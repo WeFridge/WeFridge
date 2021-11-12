@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'com.gladed.androidgitversion' version '0.4.14'
 }
 
 android {
@@ -10,8 +11,8 @@ android {
         applicationId "app.wefridge.wefridge"
         minSdk 21
         targetSdk 31
-        versionCode 1
-        versionName "1.0"
+        versionName androidGitVersion.name()
+        versionCode androidGitVersion.code()
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
