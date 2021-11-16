@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--    <item-->
+    <!--        android:id="@id/FirstFragment"-->
+    <!--        android:enabled="true"-->
+    <!--        android:icon="@mipmap/ic_launcher"-->
+    <!--        android:title="@string/app_name"/>-->
+    <item
+        android:id="@id/PantryFragment"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:title="@string/hello_first_fragment" />
+    <item
+        android:id="@id/NearbyItemsFragment"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:title="@string/hello_first_fragment" />
+    <item
+        android:id="@id/SettingsFragment"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:title="settings" />
+</menu>

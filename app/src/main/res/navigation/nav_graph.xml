@@ -3,26 +3,61 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/PantryFragment">
+
+    <!--    <fragment-->
+    <!--        android:id="@+id/FirstFragment"-->
+    <!--        android:name="app.wefridge.wefridge.FirstFragment"-->
+    <!--        android:label="@string/first_fragment_label"-->
+    <!--        tools:layout="@layout/fragment_first">-->
+
+    <!--        <action-->
+    <!--            android:id="@+id/action_FirstFragment_to_SecondFragment"-->
+    <!--            app:destination="@id/SecondFragment" />-->
+    <!--    </fragment>-->
+    <!--    <fragment-->
+    <!--        android:id="@+id/SecondFragment"-->
+    <!--        android:name="app.wefridge.wefridge.SecondFragment"-->
+    <!--        android:label="@string/second_fragment_label"-->
+    <!--        tools:layout="@layout/fragment_second">-->
+
+    <!--        <action-->
+    <!--            android:id="@+id/action_SecondFragment_to_FirstFragment"-->
+    <!--            app:destination="@id/PantryFragment" />-->
+    <!--    </fragment>-->
 
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="app.wefridge.wefridge.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
+        android:id="@+id/NearbyItemsFragment"
+        android:name="app.wefridge.wefridge.NearbyItemFragment"
+        android:label="nearby"
+        tools:layout="@layout/fragment_nerby_item_list">
 
-        <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
     </fragment>
+
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="app.wefridge.wefridge.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
+        android:id="@+id/SettingsFragment"
+        android:name="app.wefridge.wefridge.SettingsFragment"
+        android:label="setaeatings"
+        tools:layout="@layout/fragment_settings">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/EditFragment"
+        android:name="app.wefridge.wefridge.EditFragment"
+        android:label="edit"
+        tools:layout="@layout/fragment_edit">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/PantryFragment"
+        android:name="app.wefridge.wefridge.PantryFragment"
+        android:label="Pantry"
+        tools:layout="@layout/fragment_pantry_list">
 
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/action_from_list_to_edit"
+            app:destination="@id/EditFragment" />
     </fragment>
 </navigation>
