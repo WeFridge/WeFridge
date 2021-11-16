@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "129245758038",
+    "project_id": "we-fridge",
+    "storage_bucket": "we-fridge.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:129245758038:android:e66811f9255b54ab4cf1f7",
+        "android_client_info": {
+          "package_name": "app.wefridge.wefridge"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "129245758038-iu1snpub1ggp7vel55mejhdkjpo1301h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3zy00zuKbCivlobIQyfua5TT11GbGWY0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "129245758038-iu1snpub1ggp7vel55mejhdkjpo1301h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
