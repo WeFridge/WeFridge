@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun authWall() {
+    internal fun authWall() {
         // Choose authentication providers
         val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(),
