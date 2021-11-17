@@ -1,5 +1,5 @@
 package app.wefridge.wefridge.datamodel
 
-enum class Quantity {
+enum class Unit {
     GRAMM, KILOGRAMM, LITER, MILLILITER, OUNCE, PIECE;
 }
