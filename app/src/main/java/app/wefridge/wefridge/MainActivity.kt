@@ -1,6 +1,7 @@
 package app.wefridge.wefridge
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -15,6 +16,8 @@ import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
+        val response = result.idpResponse
         if (result.resultCode != RESULT_OK) {
             // Sign in failed.
             return authWall()
@@ -36,12 +40,43 @@ class MainActivity : AppCompatActivity() {
         // Successfully signed in
         val user = FirebaseAuth.getInstance().currentUser ?: return authWall()
 
-        Toast.makeText(
-            this,
-            getString(R.string.auth_success_welcome, user.displayName),
-            Toast.LENGTH_SHORT
-        )
-            .show()
+        if (response?.isNewUser == true) {
+            // create firestore user document
+            val db = Firebase.firestore
+            // TODO: create user data model
+            val userDoc = hashMapOf(
+                "name" to user.displayName,
+                "email" to user.email,
+                "image" to user.photoUrl
+            )
+            db.collection("users").document(user.uid)
+                .set(userDoc)
+                .addOnSuccessListener {
+                    Log.d("Auth", "User document ${user.uid} successfully created!")
+
+                    Toast.makeText(
+                        this,
+                        getString(R.string.auth_success_welcome, user.displayName),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                .addOnFailureListener { e ->
+                    Log.w("Auth", "Error creating user document", e)
+                    // on error, delete registration
+                    AuthUI.getInstance()
+                        .delete(this)
+                        .addOnCompleteListener {
+                            authWall()
+                        }
+                }
+        } else {
+
+            Toast.makeText(
+                this,
+                getString(R.string.auth_success_welcome_back, user.displayName),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     internal fun authWall() {
