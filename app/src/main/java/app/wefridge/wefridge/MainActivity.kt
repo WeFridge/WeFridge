@@ -69,15 +69,6 @@ class MainActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-                .addOnFailureListener { e ->
-                    Log.w("Auth", "Error creating user document", e)
-                    // on error, delete registration
-                    AuthUI.getInstance()
-                        .delete(this)
-                        .addOnCompleteListener {
-                            authWall()
-                        }
-                }
         } else {
 
             Toast.makeText(
@@ -92,7 +83,8 @@ class MainActivity : AppCompatActivity() {
         // Choose authentication providers
         val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(),
-            AuthUI.IdpConfig.GoogleBuilder().build()
+            AuthUI.IdpConfig.GoogleBuilder().build(),
+            AuthUI.IdpConfig.GitHubBuilder().build()
         )
 
         // Create and launch sign-in intent
