@@ -5,14 +5,6 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/delete"
-        style="@style/Widget.App.Button.IconOnly"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:text=""
-        app:icon="@android:drawable/ic_delete" />
-
     <ImageView
         android:id="@+id/avatar"
         android:layout_width="wrap_content"
@@ -29,5 +21,13 @@
         android:layout_weight="1"
         android:text="aegeagaegeaegeag"
         android:textAppearance="?attr/textAppearanceListItem" />
+
+    <Button
+        android:id="@+id/delete"
+        style="@style/Widget.App.Button.IconOnly"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text=""
+        app:icon="@android:drawable/ic_delete" />
 
 </LinearLayout>
