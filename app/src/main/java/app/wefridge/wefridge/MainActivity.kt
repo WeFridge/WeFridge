@@ -47,10 +47,19 @@ class MainActivity : AppCompatActivity() {
             val userDoc = hashMapOf(
                 "name" to user.displayName,
                 "email" to user.email,
-                "image" to user.photoUrl
+                "image" to user.photoUrl.toString()
             )
             db.collection("users").document(user.uid)
                 .set(userDoc)
+                .addOnFailureListener { e ->
+                    Log.w("Auth", "Error creating user document", e)
+                    // on error, delete registration
+                    AuthUI.getInstance()
+                        .delete(this)
+                        .addOnCompleteListener {
+                            authWall()
+                        }
+                }
                 .addOnSuccessListener {
                     Log.d("Auth", "User document ${user.uid} successfully created!")
 
