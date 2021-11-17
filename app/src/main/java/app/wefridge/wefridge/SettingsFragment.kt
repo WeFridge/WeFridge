@@ -35,6 +35,10 @@ class SettingsFragment : Fragment() {
     private lateinit var sp: SharedPreferences
     private lateinit var email: String
     private lateinit var name: String
+    private val participantsRecyclerViewAdapter = SettingsParticipantsRecyclerViewAdapter {
+        // TODO: remove from firestore
+        Log.v("Auth", "delete: ${it.name}")
+    }
 
 
     // This property is only valid between onCreateView and
@@ -45,19 +49,44 @@ class SettingsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.v("Auth", "createview")
+
+        sp = PreferenceManager.getDefaultSharedPreferences(context)
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        sp = PreferenceManager.getDefaultSharedPreferences(context)
+    override fun onStart() {
+        super.onStart()
+
         val user = FirebaseAuth.getInstance().currentUser!!
 
         email = sp.getString(SETTINGS_EMAIL, user.email!!)!!
         name = sp.getString(SETTINGS_NAME, user.displayName!!)!!
+        binding.contactEmail.editText!!.setText(email)
+        binding.contactName.editText!!.setText(name)
+
+        // TODO: load from firebase
+        participantsRecyclerViewAdapter.setItems(
+            listOf(
+                PlaceholderContent.ParticipantItem("1", "Karen", "aegg"),
+                PlaceholderContent.ParticipantItem("2", "Aaeg", "aegg"),
+                PlaceholderContent.ParticipantItem("3", "oje", "aegg")
+            )
+        )
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        Log.v("Auth", "viewCreated")
 
         binding.logout.setOnClickListener {
+            // clear preferences on logout
+            sp.edit {
+                clear()
+                apply()
+            }
+
             AuthUI.getInstance()
                 .signOut(requireContext())
                 .addOnCompleteListener {
@@ -68,7 +97,6 @@ class SettingsFragment : Fragment() {
         // validate email
         val contactEmail = binding.contactEmail
         val contactEmailTextEdit = contactEmail.editText!!
-        contactEmailTextEdit.setText(email)
         contactEmailTextEdit.addTextChangedListener {
             val content = it.toString()
             val isValid = Patterns.EMAIL_ADDRESS.matcher(content).matches()
@@ -97,7 +125,6 @@ class SettingsFragment : Fragment() {
         // validate name
         val contactName = binding.contactName
         val contactNameTextEdit = contactName.editText!!
-        contactNameTextEdit.setText(name)
         contactNameTextEdit.addTextChangedListener {
             val content = it.toString()
             val isValid = content.isNotBlank()
@@ -126,20 +153,7 @@ class SettingsFragment : Fragment() {
 
         with(binding.participants) {
             layoutManager = LinearLayoutManager(context)
-            // TODO: load from firebase
-            adapter = SettingsParticipantsRecyclerViewAdapter(
-                listOf(
-                    PlaceholderContent.ParticipantItem("1", "Karen", "aegg"),
-                    PlaceholderContent.ParticipantItem("2", "Aaeg", "aegg"),
-                    PlaceholderContent.ParticipantItem("3", "oje", "aegg"),
-                    PlaceholderContent.ParticipantItem("4", "Aaeg", "aegg"),
-                    PlaceholderContent.ParticipantItem("5", "oje", "aegg"),
-                    PlaceholderContent.ParticipantItem("6", "Aaeg", "aegg"),
-                    PlaceholderContent.ParticipantItem("7", "oje", "aegg")
-                )
-            ) {
-                Log.v("Auth", "delete: $it")
-            }
+            adapter = participantsRecyclerViewAdapter
         }
 
         binding.inviteParticipants.setOnClickListener {
@@ -154,7 +168,15 @@ class SettingsFragment : Fragment() {
                 .setNeutralButton("Cancel") { _, _ -> }
                 .setPositiveButton("Invite") { _, _ ->
                     // TODO: check if user exists (firestore)
-                    Log.v("Auth", editText.text.toString())
+                    val newParticipant = editText.text.toString()
+                    Log.v("Auth", newParticipant)
+                    participantsRecyclerViewAdapter.addItem(
+                        PlaceholderContent.ParticipantItem(
+                            newParticipant,
+                            newParticipant,
+                            "aegg"
+                        )
+                    )
                 }.show()
 
             val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
