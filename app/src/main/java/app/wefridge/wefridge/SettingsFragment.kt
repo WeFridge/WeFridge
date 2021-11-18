@@ -49,7 +49,6 @@ class SettingsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Log.v("Auth", "createview")
 
         sp = PreferenceManager.getDefaultSharedPreferences(context)
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
@@ -69,16 +68,19 @@ class SettingsFragment : Fragment() {
         // TODO: load from firebase
         participantsRecyclerViewAdapter.setItems(
             listOf(
-                PlaceholderContent.ParticipantItem("1", "Karen", "aegg"),
-                PlaceholderContent.ParticipantItem("2", "Aaeg", "aegg"),
-                PlaceholderContent.ParticipantItem("3", "oje", "aegg")
+                PlaceholderContent.ParticipantItem(
+                    "1",
+                    "randy.the.man@example.com",
+                    "https://lh3.googleusercontent.com/a-/AOh14GhER-CTt8Fk0N3u2zvsumXQYfC3FFRcdWR4Y-v8XQ=s96-c"
+                ),
+                PlaceholderContent.ParticipantItem("2", "pascal@bosym.de"),
+                PlaceholderContent.ParticipantItem("3", "erika1956@example.com")
             )
         )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.v("Auth", "viewCreated")
 
         binding.logout.setOnClickListener {
             // clear preferences on logout
@@ -173,8 +175,7 @@ class SettingsFragment : Fragment() {
                     participantsRecyclerViewAdapter.addItem(
                         PlaceholderContent.ParticipantItem(
                             newParticipant,
-                            newParticipant,
-                            "aegg"
+                            newParticipant
                         )
                     )
                 }.show()

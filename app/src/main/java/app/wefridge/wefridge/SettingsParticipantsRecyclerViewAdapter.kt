@@ -10,11 +10,11 @@ import androidx.recyclerview.widget.RecyclerView
 import app.wefridge.wefridge.databinding.FragmentSettingsParticipantBinding
 import app.wefridge.wefridge.placeholder.PlaceholderContent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.squareup.picasso.Picasso
 import java.lang.ref.WeakReference
 
 /**
  * [RecyclerView.Adapter] that can display a [PlaceholderContent.ParticipantItem].
- * TODO: Replace the implementation with code for your data type.
  */
 class SettingsParticipantsRecyclerViewAdapter(
     private val listener: (PlaceholderContent.ParticipantItem) -> Unit
@@ -36,7 +36,8 @@ class SettingsParticipantsRecyclerViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
         holder.name.text = item.name
-        // TODO: add image (either from url or gravatar)
+        Picasso.get().load(item.image).placeholder(R.drawable.fui_ic_anonymous_white_24dp)
+            .into(holder.avatar)
     }
 
     override fun getItemCount(): Int = values.size

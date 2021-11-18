@@ -5,10 +5,12 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal">
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/avatar"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center"
+        app:shapeAppearance="@style/ShapeAppearanceOverlay.Avatar"
         android:contentDescription="Avatar"
         app:srcCompat="@drawable/fui_ic_anonymous_white_24dp" />
 
