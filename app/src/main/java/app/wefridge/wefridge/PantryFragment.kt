@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import app.wefridge.wefridge.databinding.FragmentPantryListBinding
 import app.wefridge.wefridge.placeholder.PlaceholderContent
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -16,22 +17,30 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
  */
 class PantryFragment : Fragment() {
 
+    private var _binding: FragmentPantryListBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val mainView = inflater.inflate(R.layout.fragment_pantry_list, container, false)
+    ): View {
+        _binding = FragmentPantryListBinding.inflate(inflater, container, false);
 
-        val recycleView = mainView.findViewById<RecyclerView>(R.id.list)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val recycleView = binding.list
 
         with(recycleView) {
             layoutManager =  LinearLayoutManager(context)
             adapter = MyItemRecyclerViewAdapter(PlaceholderContent.ITEMS)
         }
 
-        mainView.findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { _ ->
-            findNavController().navigate(R.id.action_from_list_to_edit)
+       binding.fab.setOnClickListener {
+           findNavController().navigate(R.id.action_from_list_to_edit)
         }
-        return mainView
     }
 }
