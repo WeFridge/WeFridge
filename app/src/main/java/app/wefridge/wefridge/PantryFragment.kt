@@ -6,26 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import app.wefridge.wefridge.placeholder.PlaceholderContent
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
- * A fragment representing a list of Items.
+ * A fragment representing a list of Foodstuff items.
  */
 class PantryFragment : Fragment() {
-
-    private var columnCount = 1
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        arguments?.let {
-            columnCount = it.getInt(ARG_COLUMN_COUNT)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,36 +23,15 @@ class PantryFragment : Fragment() {
         val mainView = inflater.inflate(R.layout.fragment_pantry_list, container, false)
 
         val recycleView = mainView.findViewById<RecyclerView>(R.id.list)
-        // Set the adapter
-        if (recycleView is RecyclerView) {
-            with(recycleView) {
-                layoutManager = when {
-                    columnCount <= 1 -> LinearLayoutManager(context)
-                    else -> GridLayoutManager(context, columnCount)
-                }
-                adapter = MyItemRecyclerViewAdapter(PlaceholderContent.ITEMS)
-            }
-        }
 
+        with(recycleView) {
+            layoutManager =  LinearLayoutManager(context)
+            adapter = MyItemRecyclerViewAdapter(PlaceholderContent.ITEMS)
+        }
 
         mainView.findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { _ ->
             findNavController().navigate(R.id.action_from_list_to_edit)
         }
         return mainView
-    }
-
-    companion object {
-
-        // TODO: Customize parameter argument names
-        const val ARG_COLUMN_COUNT = "column-count"
-
-        // TODO: Customize parameter initialization
-        @JvmStatic
-        fun newInstance(columnCount: Int) =
-            PantryFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(ARG_COLUMN_COUNT, columnCount)
-                }
-            }
     }
 }
