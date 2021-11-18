@@ -7,10 +7,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import app.wefridge.wefridge.databinding.FragmentPantryListBinding
 import app.wefridge.wefridge.placeholder.PlaceholderContent
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
  * A fragment representing a list of Foodstuff items.
