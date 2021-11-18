@@ -36,7 +36,7 @@ object PlaceholderContent {
     }
 
     private fun getRandomFoodstuff(): String {
-        var foodStuffList = arrayOf("Gouda cheese", "octopus",
+        val foodStuffList = arrayOf("Gouda cheese", "octopus",
                 "granola",
                 "chambord",
                 "bok choy",
@@ -55,12 +55,13 @@ object PlaceholderContent {
                 "coconut milk",
                 "sausages",
                 "Romano cheese")
-        return foodStuffList[ThreadLocalRandom.current().nextInt(0, foodStuffList.size)]
+        val selectedFoodStuff = foodStuffList[ThreadLocalRandom.current().nextInt(0, foodStuffList.size)]
+        return selectedFoodStuff.substring(0, 1).uppercase(Locale.getDefault()) + selectedFoodStuff.substring(1)
     }
 
     private fun createPlaceholderItem(position: Int): PlaceholderItem {
         return PlaceholderItem(position.toString(),
-                getRandomFoodstuff(), //TODO: Capitalize this?
+                getRandomFoodstuff(),
                 ThreadLocalRandom.current().nextInt(1,42).toString(),
                 makeDetails(position))
     }
@@ -68,7 +69,7 @@ object PlaceholderContent {
     private fun makeDetails(position: Int): String {
         val builder = StringBuilder()
         builder.append("Details about Item: ").append(position)
-        for (i in 0..position - 1) {
+        for (i in 0 until position) {
             builder.append("\nMore details information here.")
         }
         return builder.toString()
