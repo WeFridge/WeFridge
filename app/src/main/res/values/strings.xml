@@ -25,6 +25,28 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
     <string name="auth_success_welcome_back">Welcome back, %1$s!</string>
     <string name="auth_success_welcome">Welcome %1$s!</string>
+    <string name="error_participants_email_own">Please invite someone else.</string>
+    <string name="error_participants_email_wrong">Please enter a valid email.</string>
+    <string name="participants_add_title">Add a participant</string>
+    <string name="participants_add_cancel">Cancel</string>
+    <string name="participants_add_invite">Invite</string>
+    <string name="participants_add_email_hint">Participants email</string>
+    <string name="settings_contact_name_saved">Name saved!</string>
+    <string name="settings_contact_email_saved">Email saved!</string>
+    <string name="error_settings_contact_name_empty">Name cannot be empty!</string>
+    <string name="error_settings_contact_name_wrong">Please enter a valid email.</string>
+    <string name="participants_remove_title">Are you sure?</string>
+    <string name="participants_remove_message">Please confirm, that you want to remove %1$s from your pantry.</string>
+    <string name="participants_remove_cancel">Cancel</string>
+    <string name="participants_remove_confirm">Confirm</string>
+    <string name="participants_add_button">Invite Participants</string>
+    <string name="settings_contact_name">Contact Name</string>
+    <string name="settings_contact_name_hint">This is shown near your shared items</string>
+    <string name="settings_contact_email">Contact Email</string>
+    <string name="settings_contact_email_hint">This is used, if someone wants to contact you about your shared items</string>
+    <string name="avatar_description">Avatar</string>
+    <string name="logout">Logout</string>
 </resources>
