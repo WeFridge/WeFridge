@@ -26,8 +26,6 @@ var SETTINGS_NAME = "SETTINGS_NAME"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [SettingsFragment.newInstance] factory method to
- * create an instance of this fragment.
  */
 class SettingsFragment : Fragment() {
 
@@ -102,8 +100,8 @@ class SettingsFragment : Fragment() {
         contactEmailTextEdit.addTextChangedListener {
             val content = it.toString()
             val isValid = Patterns.EMAIL_ADDRESS.matcher(content).matches()
-            // TODO: error message from strings file
-            contactEmail.error = if (isValid) null else "Email wrong"
+            contactEmail.error =
+                if (isValid) null else getString(R.string.error_settings_contact_name_wrong)
         }
         contactEmailTextEdit.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus)
@@ -120,8 +118,12 @@ class SettingsFragment : Fragment() {
                 putString(SETTINGS_EMAIL, email)
                 apply()
             }
-            // TODO: error message from strings file
-            Toast.makeText(context, "Email saved!", Toast.LENGTH_SHORT).show()
+
+            Toast.makeText(
+                context,
+                getString(R.string.settings_contact_email_saved),
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         // validate name
@@ -130,8 +132,8 @@ class SettingsFragment : Fragment() {
         contactNameTextEdit.addTextChangedListener {
             val content = it.toString()
             val isValid = content.isNotBlank()
-            // TODO: error message from strings file
-            contactName.error = if (isValid) null else "Name cannot be empty!"
+            contactName.error =
+                if (isValid) null else getString(R.string.error_settings_contact_name_empty)
         }
         contactNameTextEdit.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus)
@@ -148,8 +150,12 @@ class SettingsFragment : Fragment() {
                 putString(SETTINGS_NAME, name)
                 apply()
             }
-            // TODO: error message from strings file
-            Toast.makeText(context, "Name saved!", Toast.LENGTH_SHORT).show()
+
+            Toast.makeText(
+                context,
+                getString(R.string.settings_contact_name_saved),
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
 
@@ -165,10 +171,10 @@ class SettingsFragment : Fragment() {
             val editText = participant.editText!!
 
             val dialog = MaterialAlertDialogBuilder(it.context)
-                .setTitle("Add a participant")
+                .setTitle(getString(R.string.participants_add_title))
                 .setView(addBinding.root)
-                .setNeutralButton("Cancel") { _, _ -> }
-                .setPositiveButton("Invite") { _, _ ->
+                .setNeutralButton(getString(R.string.participants_add_cancel)) { _, _ -> }
+                .setPositiveButton(getString(R.string.participants_add_invite)) { _, _ ->
                     // TODO: check if user exists (firestore)
                     val newParticipant = editText.text.toString()
                     Log.v("Auth", newParticipant)
@@ -186,10 +192,10 @@ class SettingsFragment : Fragment() {
             editText.addTextChangedListener { it2 ->
                 val content = it2.toString()
                 val isValid = Patterns.EMAIL_ADDRESS.matcher(content).matches()
-                // TODO: error message from strings file
-                participant.error = if (isValid) null else "Email wrong"
+                participant.error =
+                    if (isValid) null else getString(R.string.error_participants_email_wrong)
                 if (content == ownEmail)
-                    participant.error = "Own email!"
+                    participant.error = getString(R.string.error_participants_email_own)
 
                 okButton.isEnabled = participant.error == null
             }

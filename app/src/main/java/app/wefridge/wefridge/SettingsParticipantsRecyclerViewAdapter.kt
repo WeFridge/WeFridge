@@ -77,11 +77,12 @@ class SettingsParticipantsRecyclerViewAdapter(
 
         init {
             this.delete.setOnClickListener {
-                MaterialAlertDialogBuilder(it.context)
-                    .setTitle("Are you sure?")
-                    .setMessage("Please confirm, that you want to remove \"${name.text}\" from your pantry.")
-                    .setNeutralButton("Cancel") { _, _ -> }
-                    .setPositiveButton("Confirm") { _, _ ->
+                val ctx = it.context
+                MaterialAlertDialogBuilder(ctx)
+                    .setTitle(ctx.getString(R.string.participants_remove_title))
+                    .setMessage(ctx.getString(R.string.participants_remove_message, name.text))
+                    .setNeutralButton(ctx.getString(R.string.participants_remove_cancel)) { _, _ -> }
+                    .setPositiveButton(ctx.getString(R.string.participants_remove_confirm)) { _, _ ->
                         val position = absoluteAdapterPosition
                         val toDelete = values[position]
                         listenerRef.get()?.invoke(toDelete)
