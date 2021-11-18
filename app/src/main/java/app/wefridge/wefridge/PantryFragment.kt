@@ -31,12 +31,12 @@ class PantryFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_pantry_list, container, false)
+        val mainView = inflater.inflate(R.layout.fragment_pantry_list, container, false)
 
-        val recy = view.findViewById<RecyclerView>(R.id.list)
+        val recycleView = mainView.findViewById<RecyclerView>(R.id.list)
         // Set the adapter
-        if (recy is RecyclerView) {
-            with(recy) {
+        if (recycleView is RecyclerView) {
+            with(recycleView) {
                 layoutManager = when {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
@@ -46,10 +46,10 @@ class PantryFragment : Fragment() {
         }
 
 
-        view.findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
+        mainView.findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { _ ->
             findNavController().navigate(R.id.action_from_list_to_edit)
         }
-        return view
+        return mainView
     }
 
     companion object {

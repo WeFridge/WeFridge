@@ -1,6 +1,7 @@
 package app.wefridge.wefridge.placeholder
 
 import java.util.*
+import java.util.concurrent.ThreadLocalRandom
 
 /**
  * Helper class for providing sample content for user interfaces created by
@@ -34,8 +35,34 @@ object PlaceholderContent {
         ITEM_MAP.put(item.id, item)
     }
 
+    private fun getRandomFoodstuff(): String {
+        var foodStuffList = arrayOf("Gouda cheese", "octopus",
+                "granola",
+                "chambord",
+                "bok choy",
+                "pinto beans",
+                "vegemite",
+                "onions",
+                "clams",
+                "pomegranates",
+                "Canadian bacon",
+                "hamburger",
+                "aioli",
+                "butter",
+                "milk",
+                "anchovy paste",
+                "celery seeds",
+                "coconut milk",
+                "sausages",
+                "Romano cheese")
+        return foodStuffList[ThreadLocalRandom.current().nextInt(0, foodStuffList.size)]
+    }
+
     private fun createPlaceholderItem(position: Int): PlaceholderItem {
-        return PlaceholderItem(position.toString(), "Foodstuff $position", makeDetails(position))
+        return PlaceholderItem(position.toString(),
+                getRandomFoodstuff(), //TODO: Capitalize this?
+                ThreadLocalRandom.current().nextInt(1,42).toString(),
+                makeDetails(position))
     }
 
     private fun makeDetails(position: Int): String {
@@ -50,7 +77,7 @@ object PlaceholderContent {
     /**
      * A placeholder item representing a piece of content.
      */
-    data class PlaceholderItem(val id: String, val content: String, val details: String) {
+    data class PlaceholderItem(val id: String, val content: String, val bestByDate: String, val details: String) {
         override fun toString(): String = content
     }
 }

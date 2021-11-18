@@ -29,15 +29,15 @@ class MyItemRecyclerViewAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
-        holder.idView.text = item.id
         holder.contentView.text = item.content
+        holder.bestByView.text = "Best by in ${item.bestByDate} days"
     }
 
     override fun getItemCount(): Int = values.size
 
     inner class ViewHolder(binding: FragmentPantryBinding) : RecyclerView.ViewHolder(binding.root) {
-        val idView: TextView = binding.itemNumber
         val contentView: TextView = binding.content
+        val bestByView: TextView = binding.bestByDate
 
         override fun toString(): String {
             return super.toString() + " '" + contentView.text + "'"
