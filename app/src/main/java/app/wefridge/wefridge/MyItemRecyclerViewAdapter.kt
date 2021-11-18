@@ -1,7 +1,9 @@
 package app.wefridge.wefridge
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import app.wefridge.wefridge.databinding.FragmentPantryBinding
@@ -31,6 +33,7 @@ class MyItemRecyclerViewAdapter(
         val item = values[position]
         holder.contentView.text = item.content
         holder.bestByView.text = "Best by in ${item.bestByDate} days"
+        holder.sharedIcon.visibility = if (item.shared) View.VISIBLE else View.INVISIBLE
     }
 
     override fun getItemCount(): Int = values.size
@@ -38,6 +41,8 @@ class MyItemRecyclerViewAdapter(
     inner class ViewHolder(binding: FragmentPantryBinding) : RecyclerView.ViewHolder(binding.root) {
         val contentView: TextView = binding.content
         val bestByView: TextView = binding.bestByDate
+        val sharedIcon: ImageView = binding.sharedIcon
+
 
         override fun toString(): String {
             return super.toString() + " '" + contentView.text + "'"

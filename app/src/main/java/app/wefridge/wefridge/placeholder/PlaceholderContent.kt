@@ -19,9 +19,9 @@ object PlaceholderContent {
     /**
      * A map of sample (placeholder) items, by ID.
      */
-    val ITEM_MAP: MutableMap<String, PlaceholderItem> = HashMap()
+    private val ITEM_MAP: MutableMap<String, PlaceholderItem> = HashMap()
 
-    private val COUNT = 25
+    private const val COUNT = 25
 
     init {
         // Add some sample items.
@@ -32,7 +32,7 @@ object PlaceholderContent {
 
     private fun addItem(item: PlaceholderItem) {
         ITEMS.add(item)
-        ITEM_MAP.put(item.id, item)
+        ITEM_MAP[item.id] = item
     }
 
     private fun getRandomFoodstuff(): String {
@@ -63,7 +63,8 @@ object PlaceholderContent {
         return PlaceholderItem(position.toString(),
                 getRandomFoodstuff(),
                 ThreadLocalRandom.current().nextInt(1,42).toString(),
-                makeDetails(position))
+                makeDetails(position),
+                ThreadLocalRandom.current().nextBoolean())
     }
 
     private fun makeDetails(position: Int): String {
@@ -78,7 +79,7 @@ object PlaceholderContent {
     /**
      * A placeholder item representing a piece of content.
      */
-    data class PlaceholderItem(val id: String, val content: String, val bestByDate: String, val details: String) {
+    data class PlaceholderItem(val id: String, val content: String, val bestByDate: String, val details: String, val shared: Boolean) {
         override fun toString(): String = content
     }
 }
