@@ -10,6 +10,7 @@ class ItemController: ItemControllerInterface {
     private val TAG = "ItemsOnFirebase"
     private val db = FirebaseFirestore.getInstance()
     private val items = ArrayList<Item>()
+    private val OWNER = "users/MnYhb6LQbRjdLRjvnYqt"
 
     /*
     * The function getItems is based on an example provided on
@@ -21,7 +22,7 @@ class ItemController: ItemControllerInterface {
     * */
     override fun getItems(): ArrayList<Item> {
         db.collection("items")
-            .whereEqualTo("owner", "users/MnYhb6LQbRjdLRjvnYqt") // TODO(Put a globally stored owner variable in here)
+            .whereEqualTo("owner", OWNER) // TODO(Put a globally stored owner variable in here)
             .get()
             .addOnSuccessListener { itemDocuments ->
                 for (item in itemDocuments) {
@@ -66,16 +67,17 @@ class ItemController: ItemControllerInterface {
     }
 
     private fun parse(itemData: QueryDocumentSnapshot, itemId: String): Item {
-        val name = itemData.get("name") as String?
-        val description = itemData.get("description") as String?
-        val isShared = itemData.get("is_shared") as Boolean?
-        val quantity = (itemData.get("quantity") as Long?)?.toInt()
-        val unitNumber = (itemData.get("unit") as Long?)?.toInt()
+        val name = itemData.get("name") as? String?
+        val description = itemData.get("description") as? String?
+        val isShared = itemData.get("is_shared") as? Boolean?
+        val quantity = (itemData.get("quantity") as? Long?)?.toInt()
+        val unitNumber = (itemData.get("unit") as? Long?)?.toInt()
         val unit = Unit.getByValue(unitNumber)
-        val sharedEmail = itemData.get("shared_email") as String?
-        val best_by_timestamp = (itemData.get("best_by") as Timestamp?)
+        val sharedEmail = itemData.get("shared_email") as? String?
+        val best_by_timestamp = (itemData.get("best_by") as? Timestamp?)
         val best_by_date = best_by_timestamp?.toDate()
-        val owner = itemData.get("owner") as String
+        var owner = itemData.get("owner") as? String
+        if (owner == null) owner = OWNER
 
         return Item(itemId, name, description, isShared, quantity, unit, sharedEmail, best_by_date, owner)
     }
