@@ -3,10 +3,10 @@
     <style name="Theme.WeFridge" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/fern_green</item>
-        <item name="colorPrimaryVariant">@color/yellow_green</item>
+        <item name="colorPrimaryVariant">@color/salmon_orange</item>
         <item name="colorOnPrimary">@color/pure_white</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/fern_green</item>
+        <item name="colorSecondary">@color/yellow_green</item>
         <item name="colorSecondaryVariant">@color/light_ivory</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
