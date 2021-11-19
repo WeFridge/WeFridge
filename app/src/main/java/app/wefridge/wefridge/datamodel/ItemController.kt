@@ -1,8 +1,8 @@
 package app.wefridge.wefridge.datamodel
 
 import android.util.Log
+import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.Timestamp
 import kotlin.collections.ArrayList
 
@@ -25,7 +25,12 @@ class ItemController: ItemControllerInterface {
             .get()
             .addOnSuccessListener { itemDocuments ->
                 for (item in itemDocuments) {
-                    items.add(parse(item.data, item.id))
+                    try {
+                        items.add(parse(item.data, item.id))
+                    } catch (exc: ItemOwnerMissingException) {
+                        item.data["owner"] = OWNER
+                        items.add(parse(item.data, item.id))
+                    }
                 }
             }
 
@@ -65,20 +70,22 @@ class ItemController: ItemControllerInterface {
                 })
     }
 
-    private fun parse(itemData: Map<String, Any>, itemId: String): Item {
-        val name = itemData.getOrDefault("name", null) as? String?
-        val description = itemData.getOrDefault("description", null) as? String?
-        val isShared = itemData.getOrDefault("is_shared", null) as? Boolean?
-        val quantity = (itemData.getOrDefault("quantity", null) as? Long?)?.toInt()
-        val unitNumber = (itemData.getOrDefault("unit", null) as? Long?)?.toInt()
-        val unit = Unit.getByValue(unitNumber)
-        val sharedEmail = itemData.getOrDefault("shared_email", null) as? String?
-        val best_by_timestamp = (itemData.getOrDefault("best_by", null) as? Timestamp?)
-        val best_by_date = best_by_timestamp?.toDate()
-        var owner = itemData.getOrDefault("owner", null) as? String
-        if (owner == null) owner = OWNER
+    companion object {
 
-        return Item(itemId, name, description, isShared, quantity, unit, sharedEmail, best_by_date, owner)
+        // TODO: set this function to private and adapt UntiTests appropriately
+        fun parse(itemData: Map<String, Any>, itemId: String?): Item {
+            val name = itemData.getOrDefault("name", null) as? String?
+            val description = itemData.getOrDefault("description", null) as? String?
+            val isShared = itemData.getOrDefault("is_shared", null) as? Boolean?
+            val quantity = (itemData.getOrDefault("quantity", null) as? Long?)?.toInt()
+            val unitNumber = (itemData.getOrDefault("unit", null) as? Long)?.toInt()
+            val unit = Unit.getByValue(unitNumber)
+            val sharedEmail = itemData.getOrDefault("shared_email", null) as? String?
+            val bestByTimestamp = (itemData.getOrDefault("best_by", null) as? Timestamp?)
+            val bestByDate = bestByTimestamp?.toDate()
+            val owner: String = itemData.getOrDefault("owner", null) as? String ?: throw ItemOwnerMissingException()
+
+            return Item(itemId, name, description, isShared, quantity, unit, sharedEmail, bestByDate, owner)
+        }
     }
-
 }
