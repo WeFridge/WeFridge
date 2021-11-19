@@ -1,5 +1,6 @@
 package app.wefridge.wefridge.placeholder
 
+import app.wefridge.wefridge.md5
 import java.util.*
 
 /**
@@ -52,5 +53,23 @@ object PlaceholderContent {
      */
     data class PlaceholderItem(val id: String, val content: String, val details: String) {
         override fun toString(): String = content
+    }
+
+    /**
+     * A placeholder item representing a piece of content.
+     */
+    data class ParticipantItem(val id: String, val name: String) {
+        lateinit var image: String
+        override fun toString(): String = name
+
+        constructor(id: String, name: String, image: String) : this(id, name) {
+            this.image = image
+        }
+
+        init {
+            // use image from gravatar
+            val hash = name.md5()
+            image = "https://www.gravatar.com/avatar/$hash?s=64&d=wavatar"
+        }
     }
 }
