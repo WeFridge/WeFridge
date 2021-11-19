@@ -25,4 +25,21 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <!-- EditFragment Hints & Texts -->
+    <string name="itemNameHint">Name</string>
+    <string name="itemQuantityHint">Quantity</string>
+
+    <string name="itemUnitGramText">g</string>
+    <string name="itemUnitKilogramText">kg</string>
+    <string name="itemUnitLiterText">L</string>
+    <string name="itemUnitMilliliterText">mL</string>
+    <string name="itemUnitOunceText">oz</string>
+    <string name="itemUnitPieceText">pcs</string>
+    <string name="itemBestByDateHint">Best by</string>
+    <string name="itemSaveButtonText">Save</string>
+    <string name="locationSwitchLabel">Share with your neighbors</string>
+    <string name="AddressTextInputLayoutHint">Address</string>
+    <string name="itemDescriptionHint">Additional information</string>
+    <string name="locationPickerLocateButtonText">Locate me</string>
 </resources>
