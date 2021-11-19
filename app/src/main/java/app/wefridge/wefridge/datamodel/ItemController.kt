@@ -22,11 +22,10 @@ class ItemController: ItemControllerInterface {
     * */
     override fun getItems(): ArrayList<Item> {
         db.collection("items")
-            .whereEqualTo("owner", OWNER) // TODO(Put a globally stored owner variable in here)
             .get()
             .addOnSuccessListener { itemDocuments ->
                 for (item in itemDocuments) {
-                    items.add(parse(item, item.id))
+                    items.add(parse(item.data, item.id))
                 }
             }
 
@@ -66,17 +65,17 @@ class ItemController: ItemControllerInterface {
                 })
     }
 
-    private fun parse(itemData: QueryDocumentSnapshot, itemId: String): Item {
-        val name = itemData.get("name") as? String?
-        val description = itemData.get("description") as? String?
-        val isShared = itemData.get("is_shared") as? Boolean?
-        val quantity = (itemData.get("quantity") as? Long?)?.toInt()
-        val unitNumber = (itemData.get("unit") as? Long?)?.toInt()
+    private fun parse(itemData: Map<String, Any>, itemId: String): Item {
+        val name = itemData.getOrDefault("name", null) as? String?
+        val description = itemData.getOrDefault("description", null) as? String?
+        val isShared = itemData.getOrDefault("is_shared", null) as? Boolean?
+        val quantity = (itemData.getOrDefault("quantity", null) as? Long?)?.toInt()
+        val unitNumber = (itemData.getOrDefault("unit", null) as? Long?)?.toInt()
         val unit = Unit.getByValue(unitNumber)
-        val sharedEmail = itemData.get("shared_email") as? String?
-        val best_by_timestamp = (itemData.get("best_by") as? Timestamp?)
+        val sharedEmail = itemData.getOrDefault("shared_email", null) as? String?
+        val best_by_timestamp = (itemData.getOrDefault("best_by", null) as? Timestamp?)
         val best_by_date = best_by_timestamp?.toDate()
-        var owner = itemData.get("owner") as? String
+        var owner = itemData.getOrDefault("owner", null) as? String
         if (owner == null) owner = OWNER
 
         return Item(itemId, name, description, isShared, quantity, unit, sharedEmail, best_by_date, owner)
