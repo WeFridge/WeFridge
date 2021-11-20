@@ -33,8 +33,9 @@ class PantryFragment : Fragment() {
         val recycleView = binding.list
 
         with(recycleView) {
-            layoutManager =  LinearLayoutManager(context)
-            adapter = MyItemRecyclerViewAdapter(PlaceholderContent.ITEMS)
+            layoutManager = LinearLayoutManager(context)
+            adapter =
+                MyItemRecyclerViewAdapter(PlaceholderContent.ITEMS, R.id.action_from_list_to_edit)
         }
 
        binding.fab.setOnClickListener {

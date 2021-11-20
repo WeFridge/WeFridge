@@ -49,4 +49,6 @@
     <string name="settings_contact_email_hint">This is used, if someone wants to contact you about your shared items</string>
     <string name="avatar_description">Avatar</string>
     <string name="logout">Logout</string>
+    <string name="nav_label_nearby">Nearby Shared Items</string>
+    <string name="add_new_item">Add new item</string>
 </resources>
