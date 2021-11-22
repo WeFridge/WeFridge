@@ -269,7 +269,7 @@ class EditFragment : Fragment() {
         val month = itemBestByDatePicker.month + 1
         val year = itemBestByDatePicker.year
 
-        return "${day}. ${month} ${year}"
+        return "${day}. ${month}. ${year}"
     }
 
     private fun setDatePickerVisibility() {
