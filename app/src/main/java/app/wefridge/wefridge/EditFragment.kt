@@ -14,12 +14,22 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.DatePicker
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+import kotlinx.android.synthetic.main.fragment_edit.*
+import app.wefridge.wefridge.databinding.FragmentEditBinding
+import app.wefridge.wefridge.placeholder.PlaceholderContent
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import kotlinx.android.synthetic.main.fragment_edit.*
+import java.util.*
 
 /**
  * A simple [Fragment] subclass.
@@ -27,24 +37,61 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class EditFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private var _binding: FragmentEditBinding? = null
+    private val binding get() = _binding!!
+    private var model: PlaceholderContent.PlaceholderItem? = null
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+            model = it.getParcelable(ARG_MODEL)
         }
+
+
+        (requireActivity() as AppCompatActivity).supportActionBar?.title =
+            model?.content ?: getString(R.string.add_new_item)
+
+        // this peace of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
+        requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+                if (isGranted) {
+                    getLastKnownLocation()
+                } else {
+                    Log.d("EditFragment", "Request for location access denied.")
+                }
+            }
+
+// the following is partially taken from https://developer.android.com/guide/navigation/navigation-custom-back
+        // customize the behavior, when user taps on the lower back button
+/*   // customize the behavior, when user taps on the lower back button
+     val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
+     Toast.makeText(requireContext(), "Save item", Toast.LENGTH_SHORT).show()
+ }
+ */
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_edit, container, false)
+        _binding = FragmentEditBinding.inflate(inflater, container, false)
+
+        return binding.root
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        adaptUIToModel()
+        hideDatePicker()
+        setUpDatePicker()
+        setLocationPickerActivation()
+        setUpOnClickListeners()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -64,18 +111,18 @@ class EditFragment : Fragment() {
     private fun saveNewItem() {
         // TODO: replace PlaceholderItem with Item class from branch datamodel_item
         val newItem = PlaceholderContent.PlaceholderItem(
-           id = (PlaceholderContent.ITEMS.size + 1).toString(),
-           content = itemNameTextInputLayout.editText?.text.toString(),
-           bestByDate = itemBestByDateTextInputLayout.editText?.text.toString(),
-           details = itemDescriptionTextInputLayout.editText?.text.toString(),
-           shared = itemIsSharedSwitch.isChecked)
+            id = (PlaceholderContent.ITEMS.size + 1).toString(),
+            content = itemNameTextInputLayout.editText?.text.toString(),
+            bestByDate = itemBestByDateTextInputLayout.editText?.text.toString(),
+            details = itemDescriptionTextInputLayout.editText?.text.toString(),
+            shared = itemIsSharedSwitch.isChecked
+        )
 
         PlaceholderContent.ITEMS.add(newItem)
         Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
         // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
         activity?.onBackPressed()
     }
-
 
 
     private fun getLastKnownLocation() {
@@ -87,7 +134,8 @@ class EditFragment : Fragment() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
                 // called when permission was granted
-                fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+                fusedLocationClient =
+                    LocationServices.getFusedLocationProviderClient(requireContext())
                 fusedLocationClient.lastLocation
                     .addOnSuccessListener { location ->
                         if (location != null) {
@@ -101,8 +149,9 @@ class EditFragment : Fragment() {
                         displayAlertDialogOnPermissionDenied()
                     }
 
-            } shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> {
-            // called when permission denied
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> {
+                // called when permission denied
                 displayAlertDialogOnFailedLocationDetermination()
             }
             else -> {
@@ -173,7 +222,7 @@ class EditFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpDatePicker() {
         itemBestByDatePicker.setOnDateChangedListener { datePicker, _, _, _ ->
-           setDateStringToBestByDateEditText()
+            setDateStringToBestByDateEditText()
         }
     }
 
@@ -183,6 +232,7 @@ class EditFragment : Fragment() {
         val year = itemBestByDatePicker.year
         itemBestByDateTextInputLayout.editText?.setText("${day}. ${month} ${year}")
     }
+
 
     private fun setDatePickerVisibility() {
         when (itemBestByDatePicker.visibility) {
@@ -202,7 +252,7 @@ class EditFragment : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun setLocationPickerActivation () {
+    private fun setLocationPickerActivation() {
         if (itemIsSharedSwitch.isChecked) {
             activateLocationPickerElements()
         } else {
@@ -245,10 +295,10 @@ class EditFragment : Fragment() {
         itemDescriptionTextInputLayout.editText?.isEnabled = true
         itemDescriptionTextInputLayout.editText?.focusable = View.FOCUSABLE
         itemDescriptionTextInputLayout.editText?.isFocusableInTouchMode = true
-        itemDescriptionTextInputLayout.editText?.inputType = InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE
+        itemDescriptionTextInputLayout.editText?.inputType =
+            InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE
         itemDescriptionTextInputLayout.alpha = 1f
     }
-
 
 
     companion object {
@@ -262,11 +312,10 @@ class EditFragment : Fragment() {
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
+        fun newInstance(model: PlaceholderContent.PlaceholderItem) =
             EditFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+                    putParcelable(ARG_MODEL, model)
                 }
             }
     }
