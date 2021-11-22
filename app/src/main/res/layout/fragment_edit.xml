@@ -14,7 +14,6 @@
         android:paddingHorizontal="16dp"
         android:paddingVertical="8dp">
 
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/itemNameTextInputLayout"
             android:layout_width="match_parent"
@@ -50,7 +49,7 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <RadioGroup
-                android:id="@+id/radioGroup"
+                android:id="@+id/itemUnitRadioGroup"
                 android:checkedButton="@+id/radio_button_1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -91,7 +90,7 @@
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/pantryBestByDateTextInputLayout"
+            android:id="@+id/itemBestByDateTextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/itemBestByDateHint">
@@ -110,6 +109,12 @@
                 android:focusable="false"
                 android:focusableInTouchMode="false"/>
         </com.google.android.material.textfield.TextInputLayout>
+        <DatePicker
+            android:id="@+id/itemBestByDatePicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:datePickerMode="spinner"
+            android:calendarViewShown="false"/>
 
         <!-- TODO: add box with share options-->
         <LinearLayout
@@ -126,6 +131,7 @@
             <!-- The android:switchPadding property was taken from: https://stackoverflow.com/questions/47941834/how-to-put-space-between-switch-button-and-its-text-in-android -->
             <!-- The android:textStyle property was taken from: https://stackoverflow.com/questions/4792260/how-do-you-change-text-to-bold-in-android -->
             <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/itemIsSharedSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:text="@string/locationSwitchLabel"
@@ -137,7 +143,7 @@
 
             <!-- This code snippet for a text field was taken (and modified) from: https://material.io/components/text-fields/android#outlined-text-field-->
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/AddressTextInputLayout"
+                android:id="@+id/itemAddressTextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/AddressTextInputLayoutHint"
