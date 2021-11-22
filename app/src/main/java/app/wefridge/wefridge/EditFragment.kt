@@ -14,7 +14,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.DatePicker
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,7 +27,6 @@ import app.wefridge.wefridge.databinding.FragmentEditBinding
 import app.wefridge.wefridge.placeholder.PlaceholderContent
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import kotlinx.android.synthetic.main.fragment_edit.*
 import java.util.*
 
 /**
@@ -64,13 +62,13 @@ class EditFragment : Fragment() {
                 }
             }
 
-// the following is partially taken from https://developer.android.com/guide/navigation/navigation-custom-back
-        // customize the behavior, when user taps on the lower back button
-/*   // customize the behavior, when user taps on the lower back button
-     val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
-     Toast.makeText(requireContext(), "Save item", Toast.LENGTH_SHORT).show()
- }
- */
+        // the following is partially taken from https://developer.android.com/guide/navigation/navigation-custom-back
+                // customize the behavior, when user taps on the lower back button
+        /*   // customize the behavior, when user taps on the lower back button
+             val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
+             Toast.makeText(requireContext(), "Save item", Toast.LENGTH_SHORT).show()
+         }
+         */
     }
 
     override fun onCreateView(
