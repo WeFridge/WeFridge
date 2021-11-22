@@ -85,11 +85,11 @@ object PlaceholderContent {
     // TODO: adapt PlaceholderItem to Item Object later (from branch datamodel_item)
     @Parcelize
     data class PlaceholderItem(
-        val id: String,
-        val content: String,
-        val bestByDate: String,
-        val details: String,
-        val shared: Boolean
+        var id: String,
+        var content: String,
+        var bestByDate: String,
+        var details: String,
+        var shared: Boolean
     ) : Parcelable {
         override fun toString(): String = content
     }

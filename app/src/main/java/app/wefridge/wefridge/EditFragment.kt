@@ -21,6 +21,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_edit.*
 import app.wefridge.wefridge.databinding.FragmentEditBinding
@@ -61,14 +62,6 @@ class EditFragment : Fragment() {
                     Log.d("EditFragment", "Request for location access denied.")
                 }
             }
-
-        // the following is partially taken from https://developer.android.com/guide/navigation/navigation-custom-back
-                // customize the behavior, when user taps on the lower back button
-        /*   // customize the behavior, when user taps on the lower back button
-             val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
-             Toast.makeText(requireContext(), "Save item", Toast.LENGTH_SHORT).show()
-         }
-         */
     }
 
     override fun onCreateView(
@@ -89,11 +82,12 @@ class EditFragment : Fragment() {
         hideDatePicker()
         setUpDatePicker()
         setLocationPickerActivation()
-        setUpOnClickListeners()
+        setUpOnClickListenersForFormComponents()
+        setUpSaveMechanism()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpOnClickListeners() {
+    private fun setUpOnClickListenersForFormComponents() {
         locateMeButton.setOnClickListener { getLastKnownLocation() }
 
         itemSaveButton.setOnClickListener { saveNewItem() }
@@ -104,6 +98,48 @@ class EditFragment : Fragment() {
             setDatePickerVisibility()
             setDateStringToBestByDateEditText()
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun setUpSaveMechanism() {
+        if (model?.id != null) setUpOnChangedListeners()
+        else setUpSaveButton()
+    }
+
+    private fun setUpSaveButton() {
+        itemSaveButton.setOnClickListener { saveNewItem() }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun setUpOnChangedListeners() {
+        itemNameTextInputLayout.editText?.addTextChangedListener { updateItemContentAttribute() }
+        itemQuantityTextInputLayout.editText?.addTextChangedListener { null /* change quantity item attribute */ }
+        itemUnitRadioGroup.setOnCheckedChangeListener { radioGroup, id -> null /* change unit item attribute */ }
+        itemBestByDateTextInputLayout.editText?.addTextChangedListener { updateItemBestByDateAttribute() }
+        itemIsSharedSwitch.setOnCheckedChangeListener { compoundButton, status -> updateItemSharedAttribute() }
+        itemDescriptionTextInputLayout.editText?.addTextChangedListener { updateItemDetailAttribute() }
+        // TODO: what about the location? where do we store that? Also in the item?
+    }
+
+    private fun updateItemContentAttribute() {
+        model?.content = itemNameTextInputLayout.editText?.text.toString()
+    }
+
+    private fun updateItemBestByDateAttribute() {
+        if (itemBestByDateTextInputLayout.editText?.text.toString() != "")
+            model?.bestByDate = buildDateStringFromDatePicker()  // TODO: later on, get a Date object from the DatePicker
+
+        // TODO: uncomment, when applying Item object with optional bestByDate
+        //else model?.bestByDate = null
+    }
+
+    private fun updateItemSharedAttribute() {
+        model?.shared = itemIsSharedSwitch.isChecked
+    }
+
+    // TODO: change to updateItemDESCRIPTIONAttribute when applying Item data class from datamodel_item branch
+    private fun updateItemDetailAttribute() {
+        model?.details = itemDescriptionTextInputLayout.editText?.text.toString()
     }
 
     private fun saveNewItem() {
@@ -225,12 +261,16 @@ class EditFragment : Fragment() {
     }
 
     private fun setDateStringToBestByDateEditText() {
+        itemBestByDateTextInputLayout.editText?.setText(buildDateStringFromDatePicker())
+    }
+
+    private fun buildDateStringFromDatePicker(): String {
         val day = itemBestByDatePicker.dayOfMonth
         val month = itemBestByDatePicker.month + 1
         val year = itemBestByDatePicker.year
-        itemBestByDateTextInputLayout.editText?.setText("${day}. ${month} ${year}")
-    }
 
+        return "${day}. ${month} ${year}"
+    }
 
     private fun setDatePickerVisibility() {
         when (itemBestByDatePicker.visibility) {
