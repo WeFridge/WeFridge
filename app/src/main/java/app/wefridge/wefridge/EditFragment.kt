@@ -173,7 +173,7 @@ class EditFragment : Fragment() {
                 fusedLocationClient.lastLocation
                     .addOnSuccessListener { location ->
                         if (location != null) {
-                            buildAddressString(location)
+                            setAddressStringToItemAddressTextEdit(location)
                         } else {
                             displayAlertDialogOnPermissionDenied()
                         }
@@ -198,7 +198,7 @@ class EditFragment : Fragment() {
 
     }
 
-    private fun buildAddressString(location: Location) {
+    private fun setAddressStringToItemAddressTextEdit(location: Location) {
         // the following code is based on https://stackoverflow.com/questions/9409195/how-to-get-complete-address-from-latitude-and-longitude
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
         val address =
