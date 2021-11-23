@@ -23,11 +23,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import kotlinx.android.synthetic.main.fragment_edit.*
 import app.wefridge.wefridge.databinding.FragmentEditBinding
 import app.wefridge.wefridge.placeholder.PlaceholderContent
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.CancellationTokenSource
+import kotlinx.android.synthetic.main.fragment_edit.*
 import java.util.*
 
 /**
@@ -165,12 +167,15 @@ class EditFragment : Fragment() {
         when {
             ActivityCompat.checkSelfPermission(
                 requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
                 // called when permission was granted
                 fusedLocationClient =
                     LocationServices.getFusedLocationProviderClient(requireContext())
-                fusedLocationClient.lastLocation
+                fusedLocationClient.getCurrentLocation(
+                    PRIORITY_HIGH_ACCURACY,
+                    CancellationTokenSource().token
+                )
                     .addOnSuccessListener { location ->
                         if (location != null) {
                             setAddressStringToItemAddressTextEdit(location)
@@ -184,14 +189,14 @@ class EditFragment : Fragment() {
                     }
 
             }
-            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> {
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
                 // called when permission denied
                 displayAlertDialogOnFailedLocationDetermination()
             }
             else -> {
                 // called when permission settings unspecified (like "ask every time")
                 requestPermissionLauncher.launch(
-                    Manifest.permission.ACCESS_COARSE_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 )
             }
         }
