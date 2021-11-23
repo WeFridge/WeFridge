@@ -8,7 +8,8 @@
     <string name="previous">Previous</string>
 
     <string name="Pantry">Pantry</string>
-    <string name="Foodshare">Foodshare</string>
+    <string name="Nearby">Nearby</string>
+    <string name="Settings">Settings</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
