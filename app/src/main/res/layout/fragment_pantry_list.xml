@@ -11,8 +11,6 @@
         android:name="app.wefridge.wefridge.PantryFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
         app:layoutManager="LinearLayoutManager"
         tools:context=".PantryFragment"
         tools:listitem="@layout/fragment_pantry" />
@@ -25,6 +23,6 @@
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginBottom="16dp"
-        app:srcCompat="@android:drawable/ic_dialog_email" />
+        app:srcCompat="@drawable/add_icon" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

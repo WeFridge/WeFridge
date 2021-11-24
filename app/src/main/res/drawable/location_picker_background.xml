@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The following code was taken (and modified) from: https://stackoverflow.com/questions/53533199/rounded-corners-on-linearlayout/53533685 -->
 <shape  xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="@color/purple_200"/>
+    <solid android:color="@color/light_ivory"/>
     <corners android:bottomRightRadius="8dp"
         android:bottomLeftRadius="8dp"
         android:topRightRadius="8dp"

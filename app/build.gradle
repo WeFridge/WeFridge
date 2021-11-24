@@ -30,6 +30,31 @@ android {
             // Load keystore
             def keystoreProperties = new Properties()
             try {
+                def keystorePropertiesFile = rootProject.file("keystore.properties");
+                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+            } catch(IOException ignored) {
+                // We don't have release keys, ignoring
+            }
+            if (keystoreProperties['storeFile']) {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+    signingConfigs {
+        debug {
+            keyAlias = 'androiddebugkey'
+            keyPassword = 'android'
+            storeFile = new File("${System.properties['user.home']}/.android/debug.keystore")
+            storePassword = 'android'
+            storeType = "jks"
+        }
+        release {
+            // Load keystore
+            def keystoreProperties = new Properties()
+            try {
                 def keystorePropertiesFile = rootProject.file("keystore.properties")
                 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
             } catch(IOException ignored) {

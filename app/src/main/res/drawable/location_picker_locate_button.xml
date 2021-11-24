@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This code snipet was taken (and modified) from: https://medium.com/swlh/rounded-button-in-android-studios-fbd1ee0b3161 -->
+<!-- This code snippet was taken (and modified) from: https://medium.com/swlh/rounded-button-in-android-studios-fbd1ee0b3161 -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <corners  android:radius="100dp"/>
-    <solid android:color="@color/purple_500"/>
+    <solid android:color="@color/salmon_orange"/>
 </shape>

@@ -6,64 +6,39 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import app.wefridge.wefridge.databinding.FragmentPantryListBinding
 import app.wefridge.wefridge.placeholder.PlaceholderContent
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
- * A fragment representing a list of Items.
+ * A fragment representing a list of Foodstuff items.
  */
 class PantryFragment : Fragment() {
 
-    private var columnCount = 1
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        arguments?.let {
-            columnCount = it.getInt(ARG_COLUMN_COUNT)
-        }
-    }
+    private var _binding: FragmentPantryListBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_pantry_list, container, false)
+    ): View {
+        _binding = FragmentPantryListBinding.inflate(inflater, container, false);
 
-        val recy = view.findViewById<RecyclerView>(R.id.list)
-        // Set the adapter
-        if (recy is RecyclerView) {
-            with(recy) {
-                layoutManager = when {
-                    columnCount <= 1 -> LinearLayoutManager(context)
-                    else -> GridLayoutManager(context, columnCount)
-                }
-                adapter = MyItemRecyclerViewAdapter(PlaceholderContent.ITEMS, R.id.action_from_list_to_edit)
-            }
-        }
-
-
-        view.findViewById<FloatingActionButton>(R.id.fab).setOnClickListener { view ->
-            findNavController().navigate(R.id.action_from_list_to_edit)
-        }
-        return view
+        return binding.root
     }
 
-    companion object {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        // TODO: Customize parameter argument names
-        const val ARG_COLUMN_COUNT = "column-count"
+        val recycleView = binding.list
 
-        // TODO: Customize parameter initialization
-        @JvmStatic
-        fun newInstance(columnCount: Int) =
-            PantryFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(ARG_COLUMN_COUNT, columnCount)
-                }
-            }
+        with(recycleView) {
+            layoutManager =  LinearLayoutManager(context)
+            adapter = MyItemRecyclerViewAdapter(PlaceholderContent.ITEMS, R.id.action_from_list_to_edit)
+        }
+
+       binding.fab.setOnClickListener {
+           findNavController().navigate(R.id.action_from_list_to_edit)
+        }
     }
 }

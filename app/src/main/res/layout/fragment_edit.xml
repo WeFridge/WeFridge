@@ -171,6 +171,7 @@
                 android:paddingVertical="4dp"
                 android:layout_marginVertical="8dp"
                 android:background="@drawable/location_picker_locate_button"
+                app:backgroundTint="?attr/colorPrimaryVariant"
                 app:icon="@drawable/ic_baseline_location_on_24"
                 />
 
