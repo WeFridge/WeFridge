@@ -15,7 +15,7 @@
         android:id="@id/NearbyItemsFragment"
         android:enabled="true"
         android:icon="@drawable/foodshare_image"
-        android:title="nearby" />
+        android:title="Nearby" />
     <item
         android:id="@id/SettingsFragment"
         android:enabled="true"
