@@ -1,13 +1,18 @@
 package app.wefridge.wefridge
 
+import android.content.Intent
+import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.preference.PreferenceManager
 import app.wefridge.wefridge.databinding.FragmentNearbyDetailBinding
 import app.wefridge.wefridge.placeholder.PlaceholderContent
+import com.google.firebase.auth.FirebaseAuth
 
 
 /**
@@ -20,6 +25,9 @@ class NearbyDetailFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var model: PlaceholderContent.PlaceholderItem
+    private lateinit var sp: SharedPreferences
+    private lateinit var email: String
+    private lateinit var name: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,7 +35,22 @@ class NearbyDetailFragment : Fragment() {
             model = it.getParcelable(ARG_MODEL)!!
         }
         (requireActivity() as AppCompatActivity).supportActionBar?.title = model.content
+        loadContactInfo()
 
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        loadContactInfo()
+    }
+
+    private fun loadContactInfo() {
+        sp = PreferenceManager.getDefaultSharedPreferences(context)
+        val user = FirebaseAuth.getInstance().currentUser!!
+
+        email = sp.getString(SETTINGS_EMAIL, user.email!!)!!
+        name = sp.getString(SETTINGS_NAME, user.displayName!!)!!
     }
 
     override fun onCreateView(
@@ -43,10 +66,32 @@ class NearbyDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.textId.text = model.id
-        binding.textName.text = model.content
-        binding.textBestBy.text = model.bestByDate
-        binding.textDescription.text = model.details
+        // TODO: populate textviews with actual datamodel
+        binding.quantity.text = ""
+        binding.bestBy.text = model.bestByDate
+        binding.distance.text = ""
+        binding.additionalInformation.text = model.details
+        binding.owner.text = ""
+
+        val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+            type = "text/plain"
+            data = Uri.parse("mailto:")
+            // TODO: get mail from model
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("support@arboristapp.com"))
+            putExtra(Intent.EXTRA_SUBJECT, "WeFridge: ${model.content}")
+            putExtra(
+                Intent.EXTRA_TEXT, """Hello,
+
+Shared item: ${model.content}
+
+Best regards,
+$name
+            """.trimIndent()
+            )
+        }
+        binding.contactButton.setOnClickListener {
+            startActivity(emailIntent)
+        }
 
     }
 
