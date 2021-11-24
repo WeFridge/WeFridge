@@ -8,7 +8,13 @@ class EndlessRecyclerOnScrollListener(
     private val onLoadMore: (EndlessRecyclerOnScrollListener) -> Unit
 ) : RecyclerView.OnScrollListener() {
 
-    private var loading = false
+    private var _loading = false
+    var loading
+        get() = _loading
+        set(value) {
+            _loading = value
+        }
+
     private var visibleThreshold = 2
 
     /**
@@ -32,9 +38,5 @@ class EndlessRecyclerOnScrollListener(
                 onLoadMore.invoke(this)
             }
         }
-    }
-
-    fun setLoading(loading: Boolean) {
-        this.loading = loading
     }
 }

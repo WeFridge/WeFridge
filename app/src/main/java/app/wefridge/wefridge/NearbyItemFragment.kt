@@ -51,7 +51,7 @@ class NearbyItemFragment : Fragment() {
         set(value) {
             field = value
             refreshLayout.isRefreshing = field
-            scrollListener.setLoading(field)
+            scrollListener.loading = field
         }
 
     override fun onCreateView(
