@@ -15,10 +15,10 @@
         android:id="@id/NearbyItemsFragment"
         android:enabled="true"
         android:icon="@drawable/foodshare_image"
-        android:title="@string/Foodshare" />
+        android:title="nearby" />
     <item
         android:id="@id/SettingsFragment"
         android:enabled="true"
         android:icon="@drawable/setting_image"
-        android:title="settings" />
+        android:title="Settings" />
 </menu>
