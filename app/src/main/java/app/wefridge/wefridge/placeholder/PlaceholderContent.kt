@@ -1,6 +1,8 @@
 package app.wefridge.wefridge.placeholder
 
+import android.os.Parcelable
 import app.wefridge.wefridge.md5
+import kotlinx.android.parcel.Parcelize
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 
@@ -22,7 +24,7 @@ object PlaceholderContent {
      */
     private val ITEM_MAP: MutableMap<String, PlaceholderItem> = HashMap()
 
-    private const val COUNT = 25
+    private const val COUNT = 50
 
     init {
         // Add some sample items.
@@ -80,7 +82,14 @@ object PlaceholderContent {
     /**
      * A placeholder item representing a piece of content.
      */
-    data class PlaceholderItem(val id: String, val content: String, val bestByDate: String, val details: String, val shared: Boolean) {
+    @Parcelize
+    data class PlaceholderItem(
+        val id: String,
+        val content: String,
+        val bestByDate: String,
+        val details: String,
+        val shared: Boolean
+    ) : Parcelable {
         override fun toString(): String = content
     }
 

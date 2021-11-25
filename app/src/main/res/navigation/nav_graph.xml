@@ -29,9 +29,13 @@
     <fragment
         android:id="@+id/NearbyItemsFragment"
         android:name="app.wefridge.wefridge.NearbyItemFragment"
-        android:label="nearby"
+        android:label="@string/nav_label_nearby"
         tools:layout="@layout/fragment_nerby_item_list">
 
+        <!-- TODO: add slide animation -->
+        <action
+            android:id="@+id/action_from_nearby_to_detail"
+            app:destination="@id/NearbyDetailFragment" />
     </fragment>
 
     <fragment
@@ -47,6 +51,14 @@
         android:name="app.wefridge.wefridge.EditFragment"
         android:label="edit"
         tools:layout="@layout/fragment_edit">
+
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/NearbyDetailFragment"
+        android:name="app.wefridge.wefridge.NearbyDetailFragment"
+        tools:layout="@layout/fragment_nearby_detail">
 
     </fragment>
 
