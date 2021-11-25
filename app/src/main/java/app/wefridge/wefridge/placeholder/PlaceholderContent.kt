@@ -19,8 +19,9 @@ object PlaceholderContent {
         lateinit var image: String
         override fun toString(): String = name
 
-        constructor(id: String, name: String, image: String) : this(id, name) {
-            this.image = image
+        constructor(id: String, name: String, image: String?) : this(id, name) {
+            if (image != null)
+                this.image = image
         }
 
         init {
