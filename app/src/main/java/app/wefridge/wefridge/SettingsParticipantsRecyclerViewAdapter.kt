@@ -1,7 +1,8 @@
 package app.wefridge.wefridge
 
-import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
@@ -17,9 +18,9 @@ import java.lang.ref.WeakReference
  * [RecyclerView.Adapter] that can display a [PlaceholderContent.ParticipantItem].
  */
 class SettingsParticipantsRecyclerViewAdapter(
+    private val values: ArrayList<PlaceholderContent.ParticipantItem>,
     private val listener: (PlaceholderContent.ParticipantItem) -> Unit
 ) : RecyclerView.Adapter<SettingsParticipantsRecyclerViewAdapter.ViewHolder>() {
-    private var values: ArrayList<PlaceholderContent.ParticipantItem> = arrayListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
@@ -34,40 +35,22 @@ class SettingsParticipantsRecyclerViewAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        Log.v("Auth", "bind $position")
         val item = values[position]
         holder.name.text = item.name
         Picasso.get().load(item.image).placeholder(R.drawable.fui_ic_anonymous_white_24dp)
             .into(holder.avatar)
+        holder.delete.visibility = View.VISIBLE
     }
 
     override fun getItemCount(): Int = values.size
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun setItems(list: List<PlaceholderContent.ParticipantItem>) {
-        values = ArrayList(list)
-        notifyDataSetChanged()
-    }
-
-    fun addItem(item: PlaceholderContent.ParticipantItem) {
-        values.add(item)
-        notifyItemInserted(values.size - 1)
-    }
-
-    fun addItem(index: Int, item: PlaceholderContent.ParticipantItem) {
-        values.add(index, item)
-        notifyItemInserted(index)
-    }
-
-    fun getItem(index: Int): PlaceholderContent.ParticipantItem {
-        return values[index]
-    }
 
     inner class ViewHolder(binding: FragmentSettingsParticipantBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         val avatar: ImageView = binding.avatar
         val name: TextView = binding.name
-        private val delete: Button = binding.delete
+        val delete: Button = binding.delete
         private val listenerRef: WeakReference<(PlaceholderContent.ParticipantItem) -> Unit> =
             WeakReference(listener)
 

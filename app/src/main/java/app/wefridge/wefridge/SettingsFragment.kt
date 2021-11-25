@@ -3,6 +3,8 @@ package app.wefridge.wefridge
 import android.app.AlertDialog
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.util.Patterns
 import android.view.LayoutInflater
@@ -20,6 +22,11 @@ import app.wefridge.wefridge.placeholder.PlaceholderContent
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 
 var SETTINGS_EMAIL = "SETTINGS_EMAIL"
 var SETTINGS_NAME = "SETTINGS_NAME"
@@ -31,11 +38,23 @@ class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
     private lateinit var sp: SharedPreferences
+    private val db = Firebase.firestore
+    private val usersRef = db.collection("users")
+    private lateinit var user: FirebaseUser
     private lateinit var email: String
     private lateinit var name: String
-    private val participantsRecyclerViewAdapter = SettingsParticipantsRecyclerViewAdapter {
+    private val values: ArrayList<PlaceholderContent.ParticipantItem> = arrayListOf()
+    private val participantsRecyclerViewAdapter = SettingsParticipantsRecyclerViewAdapter(values) {
         // TODO: remove from firestore
         Log.v("Auth", "delete: ${it.name}")
+        val deleteField = hashMapOf<String, Any>(
+            "owner" to FieldValue.delete()
+        )
+        usersRef.document(it.id)
+            .update(deleteField)
+            .addOnFailureListener {
+                // reload list
+            }
     }
 
 
@@ -55,43 +74,96 @@ class SettingsFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        binding.ownerEmail.visibility = View.GONE
+        binding.inviteParticipants.isEnabled = false
+        binding.participants.visibility = View.GONE
 
-        val user = FirebaseAuth.getInstance().currentUser!!
+        user = FirebaseAuth.getInstance().currentUser!!
 
         email = sp.getString(SETTINGS_EMAIL, user.email!!)!!
         name = sp.getString(SETTINGS_NAME, user.displayName!!)!!
         binding.contactEmail.editText!!.setText(email)
         binding.contactName.editText!!.setText(name)
 
-        // TODO: load from firebase
-        participantsRecyclerViewAdapter.setItems(
-            listOf(
-                PlaceholderContent.ParticipantItem(
-                    "1",
-                    "randy.the.man@example.com",
-                    "https://lh3.googleusercontent.com/a-/AOh14GhER-CTt8Fk0N3u2zvsumXQYfC3FFRcdWR4Y-v8XQ=s96-c"
-                ),
-                PlaceholderContent.ParticipantItem("2", "pascal@bosym.de"),
-                PlaceholderContent.ParticipantItem("3", "erika1956@example.com")
-            )
-        )
+        val userRef = usersRef.document(user.uid)
+        userRef.get()
+            .addOnSuccessListener { userDoc ->
+                if (_binding == null)
+                    return@addOnSuccessListener
+                if (userDoc == null) {
+                    logout()
+                    return@addOnSuccessListener
+                }
+
+                if (userDoc.contains("owner")) {
+                    loadOwnerData(userDoc.getDocumentReference("owner")!!)
+
+                    // TODO: change "invite participants" button to "leave" (or add a new one)
+
+                    return@addOnSuccessListener
+                }
+
+                loadParticipantsData(userRef)
+            }
+            .addOnFailureListener {
+                logout()
+            }
+    }
+
+    private fun loadParticipantsData(userRef: DocumentReference) {
+        usersRef
+            .whereEqualTo("owner", userRef)
+            .get()
+            .addOnSuccessListener {
+                if (_binding == null)
+                    return@addOnSuccessListener
+                binding.participants.visibility = View.VISIBLE
+                binding.inviteParticipants.isEnabled = true
+                with(values) {
+                    val oldSize = size
+                    clear()
+                    participantsRecyclerViewAdapter.notifyItemRangeRemoved(0, oldSize)
+                }
+                if (!it.isEmpty) {
+                    val participants = it.documents.map { p ->
+                        PlaceholderContent.ParticipantItem(
+                            p.id,
+                            p.getString("email") ?: "",
+                            p.getString("image")
+                        )
+                    }
+
+                    with(values) {
+                        addAll(participants)
+                        participantsRecyclerViewAdapter.notifyItemRangeInserted(
+                            0,
+                            participants.size
+                        )
+                        Log.v("Auth", "$size i")
+                    }
+                }
+            }
+    }
+
+    private fun loadOwnerData(owner: DocumentReference) {
+        owner.get()
+            .addOnSuccessListener { ownerDoc ->
+                if (_binding == null)
+                    return@addOnSuccessListener
+                val ownerName = ownerDoc.getString("name")
+                binding.ownerEmail.text = "your owner: $ownerName"
+                binding.ownerEmail.visibility = View.VISIBLE
+            }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.ownerEmail.visibility = View.GONE
+        binding.inviteParticipants.isEnabled = false
+        binding.participants.visibility = View.GONE
 
         binding.logout.setOnClickListener {
-            // clear preferences on logout
-            sp.edit {
-                clear()
-                apply()
-            }
-
-            AuthUI.getInstance()
-                .signOut(requireContext())
-                .addOnCompleteListener {
-                    (activity as MainActivity).authWall()
-                }
+            logout()
         }
 
         // validate email
@@ -177,13 +249,60 @@ class SettingsFragment : Fragment() {
                 .setPositiveButton(getString(R.string.participants_add_invite)) { _, _ ->
                     // TODO: check if user exists (firestore)
                     val newParticipant = editText.text.toString()
-                    Log.v("Auth", newParticipant)
-                    participantsRecyclerViewAdapter.addItem(
-                        PlaceholderContent.ParticipantItem(
-                            newParticipant,
-                            newParticipant
-                        )
-                    )
+                    usersRef.whereEqualTo("email", newParticipant)
+                        .limit(1)
+                        .get()
+                        .addOnSuccessListener { p ->
+                            if (p.isEmpty) {
+                                Handler(Looper.getMainLooper()).post {
+                                    Toast.makeText(
+                                        context,
+                                        "User not found!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                                return@addOnSuccessListener
+                            }
+                            val pData = p.documents[0]
+                            if (pData.contains("owner")) {
+                                Handler(Looper.getMainLooper()).post {
+                                    Toast.makeText(
+                                        context,
+                                        "User is already member of a pantry! ",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                                return@addOnSuccessListener
+                            }
+
+                            val ownerField = hashMapOf<String, Any>(
+                                "owner" to usersRef.document(user.uid)
+                            )
+
+                            pData.reference
+                                .update(ownerField)
+                                .addOnSuccessListener {
+                                    with(values) {
+                                        add(
+                                            PlaceholderContent.ParticipantItem(
+                                                pData.id,
+                                                pData.getString("email") ?: "",
+                                                pData.getString("image")
+                                            )
+                                        )
+                                        participantsRecyclerViewAdapter.notifyItemRangeInserted(
+                                            values.size - 2,
+                                            1
+                                        )
+                                    }
+                                    Toast.makeText(
+                                        context,
+                                        "User successfully added!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    // TODO: maybe send a notification to this user?
+                                }
+                        }
                 }.show()
 
             val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
@@ -201,6 +320,19 @@ class SettingsFragment : Fragment() {
             }
         }
 
+    }
+
+    private fun logout() {
+        // clear preferences on logout
+        sp.edit {
+            clear()
+            apply()
+        }
+        AuthUI.getInstance()
+            .signOut(requireContext())
+            .addOnCompleteListener {
+                (activity as MainActivity).authWall()
+            }
     }
 
     override fun onDestroyView() {
