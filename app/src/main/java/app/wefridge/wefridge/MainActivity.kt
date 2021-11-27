@@ -91,9 +91,8 @@ class MainActivity : AppCompatActivity() {
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()
             .setAvailableProviders(providers)
-            .setLogo(R.mipmap.ic_launcher_round)
-            // TODO: style customization, after #9
-            //            .setTheme(R.style.Theme_WeFridge)
+            .setLogo(R.mipmap.fridge_show_image_round)
+            .setTheme(R.style.Theme_WeFridge)
             .build()
         signInLauncher.launch(signInIntent)
     }
