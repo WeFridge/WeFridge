@@ -10,6 +10,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import app.wefridge.wefridge.databinding.ActivityMainBinding
+import app.wefridge.wefridge.datamodel.ItemController
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,7 +21,8 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        val itemController = ItemController()
+        itemController.getItems()
 
         // TODO: disable back button from toolbar
         setSupportActionBar(binding.toolbar)

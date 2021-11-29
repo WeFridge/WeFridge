@@ -1,6 +1,7 @@
 package app.wefridge.wefridge.datamodel
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.*
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -12,7 +13,11 @@ data class Item(val firebaseId: String? = null,
                 var unit: Unit? = null,
                 var sharedEmail: String? = null,
                 var bestByDate: Date? = null,
-                var owner: String) {
+                var location: GeoPoint? = null,
+                var geohash: String? = null,
+                var contactName: String? = null,
+                var contactEmail: String? = null,
+                var ownerReference: DocumentReference,) {
 
     init {
         if (isShared == null) isShared = false
@@ -23,8 +28,9 @@ data class Item(val firebaseId: String? = null,
     * This code is inspired by a code snippet found on
     * https://firebase.google.com/docs/firestore/manage-data/add-data
     * */
-    fun getHashMap(): HashMap<String, Comparable<*>?> {
-        val hashMapOf = hashMapOf(
+    fun getHashMap(): HashMap<String, Any?> {
+
+        return hashMapOf (
             "name" to name,
             "description" to description,
             "is_shared" to isShared,
@@ -32,9 +38,12 @@ data class Item(val firebaseId: String? = null,
             "unit" to unit?.value,
             "shared_email" to sharedEmail,
             "best_by" to bestByDate?.let { Timestamp(it) },
-            "owner" to owner
+            "location" to location,
+            "geohash" to geohash,
+            "contact_name" to contactName,
+            "contact_email" to contactEmail,
+            "owner" to ownerReference
         )
-        return hashMapOf
     }
 
 }

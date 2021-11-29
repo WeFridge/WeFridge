@@ -4,6 +4,8 @@ import android.util.Log
 import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.GeoPoint
 import kotlin.collections.ArrayList
 
 class ItemController: ItemControllerInterface {
@@ -72,7 +74,7 @@ class ItemController: ItemControllerInterface {
 
     companion object {
 
-        // TODO: set this function to private and adapt UntiTests appropriately
+        // TODO: set this function to private and adapt UnitTests appropriately
         fun parse(itemData: Map<String, Any>, itemId: String?): Item {
             val name = itemData.getOrDefault("name", null) as? String?
             val description = itemData.getOrDefault("description", null) as? String?
@@ -83,9 +85,13 @@ class ItemController: ItemControllerInterface {
             val sharedEmail = itemData.getOrDefault("shared_email", null) as? String?
             val bestByTimestamp = (itemData.getOrDefault("best_by", null) as? Timestamp?)
             val bestByDate = bestByTimestamp?.toDate()
-            val owner: String = itemData.getOrDefault("owner", null) as? String ?: throw ItemOwnerMissingException()
+            val location = itemData.getOrDefault("location", null) as? GeoPoint?
+            val geohash = itemData.getOrDefault("geohash", null) as? String?
+            val contactName = itemData.getOrDefault("contact_name", null) as? String?
+            val contactEmail = itemData.getOrDefault("contact_email", null) as? String?
+            val ownerDocumentReference = itemData.getOrDefault("owner", null) as? DocumentReference ?: throw ItemOwnerMissingException("Cannot get DocumentReference from owner field.")
 
-            return Item(itemId, name, description, isShared, quantity, unit, sharedEmail, bestByDate, owner)
+            return Item(itemId, name, description, isShared, quantity, unit, sharedEmail, bestByDate, location, geohash, contactName, contactEmail, ownerDocumentReference)
         }
     }
 }
