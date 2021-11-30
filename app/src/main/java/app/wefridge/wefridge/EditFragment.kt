@@ -95,6 +95,7 @@ class EditFragment : Fragment() {
         setLocationPickerActivation()
         setUpOnClickListenersForFormComponents()
         setUpSaveMechanism()
+        setUpOnDateChangedListenerForDatePicker()
     }
 
     override fun onDestroy() {
@@ -130,6 +131,12 @@ class EditFragment : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
+    private fun setUpOnDateChangedListenerForDatePicker() {
+        itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ -> setDateStringToBestByDateEditText(); setModelBestByDateAttribute() }
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpOnChangedListeners() {
         itemNameTextInputLayout.editText?.addTextChangedListener { setModelNameAttribute() }
         itemQuantityTextInputLayout.editText?.addTextChangedListener { setModelQuantityAttribute() }
@@ -137,7 +144,6 @@ class EditFragment : Fragment() {
         // itemBestByDateTextInputLayout.editText?.addTextChangedListener { setModelBestByDateAttribute() }
         itemIsSharedSwitch.setOnCheckedChangeListener { _, _ -> setModelIsSharedAttribute() }
         itemDescriptionTextInputLayout.editText?.addTextChangedListener { setModelDescriptionAttribute() }
-        itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ -> setDateStringToBestByDateEditText(); setModelBestByDateAttribute() }
         // TODO: what about the location? where do we store that? Also in the item?
     }
 
