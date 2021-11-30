@@ -1,22 +1,7 @@
 package app.wefridge.wefridge.placeholder
 
-import android.os.Parcelable
-import android.util.Log
-import app.wefridge.wefridge.MyItemRecyclerViewAdapter
-import app.wefridge.wefridge.PantryFragment
-import app.wefridge.wefridge.databinding.FragmentPantryListBinding
 import app.wefridge.wefridge.datamodel.Item
-import app.wefridge.wefridge.datamodel.ItemController
-import app.wefridge.wefridge.datamodel.ItemControllerInterface
-import app.wefridge.wefridge.datamodel.Unit
 import app.wefridge.wefridge.md5
-import com.google.android.gms.tasks.Task
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
-import kotlinx.android.parcel.Parcelize
-import java.util.*
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.collections.ArrayList
 
 /**
@@ -30,29 +15,8 @@ object PlaceholderContent {
     /**
      * Array containing all the items displayed in the 'pantry' section.
      */
-    val ITEMS: MutableList<Item> = ArrayList()
+    var items: MutableList<Item> = ArrayList()
 
-
-    init {
-        // Add some sample items.
-        val controller: ItemControllerInterface = ItemController()
-        controller.getItems ({ items ->
-            fillItemCollection(items)
-        },
-            {
-                /* do nothing yet on failure */
-            } )
-    }
-
-    private fun fillItemCollection(items: ArrayList<Item>) {
-        for (item in items) {
-            addItem(item)
-        }
-    }
-
-    private fun addItem(item: Item) {
-        ITEMS.add(item)
-    }
 
     /**
      * A placeholder item representing a piece of content.

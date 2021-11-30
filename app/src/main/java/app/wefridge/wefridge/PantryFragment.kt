@@ -1,5 +1,6 @@
 package app.wefridge.wefridge
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import app.wefridge.wefridge.databinding.FragmentPantryListBinding
+import app.wefridge.wefridge.datamodel.ItemController
+import app.wefridge.wefridge.datamodel.ItemControllerInterface
 import app.wefridge.wefridge.placeholder.PlaceholderContent
 
 /**
@@ -30,15 +33,35 @@ class PantryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val recycleView = binding.list
-
-        with(recycleView) {
-            layoutManager =  LinearLayoutManager(context)
-            adapter = MyItemRecyclerViewAdapter(PlaceholderContent.ITEMS, R.id.action_from_list_to_edit)
-        }
+        setUpRecycleViewWithItems()
 
         binding.fab.setOnClickListener {
            findNavController().navigate(R.id.action_from_list_to_edit)
         }
+    }
+
+    private fun setUpRecycleViewWithItems() {
+        val recycleView = binding.list
+        val itemController: ItemControllerInterface = ItemController()
+        itemController.getItems({ items ->
+            PlaceholderContent.items = items
+            with(recycleView) {
+                layoutManager = LinearLayoutManager(context)
+                adapter =
+                    MyItemRecyclerViewAdapter(PlaceholderContent.items, R.id.action_from_list_to_edit)
+            }
+        }, {
+            displayAlertOnGetItemsFailed()
+        })
+    }
+
+    private fun displayAlertOnGetItemsFailed() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Error loading your foodstuff")
+            .setMessage("Please check your internet connection and try again.")
+            .setPositiveButton("Retry") { _, _ ->
+                setUpRecycleViewWithItems()
+            }
+            .show()
     }
 }

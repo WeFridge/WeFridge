@@ -77,7 +77,7 @@ class ItemController: ItemControllerInterface {
                 .addOnSuccessListener { itemDocument ->
                     Log.d(TAG, "item written to Firebase with id: ${itemDocument.id}")
                     item.firebaseId = itemDocument.id
-                    PlaceholderContent.ITEMS.add(item)
+                    PlaceholderContent.items.add(item)
                     callbackOnSuccess()
                 }
                 .addOnFailureListener { exception ->
