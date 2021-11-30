@@ -110,9 +110,12 @@ class EditFragment : Fragment() {
                 model?.location = null
                 model?.isShared = false
                 displayAlertOnSaveSharedItemWithoutLocation()
+            } else {
+                setModelLocationAttribute()
+                setModelGeohashAttribute()
+                val itemController: ItemControllerInterface = ItemController()
+                itemController.saveItem(model!!, { /* do nothing on success */ }, { displayAlertOnSaveItemFailed() })
             }
-            val itemController: ItemControllerInterface = ItemController()
-            itemController.saveItem(model!!, { /* do nothing on success */ }, { displayAlertOnSaveItemFailed() })
         }
     }
 
