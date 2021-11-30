@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
@@ -54,9 +55,11 @@ class EditFragment : Fragment() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private val ADD_ITEM_MODE: Boolean get() = model?.firebaseId.isNullOrEmpty()
+    private var location: GeoPoint? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         arguments?.let {
             model = it.getParcelable(ARG_MODEL)
         }
@@ -96,11 +99,18 @@ class EditFragment : Fragment() {
         setUpOnClickListenersForFormComponents()
         setUpSaveMechanism()
         setUpOnDateChangedListenerForDatePicker()
+        setUpOnChangedListenerForAddressInput()
+        location = model?.location
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        if (!ADD_ITEM_MODE) {  // new Items should not be saved automatically, i. e. onDestroy
+        if (!ADD_ITEM_MODE) {  // **new** Items should not be saved automatically, i. e. onDestroy
+            if (location == null && model?.isShared == true) {
+                model?.location = null
+                model?.isShared = false
+                displayAlertOnSaveSharedItemWithoutLocation()
+            }
             val itemController: ItemControllerInterface = ItemController()
             itemController.saveItem(model!!, { /* do nothing on success */ }, { displayAlertOnSaveItemFailed() })
         }
@@ -136,6 +146,13 @@ class EditFragment : Fragment() {
 
     }
 
+    private fun setUpOnChangedListenerForAddressInput() {
+        itemAddressTextInputLayout.editText?.addTextChangedListener {
+            location = getGeoPointFromAddressUserInput()
+        }
+    }
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpOnChangedListeners() {
         itemNameTextInputLayout.editText?.addTextChangedListener { setModelNameAttribute() }
@@ -147,7 +164,6 @@ class EditFragment : Fragment() {
         // TODO: what about the location? where do we store that? Also in the item?
     }
 
-    // TODO: use the following functions in saveNewItem()
     private fun setModelNameAttribute() {
         model?.name = itemNameTextInputLayout.editText?.text.toString()
     }
@@ -162,12 +178,13 @@ class EditFragment : Fragment() {
         model?.unit = matchRadioButtonIdToUnit()
     }
 
-    private fun setModelLocationAttribute(location: GeoPoint) {
+    private fun setModelLocationAttribute() {
         model?.location = location
     }
 
-    private fun setModelGeohashAttribute(location: GeoLocation) {
-        model?.geohash = GeoFireUtils.getGeoHashForLocation(location)
+    private fun setModelGeohashAttribute() {
+        if (location != null)
+            model?.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(location!!.latitude, location!!.longitude))
     }
 
     private fun setModelBestByDateAttribute() {
@@ -189,38 +206,44 @@ class EditFragment : Fragment() {
 
     private fun saveNewItem() {
         // TODO: replace PlaceholderItem with Item class from branch datamodel_item
-        val ownerController: OwnerControllerInterface = OwnerController()
-        ownerController.getCurrentUser { ownerDocumentReference ->
-            model = Item(
-                contactName = null,
-                contactEmail = null,
-                ownerReference = ownerDocumentReference)
-            setModelNameAttribute()
-            setModelQuantityAttribute()
-            setModelUnitAttribute()
-            setModelBestByDateAttribute()
-            setModelIsSharedAttribute()
-            // setModelLocationAttribute(...)
-            // setModelGeohashAttribute(...)
-            setModelDescriptionAttribute()
+        if (itemIsSharedSwitch.isChecked && location == null) {
+            displayAlertOnSaveSharedItemWithoutLocation()
+            itemAddressTextInputLayout.editText?.setText("")
+        } else {
 
-            val itemController: ItemControllerInterface = ItemController()
-            itemController.saveItem(model!!, {
-                // saving was successful
-                Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
+            val ownerController: OwnerControllerInterface = OwnerController()
+            ownerController.getCurrentUser { ownerDocumentReference ->
+                model = Item(
+                    contactName = null,
+                    contactEmail = null,
+                    ownerReference = ownerDocumentReference
+                )
+                setModelNameAttribute()
+                setModelQuantityAttribute()
+                setModelUnitAttribute()
+                setModelBestByDateAttribute()
+                setModelIsSharedAttribute()
+                setModelLocationAttribute()
+                setModelGeohashAttribute()
+                setModelDescriptionAttribute()
 
-                // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
-                activity?.onBackPressed()
-            },
-                {
-                // saving newItem failed
-                displayAlertOnSaveItemFailed()
-            })
+                val itemController: ItemControllerInterface = ItemController()
+                itemController.saveItem(model!!, {
+                    // saving was successful
+                    Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
 
+                    // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
+                    activity?.onBackPressed()
+                },
+                    {
+                        // saving newItem failed
+                        displayAlertOnSaveItemFailed()
+                    })
+
+
+            }
 
         }
-
-
     }
 
 
@@ -272,6 +295,22 @@ class EditFragment : Fragment() {
         itemAddressTextInputLayout.editText?.setText(buildAddressString(location))
     }
 
+    private fun getGeoPointFromAddressUserInput(): GeoPoint? {
+        // the following piece of code is inspired by https://stackoverflow.com/questions/3574644/how-can-i-find-the-latitude-and-longitude-from-address/27834110#27834110
+        val userInputAddress = itemAddressTextInputLayout.editText?.text.toString()
+        val geocoder = Geocoder(requireContext())
+
+        if (userInputAddress == "") return null
+        val matchedAddresses: List<Address> = geocoder.getFromLocationName(userInputAddress, 1)
+        if (matchedAddresses.isEmpty()) return null
+
+        val chosenAddress = matchedAddresses[0]
+        chosenAddress.latitude
+        chosenAddress.longitude
+
+        return GeoPoint(chosenAddress.latitude, chosenAddress.longitude)
+    }
+
     private fun buildAddressString(location: GeoPoint): String {
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
         val address =
@@ -282,6 +321,14 @@ class EditFragment : Fragment() {
         val postalCode = address.get(0).postalCode
 
         return "${addressLine}, ${postalCode} ${city}, ${state}"
+    }
+
+    private fun displayAlertOnSaveSharedItemWithoutLocation() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Please specify a valid address")
+            .setMessage("The address you've entered couldn't be matched to a real location. Please specify a valid address or turn off the sharing option.")
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun displayAlertOnSaveItemFailed() {
