@@ -2,10 +2,12 @@ package app.wefridge.wefridge.datamodel
 
 import android.util.Log
 import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
+import app.wefridge.wefridge.placeholder.PlaceholderContent
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.GeoPoint
+import java.lang.Exception
 import kotlin.collections.ArrayList
 
 class ItemController: ItemControllerInterface {
@@ -22,7 +24,8 @@ class ItemController: ItemControllerInterface {
     * based on code snippets provided by the Firebase Documentation:
     * https://firebase.google.com/docs/firestore/manage-data/add-data
     * */
-    override fun getItems(): ArrayList<Item> {
+    override fun getItems(callbackOnSuccess: (ArrayList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
+        // TODO: only get items of specifc user and the groups participants
         db.collection("items")
             .get()
             .addOnSuccessListener { itemDocuments ->
@@ -34,42 +37,53 @@ class ItemController: ItemControllerInterface {
                         items.add(parse(item.data, item.id))
                     }
                 }
+
+                callbackOnSuccess(items)
             }
 
             .addOnFailureListener { exception ->
                 Log.w(TAG, "Error getting documents.", exception)
+                callbackOnFailure(exception)
             }
-        return items
     }
 
     override fun deleteItem(item: Item) {
         TODO("Not yet implemented")
     }
 
-    override fun saveItem(item: Item) {
-        if (item.firebaseId != null) overrideItem(item)
-        else addItem(item)
+    override fun saveItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
+        // TODO: insert condition: when isShared == true location coordinates have to be != null!!!
+        if (item.firebaseId != null) overrideItem(item, { callbackOnSuccess() }, { exception -> callbackOnFailure(exception) })
+        else addItem(item, { callbackOnSuccess() }, { exception -> callbackOnFailure(exception) })
     }
 
-    private fun overrideItem(item: Item) {
-        TODO("Write tests for overrideItem")
+    private fun overrideItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
         if (item.firebaseId != null)
-            db.collection("items").document(item.firebaseId)
-                .set(item)
-                .addOnSuccessListener { Log.d(TAG, "item successfully written!") }
-                .addOnFailureListener { e -> Log.w(TAG, "Error writing item to Firebase", e) }
+            db.collection("items").document(item.firebaseId!!)
+                .set(item.getHashMap())
+                .addOnSuccessListener {
+                    Log.d(TAG, "item successfully written!")
+                    callbackOnSuccess()
+                }
+                .addOnFailureListener { exception ->
+                    Log.w(TAG, "Error writing item to Firebase", exception)
+                    callbackOnFailure(exception)
+                }
     }
 
-    private fun addItem(item: Item) {
-        TODO("Write tests for addItem")
+    private fun addItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
         if (item.firebaseId == null)
             db.collection("items").add(item.getHashMap())
                 .addOnSuccessListener { itemDocument ->
                     Log.d(TAG, "item written to Firebase with id: ${itemDocument.id}")
+                    item.firebaseId = itemDocument.id
+                    PlaceholderContent.ITEMS.add(item)
+                    callbackOnSuccess()
                 }
-                .addOnFailureListener({ exception ->
+                .addOnFailureListener { exception ->
                     Log.d(TAG, "Error adding item", exception)
-                })
+                    callbackOnFailure(exception)
+                }
     }
 
     companion object {
@@ -82,7 +96,6 @@ class ItemController: ItemControllerInterface {
             val quantity = (itemData.getOrDefault("quantity", null) as? Long?)?.toInt()
             val unitNumber = (itemData.getOrDefault("unit", null) as? Long)?.toInt()
             val unit = Unit.getByValue(unitNumber)
-            val sharedEmail = itemData.getOrDefault("shared_email", null) as? String?
             val bestByTimestamp = (itemData.getOrDefault("best_by", null) as? Timestamp?)
             val bestByDate = bestByTimestamp?.toDate()
             val location = itemData.getOrDefault("location", null) as? GeoPoint?
@@ -91,7 +104,7 @@ class ItemController: ItemControllerInterface {
             val contactEmail = itemData.getOrDefault("contact_email", null) as? String?
             val ownerDocumentReference = itemData.getOrDefault("owner", null) as? DocumentReference ?: throw ItemOwnerMissingException("Cannot get DocumentReference from owner field.")
 
-            return Item(itemId, name, description, isShared, quantity, unit, sharedEmail, bestByDate, location, geohash, contactName, contactEmail, ownerDocumentReference)
+            return Item(itemId, name, description, isShared, quantity, unit, bestByDate, location, geohash, contactName, contactEmail, ownerDocumentReference)
         }
     }
 }

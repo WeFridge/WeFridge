@@ -22,7 +22,7 @@ class PantryFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentPantryListBinding.inflate(inflater, container, false);
+        _binding = FragmentPantryListBinding.inflate(inflater, container, false)
 
         return binding.root
     }
@@ -37,7 +37,7 @@ class PantryFragment : Fragment() {
             adapter = MyItemRecyclerViewAdapter(PlaceholderContent.ITEMS, R.id.action_from_list_to_edit)
         }
 
-       binding.fab.setOnClickListener {
+        binding.fab.setOnClickListener {
            findNavController().navigate(R.id.action_from_list_to_edit)
         }
     }

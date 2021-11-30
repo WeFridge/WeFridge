@@ -1,27 +1,37 @@
 package app.wefridge.wefridge.datamodel
 
+import android.os.Parcelable
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.*
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.RawValue
 import java.util.*
 import kotlin.collections.HashMap
 
-data class Item(val firebaseId: String? = null,
-                var name: String? = null,
-                var description: String? = null,
-                var isShared: Boolean? = null,
-                var quantity: Int? = null,
-                var unit: Unit? = null,
-                var sharedEmail: String? = null,
-                var bestByDate: Date? = null,
-                var location: GeoPoint? = null,
-                var geohash: String? = null,
-                var contactName: String? = null,
-                var contactEmail: String? = null,
-                var ownerReference: DocumentReference,) {
+// The solution regarding the position of
+// @RawValue was found on: https://stackoverflow.com/questions/49606163/rawvalue-annotation-is-not-applicable-to-target-value-parameter
+
+@Parcelize
+data class Item(
+    var firebaseId: String? = null,
+    var name: String? = null,
+    var description: String? = null,
+    var isShared: Boolean? = null,
+    var quantity: Int? = null,
+    var unit: Unit? = null,
+    var bestByDate: Date? = null,
+    var location: @RawValue GeoPoint? = null,
+    var geohash: String? = null,
+    var contactName: String? = null,
+    var contactEmail: String? = null,
+    var ownerReference: @RawValue DocumentReference) : Parcelable {
 
     init {
         if (isShared == null) isShared = false
-        if (quantity == null) quantity = 0
+    }
+
+    override fun toString(): String {
+        return name ?: ""
     }
 
     /*
@@ -36,7 +46,6 @@ data class Item(val firebaseId: String? = null,
             "is_shared" to isShared,
             "quantity" to quantity,
             "unit" to unit?.value,
-            "shared_email" to sharedEmail,
             "best_by" to bestByDate?.let { Timestamp(it) },
             "location" to location,
             "geohash" to geohash,

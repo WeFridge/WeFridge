@@ -6,7 +6,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
-import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
@@ -24,12 +23,19 @@ import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import app.wefridge.wefridge.databinding.FragmentEditBinding
-import app.wefridge.wefridge.placeholder.PlaceholderContent
+import app.wefridge.wefridge.datamodel.*
+import app.wefridge.wefridge.datamodel.Unit
+import com.firebase.geofire.GeoFireUtils
+import com.firebase.geofire.GeoLocation
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.firebase.firestore.GeoPoint
 import kotlinx.android.synthetic.main.fragment_edit.*
+import kotlinx.android.synthetic.main.fragment_edit.view.*
+import kotlinx.android.synthetic.main.fragment_settings.*
+import kotlinx.android.synthetic.main.fragment_settings_participant.*
 import java.util.*
 
 /**
@@ -40,10 +46,10 @@ import java.util.*
 class EditFragment : Fragment() {
     private var _binding: FragmentEditBinding? = null
     private val binding get() = _binding!!
-    private var model: PlaceholderContent.PlaceholderItem? = null
+    private var model: Item? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
-
+    private val ADD_ITEM_MODE: Boolean get() = model?.firebaseId.isNullOrEmpty()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,13 +59,13 @@ class EditFragment : Fragment() {
 
 
         (requireActivity() as AppCompatActivity).supportActionBar?.title =
-            model?.content ?: getString(R.string.add_new_item)
+            model?.name ?: getString(R.string.add_new_item)
 
-        // this peace of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
+        // this piece of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
         requestPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
                 if (isGranted) {
-                    getLastKnownLocation()
+                    getCurrentLocation()
                 } else {
                     Log.d("EditFragment", "Request for location access denied.")
                 }
@@ -88,9 +94,17 @@ class EditFragment : Fragment() {
         setUpSaveMechanism()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        if (!ADD_ITEM_MODE) {  // new Items should not be saved automatically, i. e. onDestroy
+            val itemController: ItemControllerInterface = ItemController()
+            itemController.saveItem(model!!, { /* do nothing on success */ }, { displayAlertOnSaveItemFailed() })
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpOnClickListenersForFormComponents() {
-        locateMeButton.setOnClickListener { getLastKnownLocation() }
+        locateMeButton.setOnClickListener { getCurrentLocation() }
 
         itemSaveButton.setOnClickListener { saveNewItem() }
 
@@ -104,7 +118,7 @@ class EditFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpSaveMechanism() {
-        if (model?.id != null) setUpOnChangedListeners()
+        if (!ADD_ITEM_MODE) setUpOnChangedListeners()
         else setUpSaveButton()
     }
 
@@ -114,56 +128,95 @@ class EditFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpOnChangedListeners() {
-        itemNameTextInputLayout.editText?.addTextChangedListener { updateItemContentAttribute() }
-        itemQuantityTextInputLayout.editText?.addTextChangedListener { null /* change quantity item attribute */ }
-        itemUnitRadioGroup.setOnCheckedChangeListener { radioGroup, id -> null /* change unit item attribute */ }
-        itemBestByDateTextInputLayout.editText?.addTextChangedListener { updateItemBestByDateAttribute() }
-        itemIsSharedSwitch.setOnCheckedChangeListener { compoundButton, status -> updateItemSharedAttribute() }
-        itemDescriptionTextInputLayout.editText?.addTextChangedListener { updateItemDetailAttribute() }
+        itemNameTextInputLayout.editText?.addTextChangedListener { setModelNameAttribute() }
+        itemQuantityTextInputLayout.editText?.addTextChangedListener { setModelQuantityAttribute() }
+        itemUnitRadioGroup.setOnCheckedChangeListener { radioGroup, id -> setModelUnitAttribute() }
+        itemBestByDateTextInputLayout.editText?.addTextChangedListener { setModelBestByDateAttribute() }
+        itemIsSharedSwitch.setOnCheckedChangeListener { compoundButton, status -> setModelIsSharedAttribute() }
+        itemDescriptionTextInputLayout.editText?.addTextChangedListener { setModelDescriptionAttribute() }
         // TODO: what about the location? where do we store that? Also in the item?
     }
 
-    private fun updateItemContentAttribute() {
-        model?.content = itemNameTextInputLayout.editText?.text.toString()
+    // TODO: use the following functions in saveNewItem()
+    private fun setModelNameAttribute() {
+        model?.name = itemNameTextInputLayout.editText?.text.toString()
     }
 
-    private fun updateItemBestByDateAttribute() {
+    private fun setModelQuantityAttribute() {
+        val quantityString = itemQuantityTextInputLayout.editText?.text.toString()
+        model?.quantity = if (quantityString.isNullOrEmpty()) null else quantityString.toInt()
+
+    }
+
+    private fun setModelUnitAttribute() {
+        model?.unit = matchRadioButtonIdToUnit()
+    }
+
+    private fun setModelLocationAttribute(location: GeoPoint) {
+        model?.location = location
+    }
+
+    private fun setModelGeohashAttribute(location: GeoLocation) {
+        model?.geohash = GeoFireUtils.getGeoHashForLocation(location)
+    }
+
+    private fun setModelBestByDateAttribute() {
         if (itemBestByDateTextInputLayout.editText?.text.toString() != "")
-            model?.bestByDate = buildDateStringFromDatePicker()  // TODO: later on, get a Date object from the DatePicker
-
-        // TODO: uncomment, when applying Item object with optional bestByDate
-        //else model?.bestByDate = null
+            model?.bestByDate = getDateFromDatePicker()
+        else
+            model?.bestByDate = null
     }
 
-    private fun updateItemSharedAttribute() {
-        model?.shared = itemIsSharedSwitch.isChecked
+    private fun setModelIsSharedAttribute() {
+        model?.isShared = itemIsSharedSwitch.isChecked
     }
 
-    // TODO: change to updateItemDESCRIPTIONAttribute when applying Item data class from datamodel_item branch
-    private fun updateItemDetailAttribute() {
-        model?.details = itemDescriptionTextInputLayout.editText?.text.toString()
+
+    private fun setModelDescriptionAttribute() {
+        model?.description = itemDescriptionTextInputLayout.editText?.text.toString()
     }
+
 
     private fun saveNewItem() {
         // TODO: replace PlaceholderItem with Item class from branch datamodel_item
-        val newItem = PlaceholderContent.PlaceholderItem(
-            id = (PlaceholderContent.ITEMS.size + 1).toString(),
-            content = itemNameTextInputLayout.editText?.text.toString(),
-            bestByDate = itemBestByDateTextInputLayout.editText?.text.toString(),
-            details = itemDescriptionTextInputLayout.editText?.text.toString(),
-            shared = itemIsSharedSwitch.isChecked
-        )
+        val ownerController: OwnerControllerInterface = OwnerController()
+        ownerController.getCurrentUser { ownerDocumentReference ->
+            model = Item(
+                contactName = null,
+                contactEmail = null,
+                ownerReference = ownerDocumentReference)
+            setModelNameAttribute()
+            setModelQuantityAttribute()
+            setModelUnitAttribute()
+            setModelBestByDateAttribute()
+            setModelIsSharedAttribute()
+            // setModelLocationAttribute(...)
+            // setModelGeohashAttribute(...)
+            setModelDescriptionAttribute()
 
-        PlaceholderContent.ITEMS.add(newItem)
-        Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
-        // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
-        activity?.onBackPressed()
+            val itemController: ItemControllerInterface = ItemController()
+            itemController.saveItem(model!!, {
+                // saving was successful
+                Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
+
+                // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
+                activity?.onBackPressed()
+            },
+                {
+                // saving newItem failed
+                displayAlertOnSaveItemFailed()
+            })
+
+
+        }
+
+
     }
 
 
-    private fun getLastKnownLocation() {
+    private fun getCurrentLocation() {
 
-        // this peace of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
+        // this piece of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
         when {
             ActivityCompat.checkSelfPermission(
                 requireContext(),
@@ -178,9 +231,9 @@ class EditFragment : Fragment() {
                 )
                     .addOnSuccessListener { location ->
                         if (location != null) {
-                            setAddressStringToItemAddressTextEdit(location)
+                            setAddressStringToItemAddressTextEdit(GeoPoint(location.latitude, location.longitude))
                         } else {
-                            displayAlertDialogOnPermissionDenied()
+                            displayAlertDialogOnFailedLocationDetermination()
                         }
                     }
 
@@ -203,8 +256,13 @@ class EditFragment : Fragment() {
 
     }
 
-    private fun setAddressStringToItemAddressTextEdit(location: Location) {
+    private fun setAddressStringToItemAddressTextEdit(location: GeoPoint) {
         // the following code is based on https://stackoverflow.com/questions/9409195/how-to-get-complete-address-from-latitude-and-longitude
+
+        itemAddressTextInputLayout.editText?.setText(buildAddressString(location))
+    }
+
+    private fun buildAddressString(location: GeoPoint): String {
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
         val address =
             geocoder.getFromLocation(location.latitude, location.longitude, 1)
@@ -212,7 +270,16 @@ class EditFragment : Fragment() {
         val city = address.get(0).locality
         val state = address.get(0).adminArea
         val postalCode = address.get(0).postalCode
-        itemAddressTextInputLayout.editText?.setText("${addressLine}, ${postalCode} ${city}, ${state}")
+
+        return "${addressLine}, ${postalCode} ${city}, ${state}"
+    }
+
+    private fun displayAlertOnSaveItemFailed() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Error while saving your foodstuff")
+            .setMessage("Please check your internet connection and try again.")
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun displayAlertDialogOnPermissionDenied() {
@@ -225,7 +292,7 @@ class EditFragment : Fragment() {
 
     private fun displayAlertDialogOnFailedLocationDetermination() {
         // TODO: outsource strings to strings file
-        // this peace of code is based on https://stackoverflow.com/questions/2115758/how-do-i-display-an-alert-dialog-on-android
+        // this piece of code is based on https://stackoverflow.com/questions/2115758/how-do-i-display-an-alert-dialog-on-android
         AlertDialog.Builder(requireContext())
             .setTitle("Permission denied")
             .setMessage("We have no permission to access your location.\nIf you want to make use of the \"locate me\" functionality, please enable location access in settings.")
@@ -239,23 +306,47 @@ class EditFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun adaptUIToModel() {
-        hideItemSaveButtonOnExistingModelContent()
+        hideItemSaveButtonOnExistingModelId()
         fillFieldsWithModelContent()
     }
 
-    private fun hideItemSaveButtonOnExistingModelContent() {
-        if (model?.id != null) itemSaveButton?.isVisible = false
+    private fun hideItemSaveButtonOnExistingModelId() {
+        if (!ADD_ITEM_MODE) itemSaveButton?.isVisible = false
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fillFieldsWithModelContent() {
-        itemNameTextInputLayout.editText?.setText(model?.content)
-        itemQuantityTextInputLayout.editText?.setText(null) // TODO: support quantity (not yet provided by PlaceholderItem)
-        itemUnitRadioGroup.check(radio_button_gram.id) // TODO: support unit (not yet provided by PlaceholderItem)
-        itemBestByDateTextInputLayout.editText?.setText(model?.bestByDate) // TODO: use Date data type in future from Item data type
-        itemIsSharedSwitch.isChecked = model?.shared ?: false
-        itemAddressTextInputLayout.editText?.setText(null)
-        itemDescriptionTextInputLayout.editText?.setText(model?.details)
+        itemNameTextInputLayout.editText?.setText(model?.name)
+        model?.quantity?.toString()?.let { itemQuantityTextInputLayout.editText?.setText(it) } // TODO: support quantity (not yet provided by PlaceholderItem)
+        matchUnitValueToRadioButtonId()?.let { itemUnitRadioGroup.check(it) }
+        model?.bestByDate?.toString()?.let { itemBestByDateTextInputLayout.editText?.setText(it) } // TODO: use Date data type in future from Item data type
+        itemIsSharedSwitch.isChecked = model?.isShared ?: false
+        model?.location?.let { itemAddressTextInputLayout.editText?.setText(buildAddressString(it)) }
+        itemDescriptionTextInputLayout.editText?.setText(model?.description)
+    }
+
+    private fun matchUnitValueToRadioButtonId(): Int? {
+        return when (model?.unit?.value) {
+            Unit.GRAM.value -> radio_button_gram.id
+            Unit.KILOGRAM.value -> radio_button_kilogram.id
+            Unit.LITER.value -> radio_button_liter.id
+            Unit.MILLILITER.value -> radio_button_milliliter.id
+            Unit.OUNCE.value -> radio_button_ounce.id
+            Unit.PIECE.value -> radio_button_piece.id
+            else -> null
+        }
+    }
+
+    private fun matchRadioButtonIdToUnit(): Unit? {
+        return when (itemUnitRadioGroup.checkedRadioButtonId) {
+            radio_button_gram.id -> Unit.GRAM
+            radio_button_kilogram.id -> Unit.KILOGRAM
+            radio_button_liter.id -> Unit.LITER
+            radio_button_milliliter.id -> Unit.MILLILITER
+            radio_button_ounce.id -> Unit.OUNCE
+            radio_button_piece.id -> Unit.PIECE
+            else -> null
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -275,6 +366,17 @@ class EditFragment : Fragment() {
         val year = itemBestByDatePicker.year
 
         return "${day}. ${month}. ${year}"
+    }
+
+    private fun getDateFromDatePicker(): Date {
+        val day = itemBestByDatePicker.dayOfMonth
+        val month = itemBestByDatePicker.month
+        val year = itemBestByDatePicker.year
+
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month, day)
+
+        return calendar.time
     }
 
     private fun setDatePickerVisibility() {
@@ -355,7 +457,7 @@ class EditFragment : Fragment() {
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(model: PlaceholderContent.PlaceholderItem) =
+        fun newInstance(model: Item) =
             EditFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARG_MODEL, model)
