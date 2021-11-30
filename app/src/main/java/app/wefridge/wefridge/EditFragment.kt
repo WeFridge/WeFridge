@@ -34,8 +34,12 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.firestore.GeoPoint
 import kotlinx.android.synthetic.main.fragment_edit.*
 import kotlinx.android.synthetic.main.fragment_edit.view.*
+import kotlinx.android.synthetic.main.fragment_pantry.view.*
 import kotlinx.android.synthetic.main.fragment_settings.*
 import kotlinx.android.synthetic.main.fragment_settings_participant.*
+import java.text.DateFormat
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.*
 
 /**
@@ -88,7 +92,6 @@ class EditFragment : Fragment() {
 
         adaptUIToModel()
         hideDatePicker()
-        setUpDatePicker()
         setLocationPickerActivation()
         setUpOnClickListenersForFormComponents()
         setUpSaveMechanism()
@@ -112,7 +115,7 @@ class EditFragment : Fragment() {
 
         itemBestByDateTextInputLayout.editText?.setOnClickListener {
             setDatePickerVisibility()
-            setDateStringToBestByDateEditText()
+            model?.bestByDate?.let { setDatePickerDateTo(it) }
         }
     }
 
@@ -131,9 +134,10 @@ class EditFragment : Fragment() {
         itemNameTextInputLayout.editText?.addTextChangedListener { setModelNameAttribute() }
         itemQuantityTextInputLayout.editText?.addTextChangedListener { setModelQuantityAttribute() }
         itemUnitRadioGroup.setOnCheckedChangeListener { _, _ -> setModelUnitAttribute() }
-        itemBestByDateTextInputLayout.editText?.addTextChangedListener { setModelBestByDateAttribute() }
+        // itemBestByDateTextInputLayout.editText?.addTextChangedListener { setModelBestByDateAttribute() }
         itemIsSharedSwitch.setOnCheckedChangeListener { _, _ -> setModelIsSharedAttribute() }
         itemDescriptionTextInputLayout.editText?.addTextChangedListener { setModelDescriptionAttribute() }
+        itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ -> setDateStringToBestByDateEditText(); setModelBestByDateAttribute() }
         // TODO: what about the location? where do we store that? Also in the item?
     }
 
@@ -317,9 +321,9 @@ class EditFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fillFieldsWithModelContent() {
         itemNameTextInputLayout.editText?.setText(model?.name)
-        model?.quantity?.toString()?.let { itemQuantityTextInputLayout.editText?.setText(it) } // TODO: support quantity (not yet provided by PlaceholderItem)
+        model?.quantity?.toString()?.let { itemQuantityTextInputLayout.editText?.setText(it) }
         matchUnitValueToRadioButtonId()?.let { itemUnitRadioGroup.check(it) }
-        model?.bestByDate?.toString()?.let { itemBestByDateTextInputLayout.editText?.setText(it) } // TODO: use Date data type in future from Item data type
+        model?.bestByDate?.let { setDatePickerDateTo(it); setDateStringToBestByDateEditText() }
         itemIsSharedSwitch.isChecked = model?.isShared ?: false
         model?.location?.let { itemAddressTextInputLayout.editText?.setText(buildAddressString(it)) }
         itemDescriptionTextInputLayout.editText?.setText(model?.description)
@@ -349,23 +353,38 @@ class EditFragment : Fragment() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpDatePicker() {
-        itemBestByDatePicker.setOnDateChangedListener { datePicker, _, _, _ ->
-            setDateStringToBestByDateEditText()
-        }
-    }
+
 
     private fun setDateStringToBestByDateEditText() {
         itemBestByDateTextInputLayout.editText?.setText(buildDateStringFromDatePicker())
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun setDatePickerDateTo(date: Date) {
+        val bestByDate = convertToLocalDate(date)
+        itemBestByDatePicker.updateDate(bestByDate.year, bestByDate.monthValue - 1, bestByDate.dayOfMonth)
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun convertToLocalDate(date: Date): LocalDate {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+    }
+
+    private fun buildDateStringFromModelBestByDate(): String {
+        return DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault()).format(model?.bestByDate) ?: ""
+    }
+
     private fun buildDateStringFromDatePicker(): String {
         val day = itemBestByDatePicker.dayOfMonth
-        val month = itemBestByDatePicker.month + 1
+        val month = itemBestByDatePicker.month
         val year = itemBestByDatePicker.year
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month, day)
 
-        return "${day}. ${month}. ${year}"
+
+
+        return DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault()).format(calendar.time)
     }
 
     private fun getDateFromDatePicker(): Date {
