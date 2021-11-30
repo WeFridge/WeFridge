@@ -130,9 +130,9 @@ class EditFragment : Fragment() {
     private fun setUpOnChangedListeners() {
         itemNameTextInputLayout.editText?.addTextChangedListener { setModelNameAttribute() }
         itemQuantityTextInputLayout.editText?.addTextChangedListener { setModelQuantityAttribute() }
-        itemUnitRadioGroup.setOnCheckedChangeListener { radioGroup, id -> setModelUnitAttribute() }
+        itemUnitRadioGroup.setOnCheckedChangeListener { _, _ -> setModelUnitAttribute() }
         itemBestByDateTextInputLayout.editText?.addTextChangedListener { setModelBestByDateAttribute() }
-        itemIsSharedSwitch.setOnCheckedChangeListener { compoundButton, status -> setModelIsSharedAttribute() }
+        itemIsSharedSwitch.setOnCheckedChangeListener { _, _ -> setModelIsSharedAttribute() }
         itemDescriptionTextInputLayout.editText?.addTextChangedListener { setModelDescriptionAttribute() }
         // TODO: what about the location? where do we store that? Also in the item?
     }
@@ -144,7 +144,7 @@ class EditFragment : Fragment() {
 
     private fun setModelQuantityAttribute() {
         val quantityString = itemQuantityTextInputLayout.editText?.text.toString()
-        model?.quantity = if (quantityString.isNullOrEmpty()) null else quantityString.toInt()
+        model?.quantity = if (quantityString.isEmpty() || quantityString == "null") null else quantityString.toInt()
 
     }
 
@@ -451,11 +451,8 @@ class EditFragment : Fragment() {
          * Use this factory method to create a new instance of
          * this fragment using the provided parameters.
          *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
          * @return A new instance of fragment EditFragment.
          */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(model: Item) =
             EditFragment().apply {

@@ -71,4 +71,10 @@
     <string name="logout">Logout</string>
     <string name="nav_label_nearby">Nearby Shared Items</string>
     <string name="add_new_item">Add new item</string>
+    <string name="nearby_detail_quantity">Quantity</string>
+    <string name="nearby_detail_best_by">Best by</string>
+    <string name="nearby_detail_distance">Distance</string>
+    <string name="nearby_detail_additional_information">Additional information</string>
+    <string name="nearby_detail_owner">Owner</string>
+    <string name="nearby_detail_contact">Contact</string>
 </resources>

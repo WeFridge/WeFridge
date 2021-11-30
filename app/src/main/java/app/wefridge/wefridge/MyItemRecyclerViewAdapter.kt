@@ -22,10 +22,6 @@ class MyItemRecyclerViewAdapter(
     @IdRes private val clickAction: Int? = null,
 ) : RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder>() {
 
-    init {
-
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
         val viewHolder = ViewHolder(
@@ -68,7 +64,5 @@ class MyItemRecyclerViewAdapter(
             return super.toString() + " '" + contentView.text + "'"
         }
     }
-
-
 
 }

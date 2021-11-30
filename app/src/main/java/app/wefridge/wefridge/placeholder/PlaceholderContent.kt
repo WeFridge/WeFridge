@@ -54,30 +54,6 @@ object PlaceholderContent {
         ITEMS.add(item)
     }
 
-    private fun getRandomFoodstuff(): String {
-        val foodStuffList = arrayOf("Gouda cheese", "octopus",
-                "granola",
-                "chambord",
-                "bok choy",
-                "pinto beans",
-                "vegemite",
-                "onions",
-                "clams",
-                "pomegranates",
-                "Canadian bacon",
-                "hamburger",
-                "aioli",
-                "butter",
-                "milk",
-                "anchovy paste",
-                "celery seeds",
-                "coconut milk",
-                "sausages",
-                "Romano cheese")
-        val selectedFoodStuff = foodStuffList[ThreadLocalRandom.current().nextInt(0, foodStuffList.size)]
-        return selectedFoodStuff.substring(0, 1).uppercase(Locale.getDefault()) + selectedFoodStuff.substring(1)
-    }
-
     /**
      * A placeholder item representing a piece of content.
      */
