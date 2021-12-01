@@ -14,7 +14,6 @@ class ItemController: ItemControllerInterface {
     private val TAG = "ItemsOnFirebase"
     private val db = FirebaseFirestore.getInstance()
     private val items = ArrayList<Item>()
-    private val OWNER = "users/MnYhb6LQbRjdLRjvnYqt"
 
     /*
     * The function getItems is based on an example provided on
@@ -26,25 +25,30 @@ class ItemController: ItemControllerInterface {
     * */
     override fun getItems(callbackOnSuccess: (ArrayList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
         // TODO: only get items of specifc user and the groups participants
-        db.collection("items")
-            .get()
-            .addOnSuccessListener { itemDocuments ->
-                for (item in itemDocuments) {
-                    try {
-                        items.add(parse(item.data, item.id))
-                    } catch (exc: ItemOwnerMissingException) {
-                        item.data["owner"] = OWNER
-                        items.add(parse(item.data, item.id))
+        val ownerController: OwnerControllerInterface = OwnerController()
+        ownerController.getCurrentUser { owner ->
+            db.collection("items")
+                .whereEqualTo("owner", owner)
+                .get()
+                .addOnSuccessListener { itemDocuments ->
+                    for (item in itemDocuments) {
+                        try {
+                            items.add(parse(item.data, item.id))
+                        } catch (exc: ItemOwnerMissingException) {
+                            // TODO: consider to remove this, because requests already filters by owner
+                            item.data["owner"] = owner.id
+                            items.add(parse(item.data, item.id))
+                        }
                     }
+
+                    callbackOnSuccess(items)
                 }
 
-                callbackOnSuccess(items)
-            }
-
-            .addOnFailureListener { exception ->
-                Log.w(TAG, "Error getting documents.", exception)
-                callbackOnFailure(exception)
-            }
+                .addOnFailureListener { exception ->
+                    Log.w(TAG, "Error getting documents.", exception)
+                    callbackOnFailure(exception)
+                }
+        }
     }
 
     override fun deleteItem(item: Item) {
