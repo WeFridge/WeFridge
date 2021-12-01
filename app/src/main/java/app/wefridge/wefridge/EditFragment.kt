@@ -113,9 +113,9 @@ class EditFragment : Fragment() {
             } else {
                 setModelLocationAttribute()
                 setModelGeohashAttribute()
-                val itemController: ItemControllerInterface = ItemController()
-                itemController.saveItem(model!!, { /* do nothing on success */ }, { displayAlertOnSaveItemFailed() })
             }
+            val itemController: ItemControllerInterface = ItemController()
+            itemController.saveItem(model!!, { /* do nothing on success */ }, { displayAlertOnSaveItemFailed() })
         }
     }
 
