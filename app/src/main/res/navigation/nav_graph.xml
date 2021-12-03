@@ -11,10 +11,10 @@
         android:label="@string/nav_label_nearby"
         tools:layout="@layout/fragment_nerby_item_list">
 
-        <!-- TODO: add slide animation -->
         <action
             android:id="@+id/action_from_nearby_to_detail"
-            app:destination="@id/NearbyDetailFragment" />
+            app:destination="@id/NearbyDetailFragment"
+            app:enterAnim="@anim/slide_in_right" />
     </fragment>
 
     <fragment
@@ -49,6 +49,8 @@
 
         <action
             android:id="@+id/action_from_list_to_edit"
-            app:destination="@id/EditFragment" />
+            app:destination="@id/EditFragment"
+            app:enterAnim="@anim/slide_in_right"
+            />
     </fragment>
 </navigation>
