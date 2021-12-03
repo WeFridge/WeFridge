@@ -123,8 +123,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
+        // Menu is currently unused,
+        // uncomment the following line if the action bar menu should be used again.
+        // menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
