@@ -1,5 +1,6 @@
 package app.wefridge.wefridge
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -18,6 +19,9 @@ import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,6 +35,7 @@ class MainActivity : AppCompatActivity() {
         this.onSignInResult(res)
     }
 
+    @SuppressLint("StringFormatInvalid")
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse
         if (result.resultCode != RESULT_OK) {
@@ -39,6 +44,7 @@ class MainActivity : AppCompatActivity() {
         }
         // Successfully signed in
         val user = FirebaseAuth.getInstance().currentUser ?: return authWall()
+
 
         if (response?.isNewUser == true) {
             // create firestore user document
