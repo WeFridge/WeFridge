@@ -15,6 +15,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -56,6 +57,7 @@ class EditFragment : Fragment() {
     private val ADD_ITEM_MODE: Boolean get() = model?.firebaseId.isNullOrEmpty()
     private var location: GeoPoint? = null
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var unitDropdownMenu: PopupMenu
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,6 +100,7 @@ class EditFragment : Fragment() {
 
         adaptUIToModel()
         hideDatePicker()
+        setUpUnitDropdown()
         setLocationPickerActivation()
         setUpOnClickListenersForFormComponents()
         setUpSaveMechanism()
@@ -109,7 +112,7 @@ class EditFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         if (!ADD_ITEM_MODE) {  // **new** Items should not be saved automatically, i. e. onDestroy
-            // TODO: put the following proofing into a separate function
+            // TODO: put the following condition into a separate function
             if (location == null && model?.isShared == true) {
                 model?.location = null
                 model?.geohash = null
@@ -122,7 +125,7 @@ class EditFragment : Fragment() {
             setModelContactNameAttribute()
             setModelContactEmailAttribute()
 
-            // TODO: put the following proofing into a separate function
+            // TODO: put the following condition into a separate function
             if ((model?.contactEmail == null || model?.contactEmail == "") && model?.isShared == true) {
                 model?.isShared = false
                 displayAlertOnSaveSharedItemWithoutContactEmail()
@@ -135,11 +138,23 @@ class EditFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpOnClickListenersForFormComponents() {
+
+        unitDropdownMenu.setOnMenuItemClickListener { menuItem ->
+            unit_dropdown.editText?.setText(menuItem.title)
+            setModelUnitAttribute()
+            true
+        }
+
+        unit_dropdown.editText?.setOnClickListener() {
+            unitDropdownMenu.show() ; Log.d("EditFragment", "unit_dropdown clicked") }
+
         locateMeButton.setOnClickListener { getCurrentLocation() }
 
         itemSaveButton.setOnClickListener { itemAddressTextInputLayout.clearFocus(); saveNewItem() }
 
         itemIsSharedSwitch.setOnClickListener { setLocationPickerActivation() }
+
+        itemIsSharedSwitchLabel.setOnClickListener { _ -> itemIsSharedSwitch.toggle() ; setLocationPickerActivation() }
 
         itemBestByDateTextInputLayout.editText?.setOnClickListener {
             setDatePickerVisibility()
@@ -157,6 +172,12 @@ class EditFragment : Fragment() {
         itemSaveButton.setOnClickListener { saveNewItem() }
     }
 
+    private fun setUpUnitDropdown() {
+        unitDropdownMenu = PopupMenu(requireActivity(), unit_dropdown)
+        unitDropdownMenu.inflate(R.menu.unit_dropdown)
+    }
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpOnDateChangedListenerForDatePicker() {
         itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ -> setDateStringToBestByDateEditText(); setModelBestByDateAttribute() }
@@ -170,11 +191,13 @@ class EditFragment : Fragment() {
     }
 
 
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpOnChangedListeners() {
         itemNameTextInputLayout.editText?.addTextChangedListener { setModelNameAttribute() }
         itemQuantityTextInputLayout.editText?.addTextChangedListener { setModelQuantityAttribute() }
-        itemUnitRadioGroup.setOnCheckedChangeListener { _, _ -> setModelUnitAttribute() }
+        // TODO: uncomment later
+        //itemUnitRadioGroup.setOnCheckedChangeListener { _, _ -> setModelUnitAttribute() }
         // itemBestByDateTextInputLayout.editText?.addTextChangedListener { setModelBestByDateAttribute() }
         itemIsSharedSwitch.setOnCheckedChangeListener { _, _ -> setModelIsSharedAttribute() }
         itemDescriptionTextInputLayout.editText?.addTextChangedListener { setModelDescriptionAttribute() }
@@ -192,7 +215,7 @@ class EditFragment : Fragment() {
     }
 
     private fun setModelUnitAttribute() {
-        model?.unit = matchRadioButtonIdToUnit()
+        model?.unit = matchUnitDropdownSelectionToUnit()
     }
 
     private fun setModelLocationAttribute() {
@@ -244,6 +267,7 @@ class EditFragment : Fragment() {
                 )
                 setModelNameAttribute()
                 setModelQuantityAttribute()
+                // TODO: uncomment later
                 setModelUnitAttribute()
                 setModelBestByDateAttribute()
                 setModelIsSharedAttribute()
@@ -418,35 +442,39 @@ class EditFragment : Fragment() {
     private fun fillFieldsWithModelContent() {
         itemNameTextInputLayout.editText?.setText(model?.name)
         model?.quantity?.toString()?.let { itemQuantityTextInputLayout.editText?.setText(it) }
-        matchUnitValueToRadioButtonId()?.let { itemUnitRadioGroup.check(it) }
+        matchUnitValueToUnitDropdownSelection()?.let { unit_dropdown.editText?.setText(it) }
         model?.bestByDate?.let { setDatePickerDateTo(it); setDateStringToBestByDateEditText() }
         itemIsSharedSwitch.isChecked = model?.isShared ?: false
         model?.location?.let { itemAddressTextInputLayout.editText?.setText(buildAddressString(it)) }
         itemDescriptionTextInputLayout.editText?.setText(model?.description)
     }
 
-    private fun matchUnitValueToRadioButtonId(): Int? {
+    private fun matchUnitValueToUnitDropdownSelection(): String? {
         return when (model?.unit?.value) {
-            Unit.GRAM.value -> radio_button_gram.id
-            Unit.KILOGRAM.value -> radio_button_kilogram.id
-            Unit.LITER.value -> radio_button_liter.id
-            Unit.MILLILITER.value -> radio_button_milliliter.id
-            Unit.OUNCE.value -> radio_button_ounce.id
-            Unit.PIECE.value -> radio_button_piece.id
+           Unit.GRAM.value -> getString(R.string.itemUnitGramText)
+            Unit.KILOGRAM.value -> getString(R.string.itemUnitKilogramText)
+            Unit.LITER.value -> getString(R.string.itemUnitLiterText)
+            Unit.MILLILITER.value -> getString(R.string.itemUnitMilliliterText)
+            Unit.OUNCE.value -> getString(R.string.itemUnitOunceText)
+            Unit.PIECE.value -> getString(R.string.itemUnitPieceText)
             else -> null
         }
+
     }
 
-    private fun matchRadioButtonIdToUnit(): Unit? {
-        return when (itemUnitRadioGroup.checkedRadioButtonId) {
-            radio_button_gram.id -> Unit.GRAM
-            radio_button_kilogram.id -> Unit.KILOGRAM
-            radio_button_liter.id -> Unit.LITER
-            radio_button_milliliter.id -> Unit.MILLILITER
-            radio_button_ounce.id -> Unit.OUNCE
-            radio_button_piece.id -> Unit.PIECE
+    private fun matchUnitDropdownSelectionToUnit(): Unit? {
+        Log.d("EditFragment", unit_dropdown.editText?.text.toString())
+        Log.d("EditFragment", R.string.itemUnitGramText.toString())
+        return when (unit_dropdown.editText?.text.toString()) {
+            getString(R.string.itemUnitGramText) -> Unit.GRAM
+            getString(R.string.itemUnitKilogramText) -> Unit.KILOGRAM
+            getString(R.string.itemUnitLiterText) -> Unit.LITER
+            getString(R.string.itemUnitMilliliterText) -> Unit.MILLILITER
+            getString(R.string.itemUnitOunceText) -> Unit.OUNCE
+            getString(R.string.itemUnitPieceText) -> Unit.PIECE
             else -> null
         }
+
     }
 
 
@@ -467,17 +495,12 @@ class EditFragment : Fragment() {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
     }
 
-    private fun buildDateStringFromModelBestByDate(): String {
-        return DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault()).format(model?.bestByDate) ?: ""
-    }
-
     private fun buildDateStringFromDatePicker(): String {
         val day = itemBestByDatePicker.dayOfMonth
         val month = itemBestByDatePicker.month
         val year = itemBestByDatePicker.year
         val calendar = Calendar.getInstance()
         calendar.set(year, month, day)
-
 
 
         return DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault()).format(calendar.time)

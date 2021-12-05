@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fillViewport="true"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:context=".EditFragment"
@@ -28,6 +28,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
+            android:baselineAligned="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -48,45 +49,23 @@
                     android:inputType="number"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <RadioGroup
-                android:id="@+id/itemUnitRadioGroup"
-                android:checkedButton="@+id/radio_button_1"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/unit_dropdown"
+                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.ExposedDropdownMenu"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp">
+                android:layout_height="wrap_content"
+                android:hint="@string/unit_dropdown_hint">
 
-                <RadioButton
-                    android:id="@+id/radio_button_gram"
+                <AutoCompleteTextView
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="@string/itemUnitGramText"/>
-                <RadioButton
-                    android:id="@+id/radio_button_kilogram"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="@string/itemUnitKilogramText"/>
-                <RadioButton
-                    android:id="@+id/radio_button_liter"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="@string/itemUnitLiterText"/>
-                <RadioButton
-                    android:id="@+id/radio_button_milliliter"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="@string/itemUnitMilliliterText"/>
-                <RadioButton
-                    android:id="@+id/radio_button_ounce"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="@string/itemUnitOunceText"/>
-                <RadioButton
-                    android:id="@+id/radio_button_piece"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="@string/itemUnitPieceText"/>
-            </RadioGroup>
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -130,16 +109,33 @@
             <!-- The android:layoutDirection property was taken from: The following code line was inspired by: https://stackoverflow.com/questions/45983522/how-to-set-text-position-to-the-right-of-a-switch-like-checkbox/49886523 -->
             <!-- The android:switchPadding property was taken from: https://stackoverflow.com/questions/47941834/how-to-put-space-between-switch-button-and-its-text-in-android -->
             <!-- The android:textStyle property was taken from: https://stackoverflow.com/questions/4792260/how-do-you-change-text-to-bold-in-android -->
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/itemIsSharedSwitch"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="@string/locationSwitchLabel"
-                android:layoutDirection="rtl"
-                app:switchPadding="8dp"
-                android:textStyle="bold"
-                android:textSize="17sp"
-                android:layout_marginBottom="8dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:foregroundTint="#0B15E4"
+                android:orientation="horizontal">
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/itemIsSharedSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    style="@style/Widget.App.Switch"/>
+
+                <TextView
+                    android:id="@+id/itemIsSharedSwitchLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/locationSwitchLabel"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSecondary">
+
+                </TextView>
+
+            </LinearLayout>
+
 
             <!-- This code snippet for a text field was taken (and modified) from: https://material.io/components/text-fields/android#outlined-text-field-->
             <com.google.android.material.textfield.TextInputLayout
