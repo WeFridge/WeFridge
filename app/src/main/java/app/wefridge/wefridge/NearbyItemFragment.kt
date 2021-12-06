@@ -37,7 +37,6 @@ class NearbyItemFragment : Fragment() {
     private val itemDb = db.collection("faker_items")
     private var lastVisible: DocumentSnapshot? = null
 
-    // TODO: replace with datamodel
     private val transform: (DocumentSnapshot) -> Item? =
         { doc ->
             if (doc.data != null) ItemController.parse(doc.data!!, doc.id)

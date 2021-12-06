@@ -24,7 +24,6 @@ class ItemController: ItemControllerInterface {
     * https://firebase.google.com/docs/firestore/manage-data/add-data
     * */
     override fun getItems(callbackOnSuccess: (ArrayList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
-        // TODO: only get items of specifc user and the groups participants
         val ownerController: OwnerControllerInterface = OwnerController()
         ownerController.getCurrentUser { owner ->
             db.collection("items")
