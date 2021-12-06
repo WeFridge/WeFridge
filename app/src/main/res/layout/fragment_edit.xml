@@ -74,10 +74,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/itemBestByDateHint">
 
-            <!-- the following partially was taken from https://stackoverflow.com/questions/14933330/datepicker-how-to-popup-datepicker-when-click-on-edittext
-            to prepare for implementing a date picker for the best by date
-            TODO: onClickListener and onDateSet needed! (see link above)
-            TODO: see also: https://material.io/components/date-pickers/android#using-date-pickers-->
+            <!-- the following partially was taken from https://stackoverflow.com/questions/14933330/datepicker-how-to-popup-datepicker-when-click-on-edittext-->
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -95,7 +92,6 @@
             android:datePickerMode="spinner"
             android:calendarViewShown="false"/>
 
-        <!-- TODO: add box with share options-->
         <LinearLayout
             android:id="@+id/locationPickerBox"
             android:layout_width="match_parent"
