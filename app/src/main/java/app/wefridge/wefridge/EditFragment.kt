@@ -250,7 +250,7 @@ class EditFragment : Fragment() {
     }
 
     private fun saveNewItem() {
-        // TODO: put the following proofing into a separate function
+        // TODO: put the following condition into a separate function
         if (itemIsSharedSwitch.isChecked && location == null) {
             displayAlertOnSaveSharedItemWithoutLocation()
             itemAddressTextInputLayout.editText?.setText("")
@@ -272,7 +272,7 @@ class EditFragment : Fragment() {
                 setModelContactNameAttribute()
                 setModelContactEmailAttribute()
 
-                // TODO: put the following proofing into a separate function
+                // TODO: put the following condition into a separate function
                 if ((model?.contactEmail == null || model?.contactEmail == "") && model?.isShared == true) {
                     model?.isShared = false
                     displayAlertOnSaveSharedItemWithoutContactEmail()
