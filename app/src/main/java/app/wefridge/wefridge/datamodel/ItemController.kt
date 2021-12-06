@@ -67,6 +67,9 @@ class ItemController: ItemControllerInterface {
                 .set(item.getHashMap())
                 .addOnSuccessListener {
                     Log.d(TAG, "item successfully written!")
+                    val itemIndex = PlaceholderContent.items.indexOf(item)
+                    if (itemIndex != -1) PlaceholderContent.items[itemIndex] = item
+                    else PlaceholderContent.items.add(item)
                     callbackOnSuccess()
                 }
                 .addOnFailureListener { exception ->

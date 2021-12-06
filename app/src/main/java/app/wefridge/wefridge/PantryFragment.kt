@@ -33,14 +33,14 @@ class PantryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setUpRecycleViewWithItems()
+        setUpRecyclerViewWithItems()
 
         binding.fab.setOnClickListener {
            findNavController().navigate(R.id.action_from_list_to_edit)
         }
     }
 
-    private fun setUpRecycleViewWithItems() {
+    private fun setUpRecyclerViewWithItems() {
         val recycleView = binding.list
         val itemController: ItemControllerInterface = ItemController()
         itemController.getItems({ items ->
@@ -60,7 +60,7 @@ class PantryFragment : Fragment() {
             .setTitle("Error loading your foodstuff")
             .setMessage("Please check your internet connection and try again.")
             .setPositiveButton("Retry") { _, _ ->
-                setUpRecycleViewWithItems()
+                setUpRecyclerViewWithItems()
             }
             .show()
     }
