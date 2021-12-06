@@ -147,7 +147,7 @@ class EditFragment : Fragment() {
         }
 
         unit_dropdown.editText?.setOnClickListener() {
-            unitDropdownMenu.show() ; Log.d("EditFragment", "unit_dropdown clicked") }
+            unitDropdownMenu.show() }
 
         locateMeButton.setOnClickListener { getCurrentLocation() }
 
@@ -192,17 +192,12 @@ class EditFragment : Fragment() {
     }
 
 
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpOnChangedListeners() {
         itemNameTextInputLayout.editText?.addTextChangedListener { setModelNameAttribute() }
         itemQuantityTextInputLayout.editText?.addTextChangedListener { setModelQuantityAttribute() }
-        // TODO: uncomment later
-        //itemUnitRadioGroup.setOnCheckedChangeListener { _, _ -> setModelUnitAttribute() }
-        // itemBestByDateTextInputLayout.editText?.addTextChangedListener { setModelBestByDateAttribute() }
         itemIsSharedSwitch.setOnCheckedChangeListener { _, _ -> setModelIsSharedAttribute() }
         itemDescriptionTextInputLayout.editText?.addTextChangedListener { setModelDescriptionAttribute() }
-        // TODO: what about the location? where do we store that? Also in the item?
     }
 
     private fun setModelNameAttribute() {
@@ -268,7 +263,6 @@ class EditFragment : Fragment() {
                 )
                 setModelNameAttribute()
                 setModelQuantityAttribute()
-                // TODO: uncomment later
                 setModelUnitAttribute()
                 setModelBestByDateAttribute()
                 setModelIsSharedAttribute()
