@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import app.wefridge.wefridge.databinding.ActivityMainBinding
 import com.firebase.ui.auth.AuthUI
@@ -113,18 +112,20 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // TODO: disable back button from toolbar
         setSupportActionBar(binding.toolbar)
-
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         appBarConfiguration = AppBarConfiguration(navController.graph)
-        setupActionBarWithNavController(navController, appBarConfiguration)
+        navController.addOnDestinationChangedListener { controller, destination, _ ->
+            binding.toolbar.title = controller.graph.findNode(destination.id)?.label;
+        }
+
         binding.bottomNav.setupWithNavController(navController)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
+        // Menu is currently unused,
+        // uncomment the following line if the action bar menu should be used again.
+        // menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 

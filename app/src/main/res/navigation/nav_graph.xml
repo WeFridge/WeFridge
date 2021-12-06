@@ -5,43 +5,22 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/PantryFragment">
 
-    <!--    <fragment-->
-    <!--        android:id="@+id/FirstFragment"-->
-    <!--        android:name="app.wefridge.wefridge.FirstFragment"-->
-    <!--        android:label="@string/first_fragment_label"-->
-    <!--        tools:layout="@layout/fragment_first">-->
-
-    <!--        <action-->
-    <!--            android:id="@+id/action_FirstFragment_to_SecondFragment"-->
-    <!--            app:destination="@id/SecondFragment" />-->
-    <!--    </fragment>-->
-    <!--    <fragment-->
-    <!--        android:id="@+id/SecondFragment"-->
-    <!--        android:name="app.wefridge.wefridge.SecondFragment"-->
-    <!--        android:label="@string/second_fragment_label"-->
-    <!--        tools:layout="@layout/fragment_second">-->
-
-    <!--        <action-->
-    <!--            android:id="@+id/action_SecondFragment_to_FirstFragment"-->
-    <!--            app:destination="@id/PantryFragment" />-->
-    <!--    </fragment>-->
-
     <fragment
         android:id="@+id/NearbyItemsFragment"
         android:name="app.wefridge.wefridge.NearbyItemFragment"
         android:label="@string/nav_label_nearby"
         tools:layout="@layout/fragment_nerby_item_list">
 
-        <!-- TODO: add slide animation -->
         <action
             android:id="@+id/action_from_nearby_to_detail"
-            app:destination="@id/NearbyDetailFragment" />
+            app:destination="@id/NearbyDetailFragment"
+            app:enterAnim="@anim/slide_in_right" />
     </fragment>
 
     <fragment
         android:id="@+id/SettingsFragment"
         android:name="app.wefridge.wefridge.SettingsFragment"
-        android:label="setaeatings"
+        android:label="@string/Settings"
         tools:layout="@layout/fragment_settings">
 
     </fragment>
@@ -49,7 +28,7 @@
     <fragment
         android:id="@+id/EditFragment"
         android:name="app.wefridge.wefridge.EditFragment"
-        android:label="edit"
+        android:label="@string/EditItem"
         tools:layout="@layout/fragment_edit">
 
     </fragment>
@@ -70,6 +49,8 @@
 
         <action
             android:id="@+id/action_from_list_to_edit"
-            app:destination="@id/EditFragment" />
+            app:destination="@id/EditFragment"
+            app:enterAnim="@anim/slide_in_right"
+            />
     </fragment>
 </navigation>
