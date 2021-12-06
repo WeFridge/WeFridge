@@ -1,6 +1,6 @@
 package app.wefridge.wefridge.placeholder
 
-import app.wefridge.wefridge.datamodel.Item
+import app.wefridge.wefridge.model.Item
 import app.wefridge.wefridge.md5
 import kotlin.collections.ArrayList
 

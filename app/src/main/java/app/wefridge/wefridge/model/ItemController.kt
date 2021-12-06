@@ -1,4 +1,4 @@
-package app.wefridge.wefridge.datamodel
+package app.wefridge.wefridge.model
 
 import android.util.Log
 import app.wefridge.wefridge.exceptions.ItemOwnerMissingException

@@ -1,12 +1,11 @@
 package app.wefridge.wefridge
 
-import app.wefridge.wefridge.datamodel.Item
-import app.wefridge.wefridge.datamodel.Unit
+import app.wefridge.wefridge.model.Item
+import app.wefridge.wefridge.model.Unit
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore

@@ -10,7 +10,7 @@ import androidx.annotation.IdRes
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import app.wefridge.wefridge.databinding.FragmentPantryBinding
-import app.wefridge.wefridge.datamodel.Item
+import app.wefridge.wefridge.model.Item
 
 const val ARG_MODEL = "model"
 /**

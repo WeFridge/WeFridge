@@ -1,8 +1,8 @@
 package app.wefridge.wefridge
 
-import app.wefridge.wefridge.datamodel.Item
-import app.wefridge.wefridge.datamodel.ItemController
-import app.wefridge.wefridge.datamodel.Unit
+import app.wefridge.wefridge.model.Item
+import app.wefridge.wefridge.model.ItemController
+import app.wefridge.wefridge.model.Unit
 import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation

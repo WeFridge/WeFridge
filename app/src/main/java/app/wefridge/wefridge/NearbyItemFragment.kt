@@ -9,9 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import app.wefridge.wefridge.databinding.FragmentNerbyItemListBinding
-import app.wefridge.wefridge.datamodel.Item
-import app.wefridge.wefridge.datamodel.ItemController
-import app.wefridge.wefridge.placeholder.PlaceholderContent
+import app.wefridge.wefridge.model.Item
+import app.wefridge.wefridge.model.ItemController
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore

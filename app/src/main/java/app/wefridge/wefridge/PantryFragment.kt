@@ -9,8 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import app.wefridge.wefridge.databinding.FragmentPantryListBinding
-import app.wefridge.wefridge.datamodel.ItemController
-import app.wefridge.wefridge.datamodel.ItemControllerInterface
+import app.wefridge.wefridge.model.ItemController
+import app.wefridge.wefridge.model.ItemControllerInterface
 import app.wefridge.wefridge.placeholder.PlaceholderContent
 
 /**

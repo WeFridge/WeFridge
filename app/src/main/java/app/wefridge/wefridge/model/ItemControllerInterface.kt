@@ -1,7 +1,6 @@
-package app.wefridge.wefridge.datamodel
+package app.wefridge.wefridge.model
 
 import java.lang.Exception
-import kotlin.Unit
 
 interface ItemControllerInterface {
 

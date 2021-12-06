@@ -1,4 +1,4 @@
-package app.wefridge.wefridge.datamodel
+package app.wefridge.wefridge.model
 
 /*
 * getByValue(value: Int?) and related code was partially inspired from:

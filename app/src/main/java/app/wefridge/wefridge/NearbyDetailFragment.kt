@@ -11,8 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import app.wefridge.wefridge.databinding.FragmentNearbyDetailBinding
-import app.wefridge.wefridge.datamodel.Item
-import app.wefridge.wefridge.placeholder.PlaceholderContent
+import app.wefridge.wefridge.model.Item
 import com.google.firebase.auth.FirebaseAuth
 
 

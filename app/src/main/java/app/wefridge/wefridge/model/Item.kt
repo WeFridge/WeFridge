@@ -1,4 +1,4 @@
-package app.wefridge.wefridge.datamodel
+package app.wefridge.wefridge.model
 
 import android.os.Parcelable
 import com.google.firebase.Timestamp

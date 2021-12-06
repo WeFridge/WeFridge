@@ -27,8 +27,8 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import app.wefridge.wefridge.databinding.FragmentEditBinding
-import app.wefridge.wefridge.datamodel.*
-import app.wefridge.wefridge.datamodel.Unit
+import app.wefridge.wefridge.model.*
+import app.wefridge.wefridge.model.Unit
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.android.gms.location.FusedLocationProviderClient

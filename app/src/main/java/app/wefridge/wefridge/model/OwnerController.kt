@@ -1,9 +1,8 @@
-package app.wefridge.wefridge.datamodel
+package app.wefridge.wefridge.model
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlin.Unit
 
 class OwnerController: OwnerControllerInterface {
     val firestore = FirebaseFirestore.getInstance()
