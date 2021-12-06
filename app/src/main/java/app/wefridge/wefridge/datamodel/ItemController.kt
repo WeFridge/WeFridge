@@ -45,7 +45,7 @@ class ItemController: ItemControllerInterface {
                 }
 
                 .addOnFailureListener { exception ->
-                    Log.w(TAG, "Error getting documents.", exception)
+                    Log.w(TAG, "Error getting items.", exception)
                     callbackOnFailure(exception)
                 }
         }
@@ -66,7 +66,7 @@ class ItemController: ItemControllerInterface {
             db.collection("items").document(item.firebaseId!!)
                 .set(item.getHashMap())
                 .addOnSuccessListener {
-                    Log.d(TAG, "item successfully written!")
+                    Log.d(TAG, "item successfully overridden!")
                     val itemIndex = PlaceholderContent.items.indexOf(item)
                     if (itemIndex != -1) PlaceholderContent.items[itemIndex] = item
                     else PlaceholderContent.items.add(item)
