@@ -353,6 +353,7 @@ class EditFragment : Fragment() {
         // the following piece of code is inspired by https://stackoverflow.com/questions/3574644/how-can-i-find-the-latitude-and-longitude-from-address/27834110#27834110
         val userInputAddress = itemAddressTextInputLayout.editText?.text.toString()
         val geocoder = Geocoder(requireContext())
+        var matchedGeoPoint: GeoPoint? = null
 
         if (userInputAddress == "" || userInputAddress.isBlank() || userInputAddress.isEmpty()) return null
 
@@ -361,26 +362,38 @@ class EditFragment : Fragment() {
             if (matchedAddresses.isEmpty()) return null
 
             val chosenAddress = matchedAddresses[0]
-            return GeoPoint(chosenAddress.latitude, chosenAddress.longitude)
+            matchedGeoPoint = GeoPoint(chosenAddress.latitude, chosenAddress.longitude)
         } catch (exc: IOException) {
-            itemIsSharedSwitch.toggle()
+            if (itemIsSharedSwitch.isChecked) itemIsSharedSwitch.toggle()
             displayAlertOnErrorWhileParsingAddressString()
+            exc.message?.let { Log.e("EditFragment", it) }
         }
 
-        return null
+        return matchedGeoPoint
     }
 
     private fun buildAddressString(location: GeoPoint): String {
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
-        val address =
-            geocoder.getFromLocation(location.latitude, location.longitude, 1)
+        var addressString = ""
+        try {
+            val address =
+                geocoder.getFromLocation(location.latitude, location.longitude, 1)
 
-        val addressLine = address[0].getAddressLine(0)
-        val city = address[0].locality
-        val state = address[0].adminArea
-        val postalCode = address[0].postalCode
+            val addressLine = address[0].getAddressLine(0)
+            val locality = address[0].locality
+            val adminArea = address[0].adminArea
+            val postalCode = address[0].postalCode
 
-        return "${addressLine}, ${postalCode} ${city}, ${state}"
+            addressString = "${addressLine}, ${postalCode} ${locality}, ${adminArea}"
+
+        } catch (exc: IOException) {
+            if (itemIsSharedSwitch.isChecked) itemIsSharedSwitch.toggle()
+            displayAlertOnFetchingAddressFromGeoPointWithoutNetwork()
+            exc.message?.let { Log.e("EditFragment", it) }
+        }
+
+        return addressString
+
     }
 
     private fun displayAlertOnSaveSharedItemWithoutContactEmail() {
@@ -395,6 +408,14 @@ class EditFragment : Fragment() {
         AlertDialog.Builder(requireContext())
             .setTitle("Location problem")
             .setMessage("There was an error while we tried to match the location you've entered to real coordinates. Therefore, we disabled the sharing option. Please check your internet connection and try again.")
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+    }
+
+    private fun displayAlertOnFetchingAddressFromGeoPointWithoutNetwork() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("No internet connection")
+            .setMessage("There was an error while we tried to match the location coordinates to a real address. Therefore, we disabled the sharing option. Please check your internet connection and try again.")
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
