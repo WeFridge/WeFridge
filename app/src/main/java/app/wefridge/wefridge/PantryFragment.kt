@@ -44,11 +44,10 @@ class PantryFragment : Fragment() {
         val recycleView = binding.list
         val itemController: ItemControllerInterface = ItemController()
         itemController.getItems({ items ->
-            PlaceholderContent.items = items
             with(recycleView) {
                 layoutManager = LinearLayoutManager(context)
                 adapter =
-                    MyItemRecyclerViewAdapter(PlaceholderContent.items, R.id.action_from_list_to_edit)
+                    MyItemRecyclerViewAdapter(items, R.id.action_from_list_to_edit)
             }
         }, {
             displayAlertOnGetItemsFailed()

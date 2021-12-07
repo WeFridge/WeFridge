@@ -13,7 +13,7 @@ import kotlin.collections.ArrayList
 class ItemController: ItemControllerInterface {
     private val TAG = "ItemsOnFirebase"
     private val db = FirebaseFirestore.getInstance()
-    private val items = ArrayList<Item>()
+
 
     /*
     * The function getItems is based on an example provided on
@@ -23,7 +23,7 @@ class ItemController: ItemControllerInterface {
     * based on code snippets provided by the Firebase Documentation:
     * https://firebase.google.com/docs/firestore/manage-data/add-data
     * */
-    override fun getItems(callbackOnSuccess: (ArrayList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
+    override fun getItems(callbackOnSuccess: (MutableList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
         val ownerController: OwnerControllerInterface = OwnerController()
         ownerController.getCurrentUser { owner ->
             db.collection("items")
@@ -66,9 +66,9 @@ class ItemController: ItemControllerInterface {
                 .set(item.getHashMap())
                 .addOnSuccessListener {
                     Log.d(TAG, "item successfully overridden!")
-                    val itemIndex = PlaceholderContent.items.indexOf(item)
-                    if (itemIndex != -1) PlaceholderContent.items[itemIndex] = item
-                    else PlaceholderContent.items.add(item)
+                    val itemIndex = items.indexOf(item)
+                    if (itemIndex != -1) items[itemIndex] = item
+                    else items.add(item)
                     callbackOnSuccess()
                 }
                 .addOnFailureListener { exception ->
@@ -83,7 +83,7 @@ class ItemController: ItemControllerInterface {
                 .addOnSuccessListener { itemDocument ->
                     Log.d(TAG, "item written to Firebase with id: ${itemDocument.id}")
                     item.firebaseId = itemDocument.id
-                    PlaceholderContent.items.add(item)
+                    items.add(item)
                     callbackOnSuccess()
                 }
                 .addOnFailureListener { exception ->
@@ -93,6 +93,7 @@ class ItemController: ItemControllerInterface {
     }
 
     companion object {
+        var items: MutableList<Item> = ArrayList()
 
         // TODO: set this function to private and adapt UnitTests appropriately
         fun parse(itemData: Map<String, Any>, itemId: String?): Item {

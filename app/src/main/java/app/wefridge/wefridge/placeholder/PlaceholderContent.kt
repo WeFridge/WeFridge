@@ -13,12 +13,6 @@ import kotlin.collections.ArrayList
 object PlaceholderContent {
 
     /**
-     * Array containing all the items displayed in the 'pantry' section.
-     */
-    var items: MutableList<Item> = ArrayList()
-
-
-    /**
      * A placeholder item representing a piece of content.
      */
     data class ParticipantItem(val id: String, val name: String) {
