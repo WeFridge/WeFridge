@@ -38,7 +38,7 @@ class NearbyItemFragment : Fragment() {
 
     private val transform: (DocumentSnapshot) -> Item? =
         { doc ->
-            if (doc.data != null) ItemController.parse(doc.data!!, doc.id)
+            if (doc.data != null) ItemController.parse(doc)
             else null
         }
 
