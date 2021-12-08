@@ -10,18 +10,17 @@ import androidx.annotation.IdRes
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import app.wefridge.wefridge.databinding.FragmentPantryBinding
-import app.wefridge.wefridge.placeholder.PlaceholderContent.PlaceholderItem
+import app.wefridge.wefridge.model.Item
 
 const val ARG_MODEL = "model"
 /**
- * [RecyclerView.Adapter] that can display a [PlaceholderItem].
+ * [RecyclerView.Adapter] that can display a [Item].
  * TODO: Replace the implementation with code for your data type.
  */
 class MyItemRecyclerViewAdapter(
-    private val values: List<PlaceholderItem>,
-    @IdRes private val clickAction: Int? = null
+    private val values: List<Item>,
+    @IdRes private val clickAction: Int? = null,
 ) : RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder>() {
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
@@ -48,9 +47,9 @@ class MyItemRecyclerViewAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
-        holder.contentView.text = item.content
+        holder.contentView.text = item.name
         holder.bestByView.text = "Best by in ${item.bestByDate} days"
-        holder.sharedIcon.visibility = if (item.shared) View.VISIBLE else View.INVISIBLE
+        holder.sharedIcon.visibility = if (item.isShared) View.VISIBLE else View.INVISIBLE
     }
 
     override fun getItemCount(): Int = values.size

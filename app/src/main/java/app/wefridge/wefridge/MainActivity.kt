@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
                 "email" to user.email,
                 "image" to user.photoUrl.toString()
             )
-            db.collection("users").document(user.uid)
+            db.collection(USERS_COLLECTION_NAME).document(user.uid)
                 .set(userDoc)
                 .addOnFailureListener { e ->
                     Log.w("Auth", "Error creating user document", e)
@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         appBarConfiguration = AppBarConfiguration(navController.graph)
         navController.addOnDestinationChangedListener { controller, destination, _ ->
-            binding.toolbar.title = controller.graph.findNode(destination.id)?.label;
+            binding.toolbar.title = controller.graph.findNode(destination.id)?.label
         }
 
         binding.bottomNav.setupWithNavController(navController)

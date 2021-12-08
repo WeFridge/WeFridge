@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import app.wefridge.wefridge.databinding.FragmentNearbyDetailBinding
-import app.wefridge.wefridge.placeholder.PlaceholderContent
+import app.wefridge.wefridge.model.Item
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -24,7 +24,7 @@ class NearbyDetailFragment : Fragment() {
     private var _binding: FragmentNearbyDetailBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var model: PlaceholderContent.PlaceholderItem
+    private lateinit var model: Item
     private lateinit var sp: SharedPreferences
     private lateinit var email: String
     private lateinit var name: String
@@ -34,7 +34,7 @@ class NearbyDetailFragment : Fragment() {
         arguments?.let {
             model = it.getParcelable(ARG_MODEL)!!
         }
-        (requireActivity() as AppCompatActivity).supportActionBar?.title = model.content
+        (requireActivity() as AppCompatActivity).supportActionBar?.title = model.name
         loadContactInfo()
 
     }
@@ -68,9 +68,9 @@ class NearbyDetailFragment : Fragment() {
 
         // TODO: populate textviews with actual datamodel
         binding.quantity.text = ""
-        binding.bestBy.text = model.bestByDate
+        binding.bestBy.text = model.bestByDate.toString()
         binding.distance.text = ""
-        binding.additionalInformation.text = model.details
+        binding.additionalInformation.text = model.description
         binding.owner.text = ""
 
         val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
@@ -78,11 +78,11 @@ class NearbyDetailFragment : Fragment() {
             data = Uri.parse("mailto:")
             // TODO: get mail from model
             putExtra(Intent.EXTRA_EMAIL, arrayOf("support@arboristapp.com"))
-            putExtra(Intent.EXTRA_SUBJECT, "WeFridge: ${model.content}")
+            putExtra(Intent.EXTRA_SUBJECT, "WeFridge: ${model.name}")
             putExtra(
                 Intent.EXTRA_TEXT, """Hello,
 
-Shared item: ${model.content}
+Shared item: ${model.name}
 
 Best regards,
 $name
@@ -104,7 +104,7 @@ $name
          * @return A new instance of fragment NearbyDetailFragment.
          */
         @JvmStatic
-        fun newInstance(model: PlaceholderContent.PlaceholderItem) =
+        fun newInstance(model: Item) =
             NearbyDetailFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARG_MODEL, model)

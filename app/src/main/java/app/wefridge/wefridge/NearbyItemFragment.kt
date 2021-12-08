@@ -9,7 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import app.wefridge.wefridge.databinding.FragmentNerbyItemListBinding
-import app.wefridge.wefridge.placeholder.PlaceholderContent
+import app.wefridge.wefridge.model.Item
+import app.wefridge.wefridge.model.ItemController
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
@@ -26,26 +27,14 @@ class NearbyItemFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val itemsPerPage = 15
-    private val values = ArrayList<PlaceholderContent.PlaceholderItem>()
+    private val values = ArrayList<Item>()
     private val _adapter = MyItemRecyclerViewAdapter(values, R.id.action_from_nearby_to_detail)
     private lateinit var scrollListener: EndlessRecyclerOnScrollListener
     private lateinit var refreshLayout: SwipeRefreshLayout
 
     private val db = Firebase.firestore
-    private val itemDb = db.collection("faker_items")
+    private val itemDb = db.collection(FAKER_ITEMS_COLLECTION_NAME)
     private var lastVisible: DocumentSnapshot? = null
-
-    // TODO: replace with datamodel
-    private val transform: (DocumentSnapshot) -> PlaceholderContent.PlaceholderItem =
-        { doc ->
-            PlaceholderContent.PlaceholderItem(
-                doc.id,
-                doc.getString("name") ?: "",
-                doc.getDate("best_by")?.toString() ?: "",
-                doc.getString("description") ?: "",
-                doc.getBoolean("is_shared") ?: false
-            )
-        }
 
     private var loading = false
         set(value) {
@@ -106,9 +95,10 @@ class NearbyItemFragment : Fragment() {
                     }
                     values.clear()
 
-                    val newValues = it.documents.map(transform)
+                    val newValues = it.documents.mapNotNull { item -> ItemController.tryParse(item) }
                     values.addAll(newValues)
-                    val newSize = it.size()
+
+                    val newSize = newValues.size
 
                     if (oldAmount > newSize) {
                         val diff = oldAmount - newSize
@@ -132,7 +122,7 @@ class NearbyItemFragment : Fragment() {
                         return@addOnSuccessListener
                     }
 
-                    val newValues = it.documents.map(transform)
+                    val newValues = it.documents.mapNotNull { item -> ItemController.tryParse(item) }
 
                     if (values.addAll(newValues)) {
                         _adapter.notifyItemRangeInserted(oldAmount, newValues.size)

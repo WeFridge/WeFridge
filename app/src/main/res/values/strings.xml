@@ -12,8 +12,7 @@
     <string name="Settings">Settings</string>
     <string name="EditItem">Edit Item</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>
     <string name="sync_header">Sync</string>
@@ -28,6 +27,25 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <!-- EditFragment Hints & Texts -->
+    <string name="itemNameHint">Name</string>
+    <string name="itemQuantityHint">Quantity</string>
+
+    <string name="itemUnitGramText">g</string>
+    <string name="itemUnitKilogramText">kg</string>
+    <string name="itemUnitLiterText">L</string>
+    <string name="itemUnitMilliliterText">mL</string>
+    <string name="itemUnitOunceText">oz</string>
+    <string name="itemUnitPieceText">pcs</string>
+    <string name="itemBestByDateHint">Best by</string>
+    <string name="itemSaveButtonText">Save</string>
+    <string name="locationSwitchLabel">Share with your neighbors</string>
+    <string name="AddressTextInputLayoutHint">Address</string>
+    <string name="itemDescriptionHint">Additional information</string>
+    <string name="locationPickerLocateButtonText">Locate me</string>
+    <string name="unit_dropdown_hint">Unit</string>
+
 
     <string name="auth_success_welcome_back">Welcome back, %1$s!</string>
     <string name="auth_success_welcome">Welcome %1$s!</string>
@@ -60,4 +78,5 @@
     <string name="nearby_detail_additional_information">Additional information</string>
     <string name="nearby_detail_owner">Owner</string>
     <string name="nearby_detail_contact">Contact</string>
+
 </resources>

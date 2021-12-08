@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/dropdown_item_gram"
+        android:title="@string/itemUnitGramText"/>
+    <item
+        android:id="@+id/dropdown_item_kilogram"
+        android:title="@string/itemUnitKilogramText"/>
+    <item
+        android:id="@+id/dropdown_item_liter"
+        android:title="@string/itemUnitLiterText"/>
+    <item
+        android:id="@+id/dropdown_item_milliliter"
+        android:title="@string/itemUnitMilliliterText"/>
+    <item
+        android:id="@+id/dropdown_item_ounce"
+        android:title="@string/itemUnitOunceText"/>
+    <item
+        android:id="@+id/dropdown_item_piece"
+        android:title="@string/itemUnitPieceText"/>
+
+</menu>
