@@ -14,11 +14,11 @@ import kotlin.collections.HashMap
 @Parcelize
 data class Item(
     var firebaseId: String? = null,
-    var name: String? = null,
+    var name: String = "",
     var description: String? = null,
-    var isShared: Boolean? = null,
-    var quantity: Int? = null,
-    var unit: Unit? = null,
+    var isShared: Boolean = false,
+    var quantity: Long = 0,
+    var unit: Unit = Unit.PIECE,
     var bestByDate: Date? = null,
     var location: @RawValue GeoPoint? = null,
     var geohash: String? = null,
@@ -26,12 +26,8 @@ data class Item(
     var contactEmail: String? = null,
     var ownerReference: @RawValue DocumentReference) : Parcelable {
 
-    init {
-        if (isShared == null) isShared = false
-    }
-
     override fun toString(): String {
-        return name ?: ""
+        return name
     }
 
     /*
@@ -45,7 +41,7 @@ data class Item(
             "description" to description,
             "is_shared" to isShared,
             "quantity" to quantity,
-            "unit" to unit?.value,
+            "unit" to unit.value,
             "best_by" to bestByDate?.let { Timestamp(it) },
             "location" to location,
             "geohash" to geohash,

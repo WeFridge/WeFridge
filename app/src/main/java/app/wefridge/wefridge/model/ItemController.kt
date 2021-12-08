@@ -100,12 +100,12 @@ class ItemController: ItemControllerInterface {
 
         // TODO: set this function to private and adapt UnitTests appropriately
         fun parse(itemData: Map<String, Any>, itemId: String?): Item {
-            val name = itemData.getOrDefault("name", null) as? String?
+            val name = itemData.getOrDefault("name", null) as? String? ?: ""
             val description = itemData.getOrDefault("description", null) as? String?
-            val isShared = itemData.getOrDefault("is_shared", null) as? Boolean?
-            val quantity = (itemData.getOrDefault("quantity", null) as? Long?)?.toInt()
-            val unitNumber = (itemData.getOrDefault("unit", null) as? Long)?.toInt()
-            val unit = Unit.getByValue(unitNumber)
+            val isShared = itemData.getOrDefault("is_shared", null) as? Boolean? ?: false
+            val quantity: Long = (itemData.getOrDefault("quantity", null) as? Long?) ?: 0
+            val unitNumber = (itemData.getOrDefault("unit", null) as? Long?)?.toInt()
+            val unit: Unit = Unit.getByValue(unitNumber) ?: Unit.PIECE
             val bestByTimestamp = (itemData.getOrDefault("best_by", null) as? Timestamp?)
             val bestByDate = bestByTimestamp?.toDate()
             val location = itemData.getOrDefault("location", null) as? GeoPoint?

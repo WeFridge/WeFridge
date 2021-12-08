@@ -206,7 +206,7 @@ class EditFragment : Fragment() {
 
     private fun setModelQuantityAttribute() {
         val quantityString = itemQuantityTextInputLayout.editText?.text.toString()
-        model?.quantity = if (quantityString.isEmpty() || quantityString == "null") null else quantityString.toInt()
+        model?.quantity = if (quantityString.isEmpty() || quantityString.isBlank()) 0 else quantityString.toLong()
 
     }
 
@@ -492,7 +492,7 @@ class EditFragment : Fragment() {
 
     }
 
-    private fun matchUnitDropdownSelectionToUnit(): Unit? {
+    private fun matchUnitDropdownSelectionToUnit(): Unit {
         Log.d("EditFragment", unit_dropdown.editText?.text.toString())
         Log.d("EditFragment", R.string.itemUnitGramText.toString())
         return when (unit_dropdown.editText?.text.toString()) {
@@ -502,9 +502,8 @@ class EditFragment : Fragment() {
             getString(R.string.itemUnitMilliliterText) -> Unit.MILLILITER
             getString(R.string.itemUnitOunceText) -> Unit.OUNCE
             getString(R.string.itemUnitPieceText) -> Unit.PIECE
-            else -> null
+            else -> Unit.PIECE
         }
-
     }
 
 
