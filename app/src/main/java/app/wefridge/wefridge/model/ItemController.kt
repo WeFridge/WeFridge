@@ -1,6 +1,7 @@
 package app.wefridge.wefridge.model
 
 import android.util.Log
+import app.wefridge.wefridge.*
 import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
 import com.google.firebase.firestore.*
 import java.lang.Exception
@@ -8,7 +9,7 @@ import kotlin.collections.ArrayList
 
 class ItemController: ItemControllerInterface {
     private val TAG = "ItemsOnFirebase"
-    private val db = FirebaseFirestore.getInstance()
+    private val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
 
 
     /*
@@ -22,8 +23,8 @@ class ItemController: ItemControllerInterface {
     override fun getItems(callbackOnSuccess: (MutableList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
         val ownerController: OwnerControllerInterface = OwnerController()
         ownerController.getCurrentUser { owner ->
-            db.collection("items")
-                .whereEqualTo("owner", owner)
+            itemsRef
+                .whereEqualTo(ITEM_OWNER, owner)
                 .get()
                 .addOnSuccessListener { itemDocuments ->
                     items.clear()
@@ -53,7 +54,7 @@ class ItemController: ItemControllerInterface {
 
     private fun overrideItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
         if (item.firebaseId != null)
-            db.collection("items").document(item.firebaseId!!)
+            itemsRef.document(item.firebaseId!!)
                 .set(item.getHashMap())
                 .addOnSuccessListener {
                     Log.d(TAG, "item successfully overridden!")
@@ -70,7 +71,7 @@ class ItemController: ItemControllerInterface {
 
     private fun addItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
         if (item.firebaseId == null)
-            db.collection("items").add(item.getHashMap())
+            itemsRef.add(item.getHashMap())
                 .addOnSuccessListener { itemDocument ->
                     Log.d(TAG, "item written to Firebase with id: ${itemDocument.id}")
                     item.firebaseId = itemDocument.id
@@ -100,17 +101,17 @@ class ItemController: ItemControllerInterface {
         private fun parse(item: DocumentSnapshot): Item {
             with(item) {
                 return Item(id,
-                    getString("name") ?: "",
-                    getString("description"),
-                    getBoolean("is_shared") ?: false,
-                    getLong("quantity") ?: 0,
-                    Unit.getByValue(getLong("unit")?.toInt()) ?: Unit.PIECE,
-                    getTimestamp("best_by")?.toDate(),
-                    getGeoPoint("location"),
-                    getString("geohash"),
-                    getString("contact_name"),
-                    getString("contact_email"),
-                    getDocumentReference("owner") ?: throw ItemOwnerMissingException("Cannot get DocumentReference from owner field."))
+                    getString(ITEM_NAME) ?: "",
+                    getString(ITEM_DESCRIPTION),
+                    getBoolean(ITEM_IS_SHARED) ?: false,
+                    getLong(ITEM_QUANTITY) ?: 0,
+                    Unit.getByValue(getLong(ITEM_UNIT)?.toInt()) ?: Unit.PIECE,
+                    getTimestamp(ITEM_BEST_BY)?.toDate(),
+                    getGeoPoint(ITEM_LOCATION),
+                    getString(ITEM_GEOHASH),
+                    getString(ITEM_CONTACT_NAME),
+                    getString(ITEM_CONTACT_EMAIL),
+                    getDocumentReference(ITEM_OWNER) ?: throw ItemOwnerMissingException("Cannot get DocumentReference from owner field."))
             }
         }
 
@@ -132,8 +133,8 @@ class ItemController: ItemControllerInterface {
             val db = FirebaseFirestore.getInstance()
             val ownerController: OwnerControllerInterface = OwnerController()
             ownerController.getCurrentUser { owner ->
-                db.collection("items")
-                    .whereEqualTo("owner", owner)
+                db.collection(ITEMS_COLLECTION_NAME)
+                    .whereEqualTo(ITEM_OWNER, owner)
                     .addSnapshotListener { snapshots, exception ->
                         if (exception != null) {
                             Log.e("ItemController", "Error in SnapshotListener: ", exception)

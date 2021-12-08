@@ -33,7 +33,7 @@ class NearbyItemFragment : Fragment() {
     private lateinit var refreshLayout: SwipeRefreshLayout
 
     private val db = Firebase.firestore
-    private val itemDb = db.collection("faker_items")
+    private val itemDb = db.collection(FAKER_ITEMS_COLLECTION_NAME)
     private var lastVisible: DocumentSnapshot? = null
 
     private var loading = false

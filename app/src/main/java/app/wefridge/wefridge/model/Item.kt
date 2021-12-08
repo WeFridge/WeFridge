@@ -1,6 +1,7 @@
 package app.wefridge.wefridge.model
 
 import android.os.Parcelable
+import app.wefridge.wefridge.*
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.*
 import kotlinx.android.parcel.Parcelize
@@ -37,17 +38,17 @@ data class Item(
     fun getHashMap(): HashMap<String, Any?> {
 
         return hashMapOf (
-            "name" to name,
-            "description" to description,
-            "is_shared" to isShared,
-            "quantity" to quantity,
-            "unit" to unit.value,
-            "best_by" to bestByDate?.let { Timestamp(it) },
-            "location" to location,
-            "geohash" to geohash,
-            "contact_name" to contactName,
-            "contact_email" to contactEmail,
-            "owner" to ownerReference
+            ITEM_NAME to name,
+            ITEM_DESCRIPTION to description,
+            ITEM_IS_SHARED to isShared,
+            ITEM_QUANTITY to quantity,
+            ITEM_UNIT to unit.value,
+            ITEM_BEST_BY to bestByDate?.let { Timestamp(it) },
+            ITEM_LOCATION to location,
+            ITEM_GEOHASH to geohash,
+            ITEM_CONTACT_NAME to contactName,
+            ITEM_CONTACT_EMAIL to contactEmail,
+            ITEM_OWNER to ownerReference
         )
     }
 
