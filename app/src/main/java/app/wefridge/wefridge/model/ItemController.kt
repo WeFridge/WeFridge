@@ -2,11 +2,8 @@ package app.wefridge.wefridge.model
 
 import android.util.Log
 import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.*
 import java.lang.Exception
 import kotlin.collections.ArrayList
 
@@ -33,12 +30,12 @@ class ItemController: ItemControllerInterface {
                     items.clear()
                     for (itemDocument in itemDocuments) {
                         try {
-                            items.add(parse(itemDocument.data, itemDocument.id))
+                            items.add(parse(itemDocument))
 
                         } catch (exc: ItemOwnerMissingException) {
                             // TODO: consider to remove this, because requests already filters by owner
                             itemDocument.data["owner"] = owner.id
-                            items.add(parse(itemDocument.data, itemDocument.id))
+                            items.add(parse(itemDocument))
                         }
                     }
                     callbackOnSuccess(items)
@@ -99,23 +96,21 @@ class ItemController: ItemControllerInterface {
         private var snapshotListenerSetUp = false
 
         // TODO: set this function to private and adapt UnitTests appropriately
-        fun parse(itemData: Map<String, Any>, itemId: String?): Item {
-            val name = itemData.getOrDefault("name", null) as? String? ?: ""
-            val description = itemData.getOrDefault("description", null) as? String?
-            val isShared = itemData.getOrDefault("is_shared", null) as? Boolean? ?: false
-            val quantity: Long = (itemData.getOrDefault("quantity", null) as? Long?) ?: 0
-            val unitNumber = (itemData.getOrDefault("unit", null) as? Long?)?.toInt()
-            val unit: Unit = Unit.getByValue(unitNumber) ?: Unit.PIECE
-            val bestByTimestamp = (itemData.getOrDefault("best_by", null) as? Timestamp?)
-            val bestByDate = bestByTimestamp?.toDate()
-            val location = itemData.getOrDefault("location", null) as? GeoPoint?
-            val geohash = itemData.getOrDefault("geohash", null) as? String?
-            val contactName = itemData.getOrDefault("contact_name", null) as? String?
-            val contactEmail = itemData.getOrDefault("contact_email", null) as? String?
-            val ownerDocumentReference = itemData.getOrDefault("owner", null) as? DocumentReference
-                ?: throw ItemOwnerMissingException("Cannot get DocumentReference from owner field.")
-
-            return Item(itemId, name, description, isShared, quantity, unit, bestByDate, location, geohash, contactName, contactEmail, ownerDocumentReference)
+        fun parse(item: DocumentSnapshot): Item {
+            with(item) {
+                return Item(id,
+                    getString("name") ?: "",
+                    getString("description"),
+                    getBoolean("is_shared") ?: false,
+                    getLong("quantity") ?: 0,
+                    Unit.getByValue(getLong("unit")?.toInt()) ?: Unit.PIECE,
+                    getTimestamp("best_by")?.toDate(),
+                    getGeoPoint("location"),
+                    getString("geohash"),
+                    getString("contact_name"),
+                    getString("contact_email"),
+                    getDocumentReference("owner") ?: throw ItemOwnerMissingException("Cannot get DocumentReference from owner field."))
+            }
         }
 
         fun addOnItemChangedListener(listener: OnItemsChangeListener) {
@@ -152,10 +147,7 @@ class ItemController: ItemControllerInterface {
                                 DocumentChange.Type.ADDED -> {
                                     items.add(
                                         documentSnapshot.newIndex,
-                                        parse(
-                                            documentSnapshot.document.data,
-                                            documentSnapshot.document.id
-                                        )
+                                        parse(documentSnapshot.document)
                                     )
                                     notifyOnItemChangedListeners(
                                         DocumentChange.Type.ADDED,
@@ -164,10 +156,7 @@ class ItemController: ItemControllerInterface {
                                 }
 
                                 DocumentChange.Type.MODIFIED -> {
-                                    val modifiedItem = parse(
-                                        documentSnapshot.document.data,
-                                        documentSnapshot.document.id
-                                    )
+                                    val modifiedItem = parse(documentSnapshot.document)
                                     items[documentSnapshot.newIndex] = modifiedItem
                                     notifyOnItemChangedListeners(
                                         DocumentChange.Type.MODIFIED,
