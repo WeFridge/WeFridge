@@ -7,7 +7,7 @@ import com.google.firebase.firestore.*
 import java.lang.Exception
 import kotlin.collections.ArrayList
 
-class ItemController: ItemControllerInterface {
+class ItemController {
     private val TAG = "ItemsOnFirebase"
     private val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
 
@@ -20,8 +20,8 @@ class ItemController: ItemControllerInterface {
     * based on code snippets provided by the Firebase Documentation:
     * https://firebase.google.com/docs/firestore/manage-data/add-data
     * */
-    override fun getItems(callbackOnSuccess: (MutableList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
-        val ownerController: OwnerControllerInterface = OwnerController()
+    fun getItems(callbackOnSuccess: (MutableList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
+        val ownerController = OwnerController()
         ownerController.getCurrentUser { owner ->
             itemsRef
                 .whereEqualTo(ITEM_OWNER, owner)
@@ -42,11 +42,11 @@ class ItemController: ItemControllerInterface {
         }
     }
 
-    override fun deleteItem(item: Item) {
+    fun deleteItem(item: Item) {
         TODO("Not yet implemented")
     }
 
-    override fun saveItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
+    fun saveItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
         // TODO: insert condition: when isShared == true location coordinates have to be != null!!!
         if (item.firebaseId != null) overrideItem(item, { callbackOnSuccess() }, { exception -> callbackOnFailure(exception) })
         else addItem(item, { callbackOnSuccess() }, { exception -> callbackOnFailure(exception) })
@@ -131,7 +131,7 @@ class ItemController: ItemControllerInterface {
 
         private fun setUpSnapshotListener() {
             val db = FirebaseFirestore.getInstance()
-            val ownerController: OwnerControllerInterface = OwnerController()
+            val ownerController = OwnerController()
             ownerController.getCurrentUser { owner ->
                 db.collection(ITEMS_COLLECTION_NAME)
                     .whereEqualTo(ITEM_OWNER, owner)

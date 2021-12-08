@@ -5,11 +5,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 
-class OwnerController: OwnerControllerInterface {
+class OwnerController {
     private val usersRef = FirebaseFirestore.getInstance().collection(USERS_COLLECTION_NAME)
     private val firebaseAuth = FirebaseAuth.getInstance()
 
-    override fun getCurrentUser(callback: (DocumentReference) -> kotlin.Unit) {
+    fun getCurrentUser(callback: (DocumentReference) -> kotlin.Unit) {
         val userID = firebaseAuth.currentUser!!.uid
         val ownerDocumentReference = usersRef.document(userID)
 

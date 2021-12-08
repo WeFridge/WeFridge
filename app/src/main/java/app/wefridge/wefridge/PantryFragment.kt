@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import app.wefridge.wefridge.databinding.FragmentPantryListBinding
 import app.wefridge.wefridge.model.ItemController
-import app.wefridge.wefridge.model.ItemControllerInterface
 import app.wefridge.wefridge.model.OnItemsChangeListener
 import com.google.firebase.firestore.DocumentChange
 
@@ -39,7 +38,7 @@ class PantryFragment : Fragment(), OnItemsChangeListener {
         if (savedInstanceState?.getBoolean("getItemsSuccessfullyCalled") == true) {
             setUpRecyclerViewWithItems()
         } else {
-            val itemController: ItemControllerInterface = ItemController()
+            val itemController = ItemController()
             itemController.getItems({
                     setUpRecyclerViewWithItems()
                     getItemsSuccessfullyCalled = true

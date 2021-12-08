@@ -132,7 +132,7 @@ class EditFragment : Fragment() {
                 displayAlertOnSaveSharedItemWithoutContactEmail()
             }
 
-            val itemController: ItemControllerInterface = ItemController()
+            val itemController = ItemController()
             itemController.saveItem(model!!, { /* do nothing on success */ }, { displayAlertOnSaveItemFailed() })
         }
     }
@@ -256,7 +256,7 @@ class EditFragment : Fragment() {
             itemAddressTextInputLayout.editText?.setText("")
         } else {
 
-            val ownerController: OwnerControllerInterface = OwnerController()
+            val ownerController = OwnerController()
             ownerController.getCurrentUser { ownerDocumentReference ->
                 model = Item(
                     ownerReference = ownerDocumentReference
@@ -278,7 +278,7 @@ class EditFragment : Fragment() {
                     displayAlertOnSaveSharedItemWithoutContactEmail()
                 } else {
 
-                    val itemController: ItemControllerInterface = ItemController()
+                    val itemController = ItemController()
                     itemController.saveItem(model!!, {
                         // saving was successful
                         Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
