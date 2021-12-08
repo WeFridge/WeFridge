@@ -49,7 +49,7 @@ class MyItemRecyclerViewAdapter(
         val item = values[position]
         holder.contentView.text = item.name
         holder.bestByView.text = "Best by in ${item.bestByDate} days"
-        holder.sharedIcon.visibility = if (item.isShared == true) View.VISIBLE else View.INVISIBLE
+        holder.sharedIcon.visibility = if (item.isShared) View.VISIBLE else View.INVISIBLE
     }
 
     override fun getItemCount(): Int = values.size
