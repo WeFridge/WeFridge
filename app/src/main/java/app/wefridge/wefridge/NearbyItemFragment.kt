@@ -36,12 +36,6 @@ class NearbyItemFragment : Fragment() {
     private val itemDb = db.collection("faker_items")
     private var lastVisible: DocumentSnapshot? = null
 
-    private val transform: (DocumentSnapshot) -> Item? =
-        { doc ->
-            if (doc.data != null) ItemController.parse(doc)
-            else null
-        }
-
     private var loading = false
         set(value) {
             field = value
@@ -101,7 +95,7 @@ class NearbyItemFragment : Fragment() {
                     }
                     values.clear()
 
-                    val newValues = it.documents.mapNotNull(transform)
+                    val newValues = it.documents.mapNotNull { item -> ItemController.tryParse(item) }
                     values.addAll(newValues)
 
                     val newSize = newValues.size
@@ -128,7 +122,7 @@ class NearbyItemFragment : Fragment() {
                         return@addOnSuccessListener
                     }
 
-                    val newValues = it.documents.mapNotNull(transform)
+                    val newValues = it.documents.mapNotNull { item -> ItemController.tryParse(item) }
 
                     if (values.addAll(newValues)) {
                         _adapter.notifyItemRangeInserted(oldAmount, newValues.size)

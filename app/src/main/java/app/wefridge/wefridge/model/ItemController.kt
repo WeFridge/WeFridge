@@ -2,7 +2,6 @@ package app.wefridge.wefridge.model
 
 import android.util.Log
 import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.*
 import java.lang.Exception
 import kotlin.collections.ArrayList
@@ -29,14 +28,8 @@ class ItemController: ItemControllerInterface {
                 .addOnSuccessListener { itemDocuments ->
                     items.clear()
                     for (itemDocument in itemDocuments) {
-                        try {
-                            items.add(parse(itemDocument))
-
-                        } catch (exc: ItemOwnerMissingException) {
-                            // TODO: consider to remove this, because requests already filters by owner
-                            itemDocument.data["owner"] = owner.id
-                            items.add(parse(itemDocument))
-                        }
+                        val item = tryParse(itemDocument)
+                        if (item != null) items.add(item)
                     }
                     callbackOnSuccess(items)
                 }
@@ -95,8 +88,16 @@ class ItemController: ItemControllerInterface {
         private var onItemsChangedListeners: MutableList<OnItemsChangeListener> = ArrayList()
         private var snapshotListenerSetUp = false
 
+        fun tryParse(item: DocumentSnapshot): Item? {
+            return try {
+                parse(item)
+            } catch (exception: ItemOwnerMissingException) {
+                return null
+            }
+        }
+
         // TODO: set this function to private and adapt UnitTests appropriately
-        fun parse(item: DocumentSnapshot): Item {
+        private fun parse(item: DocumentSnapshot): Item {
             with(item) {
                 return Item(id,
                     getString("name") ?: "",
@@ -145,23 +146,28 @@ class ItemController: ItemControllerInterface {
                         for (documentSnapshot in snapshots.documentChanges) {
                             when (documentSnapshot.type) {
                                 DocumentChange.Type.ADDED -> {
-                                    items.add(
-                                        documentSnapshot.newIndex,
-                                        parse(documentSnapshot.document)
-                                    )
-                                    notifyOnItemChangedListeners(
-                                        DocumentChange.Type.ADDED,
-                                        documentSnapshot.newIndex
-                                    )
+                                    val addedItem = tryParse(documentSnapshot.document)
+                                    if (addedItem != null) {
+                                        items.add(documentSnapshot.newIndex, addedItem)
+
+                                        notifyOnItemChangedListeners(
+                                            DocumentChange.Type.ADDED,
+                                            documentSnapshot.newIndex
+                                        )
+                                    }
+
                                 }
 
                                 DocumentChange.Type.MODIFIED -> {
-                                    val modifiedItem = parse(documentSnapshot.document)
-                                    items[documentSnapshot.newIndex] = modifiedItem
-                                    notifyOnItemChangedListeners(
-                                        DocumentChange.Type.MODIFIED,
-                                        documentSnapshot.newIndex
-                                    )
+                                    val modifiedItem = tryParse(documentSnapshot.document)
+                                    if (modifiedItem != null) {
+                                        items[documentSnapshot.newIndex] = modifiedItem
+                                        notifyOnItemChangedListeners(
+                                            DocumentChange.Type.MODIFIED,
+                                            documentSnapshot.newIndex
+                                        )
+                                    }
+
                                 }
 
                                 DocumentChange.Type.REMOVED -> {
