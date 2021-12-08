@@ -155,7 +155,6 @@ class ItemController: ItemControllerInterface {
                                             documentSnapshot.newIndex
                                         )
                                     }
-
                                 }
 
                                 DocumentChange.Type.MODIFIED -> {
