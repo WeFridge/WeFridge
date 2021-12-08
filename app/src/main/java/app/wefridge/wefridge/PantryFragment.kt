@@ -11,15 +11,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import app.wefridge.wefridge.databinding.FragmentPantryListBinding
 import app.wefridge.wefridge.model.ItemController
 import app.wefridge.wefridge.model.ItemControllerInterface
-import app.wefridge.wefridge.placeholder.PlaceholderContent
+import app.wefridge.wefridge.model.OnItemsChangeListener
+import com.google.firebase.firestore.DocumentChange
 
 /**
  * A fragment representing a list of Foodstuff items.
  */
-class PantryFragment : Fragment() {
+class PantryFragment : Fragment(), OnItemsChangeListener {
 
     private var _binding: FragmentPantryListBinding? = null
     private val binding get() = _binding!!
+    private var getItemsSuccessfullyCalled = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -30,29 +32,52 @@ class PantryFragment : Fragment() {
         return binding.root
     }
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setUpRecyclerViewWithItems()
+        if (savedInstanceState?.getBoolean("getItemsSuccessfullyCalled") == true) {
+            setUpRecyclerViewWithItems()
+        } else {
+            val itemController: ItemControllerInterface = ItemController()
+            itemController.getItems({
+                    setUpRecyclerViewWithItems()
+                    getItemsSuccessfullyCalled = true
+                },
+                {
+                    displayAlertOnGetItemsFailed()
+                    getItemsSuccessfullyCalled = false
+                })
+        }
+
+        ItemController.addOnItemChangedListener(this)
+
 
         binding.fab.setOnClickListener {
            findNavController().navigate(R.id.action_from_list_to_edit)
         }
     }
 
-    private fun setUpRecyclerViewWithItems() {
-        val recycleView = binding.list
-        val itemController: ItemControllerInterface = ItemController()
-        itemController.getItems({ items ->
-            with(recycleView) {
-                layoutManager = LinearLayoutManager(context)
-                adapter =
-                    MyItemRecyclerViewAdapter(items, R.id.action_from_list_to_edit)
-            }
-        }, {
-            displayAlertOnGetItemsFailed()
-        })
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putSerializable("getItemsSuccessfullyCalled", getItemsSuccessfullyCalled)
     }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ItemController.deleteOnItemChangedListener(this)
+    }
+
+    private fun setUpRecyclerViewWithItems() {
+        val recyclerView = binding.list
+        with(recyclerView) {
+            layoutManager = LinearLayoutManager(context)
+            adapter =
+                MyItemRecyclerViewAdapter(ItemController.items, R.id.action_from_list_to_edit)
+        }
+    }
+
 
     private fun displayAlertOnGetItemsFailed() {
         AlertDialog.Builder(requireContext())
@@ -62,5 +87,15 @@ class PantryFragment : Fragment() {
                 setUpRecyclerViewWithItems()
             }
             .show()
+    }
+
+    override fun onItemChanged(type: DocumentChange.Type, atIndex: Int) {
+        val recyclerView = binding.list
+
+        when(type) {
+            DocumentChange.Type.ADDED -> recyclerView.adapter?.notifyItemInserted(atIndex)
+            DocumentChange.Type.MODIFIED -> recyclerView.adapter?.notifyItemChanged(atIndex)
+            DocumentChange.Type.REMOVED -> recyclerView.adapter?.notifyItemRemoved(atIndex)
+        }
     }
 }
