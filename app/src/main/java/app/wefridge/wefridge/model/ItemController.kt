@@ -22,24 +22,23 @@ class ItemController {
     * */
     fun getItems(callbackOnSuccess: (MutableList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
         val ownerController = OwnerController()
-        ownerController.getCurrentUser { owner ->
-            itemsRef
-                .whereEqualTo(ITEM_OWNER, owner)
-                .get()
-                .addOnSuccessListener { itemDocuments ->
-                    items.clear()
-                    for (itemDocument in itemDocuments) {
-                        val item = tryParse(itemDocument)
-                        if (item != null) items.add(item)
-                    }
-                    callbackOnSuccess(items)
+        val ownerRef = ownerController.getCurrentUser()
+        itemsRef
+            .whereEqualTo(ITEM_OWNER, ownerRef)
+            .get()
+            .addOnSuccessListener { itemDocuments ->
+                items.clear()
+                for (itemDocument in itemDocuments) {
+                    val item = tryParse(itemDocument)
+                    if (item != null) items.add(item)
                 }
+                callbackOnSuccess(items)
+            }
 
-                .addOnFailureListener { exception ->
-                    Log.w(TAG, "Error getting items.", exception)
-                    callbackOnFailure(exception)
-                }
-        }
+            .addOnFailureListener { exception ->
+                Log.w(TAG, "Error getting items.", exception)
+                callbackOnFailure(exception)
+            }
     }
 
     fun deleteItem(item: Item) {
@@ -130,57 +129,57 @@ class ItemController {
         }
 
         private fun setUpSnapshotListener() {
-            val db = FirebaseFirestore.getInstance()
+            val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
             val ownerController = OwnerController()
-            ownerController.getCurrentUser { owner ->
-                db.collection(ITEMS_COLLECTION_NAME)
-                    .whereEqualTo(ITEM_OWNER, owner)
-                    .addSnapshotListener { snapshots, exception ->
-                        if (exception != null) {
-                            Log.e("ItemController", "Error in SnapshotListener: ", exception)
-                            return@addSnapshotListener
-                        }
+            val ownerRef = ownerController.getCurrentUser()
+            itemsRef
+                .whereEqualTo(ITEM_OWNER, ownerRef)
+                .addSnapshotListener { snapshots, exception ->
+                    if (exception != null) {
+                        Log.e("ItemController", "Error in SnapshotListener: ", exception)
+                        return@addSnapshotListener
+                    }
 
-                        if (snapshots == null)
-                            return@addSnapshotListener
+                    if (snapshots == null)
+                        return@addSnapshotListener
 
-                        for (documentSnapshot in snapshots.documentChanges) {
-                            when (documentSnapshot.type) {
-                                DocumentChange.Type.ADDED -> {
-                                    val addedItem = tryParse(documentSnapshot.document)
-                                    if (addedItem != null) {
-                                        items.add(documentSnapshot.newIndex, addedItem)
+                    for (documentSnapshot in snapshots.documentChanges) {
+                        when (documentSnapshot.type) {
+                            DocumentChange.Type.ADDED -> {
+                                val addedItem = tryParse(documentSnapshot.document)
+                                if (addedItem != null) {
+                                    items.add(documentSnapshot.newIndex, addedItem)
 
-                                        notifyOnItemChangedListeners(
-                                            DocumentChange.Type.ADDED,
-                                            documentSnapshot.newIndex
-                                        )
-                                    }
-                                }
-
-                                DocumentChange.Type.MODIFIED -> {
-                                    val modifiedItem = tryParse(documentSnapshot.document)
-                                    if (modifiedItem != null) {
-                                        items[documentSnapshot.newIndex] = modifiedItem
-                                        notifyOnItemChangedListeners(
-                                            DocumentChange.Type.MODIFIED,
-                                            documentSnapshot.newIndex
-                                        )
-                                    }
-
-                                }
-
-                                DocumentChange.Type.REMOVED -> {
-                                    items.removeAt(documentSnapshot.oldIndex)
                                     notifyOnItemChangedListeners(
-                                        DocumentChange.Type.REMOVED,
-                                        documentSnapshot.oldIndex
+                                        DocumentChange.Type.ADDED,
+                                        documentSnapshot.newIndex
                                     )
                                 }
                             }
+
+                            DocumentChange.Type.MODIFIED -> {
+                                val modifiedItem = tryParse(documentSnapshot.document)
+                                if (modifiedItem != null) {
+                                    items[documentSnapshot.newIndex] = modifiedItem
+                                    notifyOnItemChangedListeners(
+                                        DocumentChange.Type.MODIFIED,
+                                        documentSnapshot.newIndex
+                                    )
+                                }
+
+                            }
+
+                            DocumentChange.Type.REMOVED -> {
+                                items.removeAt(documentSnapshot.oldIndex)
+                                notifyOnItemChangedListeners(
+                                    DocumentChange.Type.REMOVED,
+                                    documentSnapshot.oldIndex
+                                )
+                            }
                         }
                     }
-            }
+                }
+
         }
 
         private fun notifyOnItemChangedListeners(type: DocumentChange.Type, atIndex: Int) {

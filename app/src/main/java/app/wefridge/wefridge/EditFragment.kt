@@ -257,43 +257,39 @@ class EditFragment : Fragment() {
         } else {
 
             val ownerController = OwnerController()
-            ownerController.getCurrentUser { ownerDocumentReference ->
-                model = Item(
-                    ownerReference = ownerDocumentReference
-                )
-                setModelNameAttribute()
-                setModelQuantityAttribute()
-                setModelUnitAttribute()
-                setModelBestByDateAttribute()
-                setModelIsSharedAttribute()
-                setModelLocationAttribute()
-                setModelGeohashAttribute()
-                setModelDescriptionAttribute()
-                setModelContactNameAttribute()
-                setModelContactEmailAttribute()
+            val ownerRef = ownerController.getCurrentUser()
+            model = Item(ownerReference = ownerRef)
+            setModelNameAttribute()
+            setModelQuantityAttribute()
+            setModelUnitAttribute()
+            setModelBestByDateAttribute()
+            setModelIsSharedAttribute()
+            setModelLocationAttribute()
+            setModelGeohashAttribute()
+            setModelDescriptionAttribute()
+            setModelContactNameAttribute()
+            setModelContactEmailAttribute()
 
-                // TODO: put the following condition into a separate function
-                if ((model?.contactEmail == null || model?.contactEmail == "") && model?.isShared == true) {
-                    model?.isShared = false
-                    displayAlertOnSaveSharedItemWithoutContactEmail()
-                } else {
+            // TODO: put the following condition into a separate function
+            if ((model?.contactEmail == null || model?.contactEmail == "") && model?.isShared == true) {
+                model?.isShared = false
+                displayAlertOnSaveSharedItemWithoutContactEmail()
+            } else {
 
-                    val itemController = ItemController()
-                    itemController.saveItem(model!!, {
-                        // saving was successful
-                        Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
+                val itemController = ItemController()
+                itemController.saveItem(model!!, {
+                    // saving was successful
+                    Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
 
-                        // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
-                        activity?.onBackPressed()
-                    },
-                        {
-                            // saving newItem failed
-                            displayAlertOnSaveItemFailed()
-                        })
+                    // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
+                    activity?.onBackPressed()
+                },
+                    {
+                        // saving newItem failed
+                        displayAlertOnSaveItemFailed()
+                    })
 
-                }
             }
-
         }
     }
 

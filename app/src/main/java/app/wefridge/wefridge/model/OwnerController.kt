@@ -9,10 +9,9 @@ class OwnerController {
     private val usersRef = FirebaseFirestore.getInstance().collection(USERS_COLLECTION_NAME)
     private val firebaseAuth = FirebaseAuth.getInstance()
 
-    fun getCurrentUser(callback: (DocumentReference) -> kotlin.Unit) {
+    fun getCurrentUser(): DocumentReference {
         val userID = firebaseAuth.currentUser!!.uid
-        val ownerDocumentReference = usersRef.document(userID)
+        return usersRef.document(userID)
 
-        return callback(ownerDocumentReference)
     }
 }
