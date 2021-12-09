@@ -21,6 +21,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.ktx.messaging
 
 
 class MainActivity : AppCompatActivity() {
@@ -44,6 +45,16 @@ class MainActivity : AppCompatActivity() {
         }
         // Successfully signed in
         val user = FirebaseAuth.getInstance().currentUser ?: return authWall()
+        Log.d("FCM", "This is the user id: ${user.uid} ")
+        Firebase.messaging.subscribeToTopic(user.uid)
+            .addOnCompleteListener { task ->
+                var msg = "subscribed to:"+user.uid
+                if (!task.isSuccessful) {
+                    msg = "subscribe_failed"
+                }
+                Log.d(R.string.TAG_Main.toString(), msg)
+            }
+
 
 
         if (response?.isNewUser == true) {
@@ -127,6 +138,7 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
         binding.bottomNav.setupWithNavController(navController)
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
