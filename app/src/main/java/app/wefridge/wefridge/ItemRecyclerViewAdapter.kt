@@ -17,10 +17,10 @@ const val ARG_MODEL = "model"
  * [RecyclerView.Adapter] that can display a [Item].
  * TODO: Replace the implementation with code for your data type.
  */
-class MyItemRecyclerViewAdapter(
+class ItemRecyclerViewAdapter(
     private val values: List<Item>,
-    @IdRes private val clickAction: Int? = null,
-) : RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder>() {
+    @IdRes private val clickAction: Int? = null
+) : RecyclerView.Adapter<ItemRecyclerViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
@@ -48,7 +48,7 @@ class MyItemRecyclerViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
         holder.contentView.text = item.name
-        holder.bestByView.text = "Best by in ${item.bestByDate} days"
+        holder.bestByView.text = getBestByString(item.bestByDate, holder.itemView.context)
         holder.sharedIcon.visibility = if (item.isShared) View.VISIBLE else View.INVISIBLE
     }
 

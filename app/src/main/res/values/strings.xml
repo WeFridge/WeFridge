@@ -46,6 +46,10 @@
     <string name="locationPickerLocateButtonText">Locate me</string>
     <string name="unit_dropdown_hint">Unit</string>
 
+    <string name="best_by_overdue">Expired on %1$s</string>
+    <string name="best_by_plural">Best by in %1$s days</string>
+    <string name="best_by_singular">Best by in 1 day</string>
+    <string name="best_by_today">Best by today</string>
 
     <string name="auth_success_welcome_back">Welcome back, %1$s!</string>
     <string name="auth_success_welcome">Welcome %1$s!</string>

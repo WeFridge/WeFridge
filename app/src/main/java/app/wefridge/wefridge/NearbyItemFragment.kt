@@ -28,7 +28,7 @@ class NearbyItemFragment : Fragment() {
 
     private val itemsPerPage = 15
     private val values = ArrayList<Item>()
-    private val _adapter = MyItemRecyclerViewAdapter(values, R.id.action_from_nearby_to_detail)
+    private val _adapter = ItemRecyclerViewAdapter(values, R.id.action_from_nearby_to_detail)
     private lateinit var scrollListener: EndlessRecyclerOnScrollListener
     private lateinit var refreshLayout: SwipeRefreshLayout
 
