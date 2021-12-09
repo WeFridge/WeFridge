@@ -4,8 +4,6 @@ import android.util.Log
 import app.wefridge.wefridge.*
 import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
 import com.google.firebase.firestore.*
-import java.lang.Exception
-import kotlin.collections.ArrayList
 
 class ItemController {
     private val TAG = "ItemsOnFirebase"
@@ -21,8 +19,7 @@ class ItemController {
     * https://firebase.google.com/docs/firestore/manage-data/add-data
     * */
     fun getItems(callbackOnSuccess: (MutableList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
-        val ownerController = OwnerController()
-        val ownerRef = ownerController.getCurrentUser()
+        val ownerRef = UserController.getCurrentUserRef()
         itemsRef
             .whereEqualTo(ITEM_OWNER, ownerRef)
             .get()
@@ -130,8 +127,7 @@ class ItemController {
 
         private fun setUpSnapshotListener() {
             val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
-            val ownerController = OwnerController()
-            val ownerRef = ownerController.getCurrentUser()
+            val ownerRef = UserController.getCurrentUserRef()
             itemsRef
                 .whereEqualTo(ITEM_OWNER, ownerRef)
                 .addSnapshotListener { snapshots, exception ->

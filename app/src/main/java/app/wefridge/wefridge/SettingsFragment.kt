@@ -19,12 +19,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import app.wefridge.wefridge.databinding.FragmentSettingsBinding
 import app.wefridge.wefridge.databinding.FragmentSettingsParticipantAddBinding
 import app.wefridge.wefridge.model.User
+import app.wefridge.wefridge.model.UserController
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -40,21 +38,15 @@ class SettingsFragment : Fragment() {
     private lateinit var sp: SharedPreferences
     private val db = Firebase.firestore
     private val usersRef = db.collection("users")
-    private lateinit var user: FirebaseUser
     private lateinit var email: String
     private lateinit var name: String
     private val values: ArrayList<User> = arrayListOf()
     private val participantsRecyclerViewAdapter = SettingsParticipantsRecyclerViewAdapter(values) {
-        // TODO: remove from firestore
-        Log.v("Auth", "delete: ${it.name}")
-        val deleteField = hashMapOf<String, Any>(
-            "owner" to FieldValue.delete()
-        )
-        usersRef.document(it.id)
-            .update(deleteField)
-            .addOnFailureListener {
-                // reload list
-            }
+        Log.v("Auth", "delete: ${it.email}")
+
+        UserController.removeOwner(it.ref, {}, {
+            // reload list
+        })
     }
 
 
@@ -78,45 +70,30 @@ class SettingsFragment : Fragment() {
         binding.inviteParticipants.isEnabled = false
         binding.participants.visibility = View.GONE
 
-        user = FirebaseAuth.getInstance().currentUser!!
-
-        email = sp.getString(SETTINGS_EMAIL, user.email!!)!!
-        name = sp.getString(SETTINGS_NAME, user.displayName!!)!!
+        email = UserController.getLocalEmail(sp)
+        name = UserController.getLocalName(sp)
         binding.contactEmail.editText!!.setText(email)
         binding.contactName.editText!!.setText(name)
 
-        val userRef = usersRef.document(user.uid)
-        userRef.get()
-            .addOnSuccessListener { userDoc ->
-                if (_binding == null)
-                    return@addOnSuccessListener
-                if (userDoc == null) {
-                    logout()
-                    return@addOnSuccessListener
-                }
+        UserController.getUser({ user ->
+            if (_binding == null)
+                return@getUser
 
-                if (userDoc.contains("owner")) {
-                    loadOwnerData(userDoc.getDocumentReference("owner")!!)
+            if (user.ownerReference != null) {
+                UserController.getUser({ owner ->
+                    if (_binding != null) {
+                        binding.ownerEmail.text = "your owner: ${owner.name}"
+                        binding.ownerEmail.visibility = View.VISIBLE
 
-                    // TODO: change "invite participants" button to "leave" (or add a new one)
-
-                    return@addOnSuccessListener
-                }
-
-                loadParticipantsData(userRef)
+                        // TODO: change "invite participants" button to "leave" (or add a new one)
+                    }
+                }, {}, user.ownerReference)
+                return@getUser
             }
-            .addOnFailureListener {
-                logout()
-            }
-    }
 
-    private fun loadParticipantsData(userRef: DocumentReference) {
-        usersRef
-            .whereEqualTo("owner", userRef)
-            .get()
-            .addOnSuccessListener {
+            UserController.getUsersParticipants({ participants ->
                 if (_binding == null)
-                    return@addOnSuccessListener
+                    return@getUsersParticipants
                 binding.participants.visibility = View.VISIBLE
                 binding.inviteParticipants.isEnabled = true
                 with(values) {
@@ -124,36 +101,20 @@ class SettingsFragment : Fragment() {
                     clear()
                     participantsRecyclerViewAdapter.notifyItemRangeRemoved(0, oldSize)
                 }
-                if (!it.isEmpty) {
-                    val participants = it.documents.map { p ->
-                        User(
-                            p.id,
-                            p.getString("email") ?: "",
-                            p.getString("image")
-                        )
-                    }
+                if (participants == null)
+                    return@getUsersParticipants
 
-                    with(values) {
-                        addAll(participants)
-                        participantsRecyclerViewAdapter.notifyItemRangeInserted(
-                            0,
-                            participants.size
-                        )
-                        Log.v("Auth", "$size i")
-                    }
+                with(values) {
+                    addAll(participants)
+                    participantsRecyclerViewAdapter.notifyItemRangeInserted(
+                        0,
+                        participants.size
+                    )
+                    Log.v("Auth", "$size i")
                 }
-            }
-    }
+            }, {})
 
-    private fun loadOwnerData(owner: DocumentReference) {
-        owner.get()
-            .addOnSuccessListener { ownerDoc ->
-                if (_binding == null)
-                    return@addOnSuccessListener
-                val ownerName = ownerDoc.getString("name")
-                binding.ownerEmail.text = "your owner: $ownerName"
-                binding.ownerEmail.visibility = View.VISIBLE
-            }
+        }, { logout() })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -248,59 +209,54 @@ class SettingsFragment : Fragment() {
                 .setNeutralButton(getString(R.string.participants_add_cancel)) { _, _ -> }
                 .setPositiveButton(getString(R.string.participants_add_invite)) { _, _ ->
                     // TODO: check if user exists (firestore)
-                    val newParticipant = editText.text.toString()
-                    usersRef.whereEqualTo("email", newParticipant)
-                        .limit(1)
-                        .get()
-                        .addOnSuccessListener { p ->
-                            if (p.isEmpty) {
-                                Handler(Looper.getMainLooper()).post {
-                                    Toast.makeText(
-                                        context,
-                                        "User not found!",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                                return@addOnSuccessListener
+                    val newParticipantEmail = editText.text.toString()
+                    UserController.getUserFromEmail(newParticipantEmail, { newParticipant ->
+                        if (newParticipant == null) {
+                            Handler(Looper.getMainLooper()).post {
+                                Toast.makeText(
+                                    context,
+                                    "User not found!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
-                            val pData = p.documents[0]
-                            if (pData.contains("owner")) {
-                                Handler(Looper.getMainLooper()).post {
-                                    Toast.makeText(
-                                        context,
-                                        "User is already member of a pantry! ",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                                return@addOnSuccessListener
-                            }
-
-                            val ownerField = hashMapOf<String, Any>(
-                                "owner" to usersRef.document(user.uid)
-                            )
-
-                            pData.reference
-                                .update(ownerField)
-                                .addOnSuccessListener {
-                                    with(values) {
-                                        add(
-                                            size,
-                                            User(
-                                                pData.id,
-                                                pData.getString("email") ?: "",
-                                                pData.getString("image")
-                                            )
-                                        )
-                                        participantsRecyclerViewAdapter.notifyItemInserted(size - 1)
-                                    }
-                                    Toast.makeText(
-                                        context,
-                                        "User successfully added!",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    // TODO: maybe send a notification to this user?
-                                }
+                            return@getUserFromEmail
                         }
+                        if (newParticipant.ownerReference != null) {
+                            Handler(Looper.getMainLooper()).post {
+                                Toast.makeText(
+                                    context,
+                                    "User is already member of a pantry! ",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            return@getUserFromEmail
+                        }
+
+                        UserController.setOwner(newParticipant.ref, {
+                            with(values) {
+                                add(size, newParticipant)
+                                participantsRecyclerViewAdapter.notifyItemInserted(size - 1)
+                            }
+                            Toast.makeText(
+                                context,
+                                "User successfully added!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            // TODO: maybe send a notification to this user?
+                        }, {
+                            Toast.makeText(
+                                context,
+                                "Failure while adding user!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        })
+                    }, {
+                        Toast.makeText(
+                            context,
+                            "Failure while adding user!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    })
                 }.show()
 
             val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)

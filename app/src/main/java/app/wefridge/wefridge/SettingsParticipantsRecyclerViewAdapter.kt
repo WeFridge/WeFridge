@@ -37,7 +37,7 @@ class SettingsParticipantsRecyclerViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         Log.v("Auth", "bind $position")
         val item = values[position]
-        holder.name.text = item.name
+        holder.name.text = item.email
         Picasso.get().load(item.image).placeholder(R.drawable.fui_ic_anonymous_white_24dp)
             .into(holder.avatar)
         holder.delete.visibility = View.VISIBLE
