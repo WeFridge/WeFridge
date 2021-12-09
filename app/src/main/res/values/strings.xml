@@ -87,6 +87,7 @@
     <string name="ad_title_error_save_item">Item not saved</string>
     <string name="ad_title_location_determination_failed">Unable to determine location</string>
     <string name="ad_title_location_permission_rationale">Why do we need your location?</string>
+    <string name="ad_title_account_not_verified">Account not verified</string>
 
     <string name="ad_msg_contact_email_missing">In order to share an Item, you have to provide a contact email other users can use to reach out to you. Please state your email address in the settings tab.</string>
     <string name="ad_msg_error_parsing_address_string">There was an error while we tried to match the location you\'ve entered to real coordinates. Therefore, we disabled the sharing option. Please check your internet connection and try again.</string>
@@ -95,6 +96,7 @@
     <string name="ad_msg_error_save_item">Please check your internet connection and try again.</string>
     <string name="ad_msg_location_determination_failed">Please check your internet connection or try again another time.</string>
     <string name="ad_msg_location_permission_rationale">Your location is needed as soon as you start sharing this foodstuff. If you want to determine your location conveniently with just a tap, give us the required permission to do so. Other users will not see your exact location.</string>
+    <string name="ad_msg_account_not_verified">It seems like you are logged out. Please log in under "Settings" > "Login". Then try again.</string>
 
     <string name="ad_btn_retry">Retry</string>
     <string name="ad_btn_open_settings">Open settings</string>

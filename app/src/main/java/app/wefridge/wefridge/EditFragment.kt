@@ -64,22 +64,31 @@ class EditFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // TODO: set owner without !!. If null, display an alert, that owner is not set and "go back" to last view
-        model = arguments?.getParcelable(ARG_MODEL) ?: Item(ownerReference = OwnerController.getCurrentUser()!!)
+        val ownerReference = OwnerController.getCurrentUser()
+        if (ownerReference == null) {
+            requireActivity().onBackPressed()
+            buildAlert(
+                R.string.ad_title_account_not_verified,
+                R.string.ad_msg_account_not_verified
+            ).show()
 
+        } else {
+            model = arguments?.getParcelable(ARG_MODEL) ?: Item(ownerReference = ownerReference)
 
-        (requireActivity() as AppCompatActivity).supportActionBar?.title =
-            model.firebaseId?.let { model.name } ?: getString(R.string.add_new_item)
+            (requireActivity() as AppCompatActivity).supportActionBar?.title =
+                model.firebaseId?.let { model.name } ?: getString(R.string.add_new_item)
 
-        // this piece of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
-        requestPermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-                if (isGranted) {
-                    getCurrentLocation()
-                } else {
-                    Log.d("EditFragment", "Request for location access denied.")
+            // TODO: move to separate file and call method from here
+            // this piece of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
+            requestPermissionLauncher =
+                registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+                    if (isGranted) {
+                        getCurrentLocation()
+                    } else {
+                        Log.d("EditFragment", "Request for location access denied.")
+                    }
                 }
-            }
+        }
     }
 
     override fun onCreateView(
@@ -99,17 +108,25 @@ class EditFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adaptUIToModel()
-        hideDatePicker()
+        setUpItemNameTextInputLayout()
+        setUpItemQuantityTextInputLayout()
         setUpUnitDropdown()
-        setLocationPickerActivation()
-        setUpOnClickListenersForFormComponents()
-        setUpSaveMechanism()
-        setUpOnDateChangedListenerForDatePicker()
-        setUpOnFocusChangeListenerForAddressInputEditText()
+        setUpItemBestByDatePicker() // TODO: remove later
+        setUpItemBestByDateTextInputLayout()
+        // TODO: uncomment later
+        //setUpItemBestByDatePicker()
+        setUpLocationPickerBox()
+        setUpItemIsSharedSwitch()
+        setUpItemIsSharedSwitchLabel()
+        setUpItemAddressTextInputLayout()
+        setUpLocateMeButton()
+        setUpItemDescriptionTextInputLayout()
+        setUpSaveButton()
+
         location = model.location
     }
 
+    // TODO: simplify the process of checking isShared + location and isShared and contactEmail
     override fun onDestroy() {
         super.onDestroy()
         if (!ADD_ITEM_MODE) {  // **new** Items should not be saved automatically, i. e. onDestroy
@@ -136,70 +153,88 @@ class EditFragment : Fragment() {
         }
     }
 
-    // TODO: create setUp method for each form component
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpOnClickListenersForFormComponents() {
+    private fun setUpItemNameTextInputLayout() {
+        itemNameTextInputLayout.editText?.addTextChangedListener { setModelNameAttribute() }
+        itemNameTextInputLayout.editText?.setText(model.name)
 
+    }
+
+    private fun setUpItemQuantityTextInputLayout() {
+        itemQuantityTextInputLayout.editText?.addTextChangedListener { setModelQuantityAttribute() }
+        itemQuantityTextInputLayout.editText?.setText(model.quantity.toString())
+    }
+
+    private fun setUpUnitDropdown() {
+        unitDropdownMenu = PopupMenu(requireActivity(), unit_dropdown)
+        unitDropdownMenu.inflate(R.menu.unit_dropdown)
         unitDropdownMenu.setOnMenuItemClickListener { menuItem ->
             unit_dropdown.editText?.setText(menuItem.title)
             setModelUnitAttribute()
             true
         }
-
+        unit_dropdown.editText?.setText(matchUnitValueToUnitDropdownSelection())
         unit_dropdown.editText?.setOnClickListener { unitDropdownMenu.show() }
+    }
 
-        locateMeButton.setOnClickListener { getCurrentLocation() }
-
-        itemSaveButton.setOnClickListener { itemAddressTextInputLayout.clearFocus(); saveNewItem() }
-
-        itemIsSharedSwitch.setOnClickListener { setLocationPickerActivation() }
-
-        itemIsSharedSwitchLabel.setOnClickListener { itemIsSharedSwitch.toggle() ; setLocationPickerActivation() }
-
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun setUpItemBestByDateTextInputLayout() {
+        // TODO: build date string from model
+        if (model.bestByDate != null) itemBestByDateTextInputLayout.editText?.setText(buildDateStringFromDatePicker())
         itemBestByDateTextInputLayout.editText?.setOnClickListener {
             setDatePickerVisibility()
             model.bestByDate?.let { setDatePickerDateTo(it) }
         }
     }
 
-    // TODO: remove this method. Instead: call setUpOnChangedListeners every time and set up save button anyway
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpSaveMechanism() {
-        if (!ADD_ITEM_MODE) setUpOnChangedListeners()
-        else setUpSaveButton()
+    private fun setUpItemBestByDatePicker() {
+        hideDatePicker()
+        model.bestByDate?.let { setDatePickerDateTo(it) }
+        itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ ->
+            itemBestByDateTextInputLayout.editText?.setText(buildDateStringFromDatePicker())
+            setModelBestByDateAttribute()
+        }
     }
 
-    private fun setUpSaveButton() {
-        itemSaveButton.setOnClickListener { saveNewItem() }
-    }
-
-    private fun setUpUnitDropdown() {
-        unitDropdownMenu = PopupMenu(requireActivity(), unit_dropdown)
-        unitDropdownMenu.inflate(R.menu.unit_dropdown)
-    }
-
-    // TODO: move into setUpDatePicker
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpOnDateChangedListenerForDatePicker() {
-        itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ -> setDateStringToBestByDateEditText(); setModelBestByDateAttribute() }
-
+    private fun setUpLocationPickerBox() {
+        setLocationPickerActivation()
     }
 
-    // TODO: move into setUpAddressInput
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun setUpItemIsSharedSwitch() {
+        itemIsSharedSwitch.isChecked = model.isShared
+        itemIsSharedSwitch.setOnCheckedChangeListener { _, _ ->
+            setModelIsSharedAttribute()
+            setLocationPickerActivation()
+        }
+    }
+
+    private fun setUpItemIsSharedSwitchLabel() {
+        itemIsSharedSwitchLabel.setOnClickListener { itemIsSharedSwitch.toggle() }
+    }
+
     // TODO: refactor, so that the location from "locate me" btn can be inserted without calling getGeoPointFromAddressUserInput
-    private fun setUpOnFocusChangeListenerForAddressInputEditText() {
+    private fun setUpItemAddressTextInputLayout() {
+        model.location?.let { itemAddressTextInputLayout.editText?.setText(buildAddressString(it)) }
         itemAddressTextInputLayout.editText?.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) location = getGeoPointFromAddressUserInput()
         }
     }
 
-    // TODO: split up into setUp* methods
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpOnChangedListeners() {
-        itemNameTextInputLayout.editText?.addTextChangedListener { setModelNameAttribute() }
-        itemQuantityTextInputLayout.editText?.addTextChangedListener { setModelQuantityAttribute() }
-        itemIsSharedSwitch.setOnCheckedChangeListener { _, _ -> setModelIsSharedAttribute() }
+    private fun setUpLocateMeButton() {
+        locateMeButton.setOnClickListener { getCurrentLocation() }
+    }
+
+    private fun setUpItemDescriptionTextInputLayout() {
+        itemDescriptionTextInputLayout.editText?.setText(model.description)
         itemDescriptionTextInputLayout.editText?.addTextChangedListener { setModelDescriptionAttribute() }
+    }
+
+    private fun setUpSaveButton() {
+        if (!ADD_ITEM_MODE) itemSaveButton?.isVisible = false
+        itemSaveButton.setOnClickListener { itemAddressTextInputLayout.clearFocus(); saveNewItem() }
+
     }
 
     // TODO: consider removing this methods and instead call code directly
@@ -423,30 +458,6 @@ class EditFragment : Fragment() {
              .setPositiveButton(android.R.string.ok, null)
     }
 
-    // TODO: remove and call methods directly
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun adaptUIToModel() {
-        hideItemSaveButtonOnExistingModelId()
-        fillFieldsWithModelContent()
-    }
-
-    // TODO: remove and call code directly
-    private fun hideItemSaveButtonOnExistingModelId() {
-        if (!ADD_ITEM_MODE) itemSaveButton?.isVisible = false
-    }
-
-    // TODO: split up into setUp* methods
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun fillFieldsWithModelContent() {
-        itemNameTextInputLayout.editText?.setText(model.name)
-        itemQuantityTextInputLayout.editText?.setText(model.quantity.toString())
-        unit_dropdown.editText?.setText(matchUnitValueToUnitDropdownSelection())
-        model.bestByDate?.let { setDatePickerDateTo(it); setDateStringToBestByDateEditText() }
-        itemIsSharedSwitch.isChecked = model.isShared
-        model.location?.let { itemAddressTextInputLayout.editText?.setText(buildAddressString(it)) }
-        itemDescriptionTextInputLayout.editText?.setText(model.description)
-    }
-
     // TODO: remove method and add string attribute to Unit. Init strings with resource strings
     private fun matchUnitValueToUnitDropdownSelection(): String {
         return when (model.unit.value) {
@@ -474,11 +485,6 @@ class EditFragment : Fragment() {
         }
     }
 
-    // TODO: move into setUp* method
-    private fun setDateStringToBestByDateEditText() {
-        itemBestByDateTextInputLayout.editText?.setText(buildDateStringFromDatePicker())
-    }
-
     // TODO: create extension for DatePicker (or create own class if that doesn't work)
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setDatePickerDateTo(date: Date) {
@@ -500,7 +506,6 @@ class EditFragment : Fragment() {
         val year = itemBestByDatePicker.year
         val calendar = Calendar.getInstance()
         calendar.set(year, month, day)
-
 
         return DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault()).format(calendar.time)
     }
@@ -540,11 +545,9 @@ class EditFragment : Fragment() {
     // TODO: create setUp* method for LocationPicker and move this code into it
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setLocationPickerActivation() {
-        if (itemIsSharedSwitch.isChecked) {
-            activateLocationPickerElements()
-        } else {
-            deactivateLocationPickerElements()
-        }
+        if (model.isShared) activateLocationPickerElements()
+        else deactivateLocationPickerElements()
+
     }
 
     // TODO: refactor. One generic method for editTexts. Overload with different parameter (button)
