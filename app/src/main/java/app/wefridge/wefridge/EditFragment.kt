@@ -85,6 +85,12 @@ class EditFragment : Fragment() {
                     if (isGranted) {
                         getCurrentLocation()
                     } else {
+                        buildAlert(R.string.ad_title_location_permission_denied, R.string.ad_msg_location_permission_denied)
+                            .setNeutralButton(R.string.ad_btn_open_settings) { dialogInterface: DialogInterface, _ ->
+                                // this piece of code is based on https://stackoverflow.com/questions/19517417/opening-android-settings-programmatically
+                                dialogInterface.run { startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+                            }
+                            .show()
                         Log.d("EditFragment", "Request for location access denied.")
                     }
                 }
