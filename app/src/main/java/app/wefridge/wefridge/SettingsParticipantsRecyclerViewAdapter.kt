@@ -9,7 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import app.wefridge.wefridge.databinding.FragmentSettingsParticipantBinding
-import app.wefridge.wefridge.placeholder.PlaceholderContent
+import app.wefridge.wefridge.model.User
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.squareup.picasso.Picasso
 import java.lang.ref.WeakReference
@@ -18,8 +18,8 @@ import java.lang.ref.WeakReference
  * [RecyclerView.Adapter] that can display a [PlaceholderContent.ParticipantItem].
  */
 class SettingsParticipantsRecyclerViewAdapter(
-    private val values: ArrayList<PlaceholderContent.ParticipantItem>,
-    private val listener: (PlaceholderContent.ParticipantItem) -> Unit
+    private val values: ArrayList<User>,
+    private val listener: (User) -> Unit
 ) : RecyclerView.Adapter<SettingsParticipantsRecyclerViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -51,7 +51,7 @@ class SettingsParticipantsRecyclerViewAdapter(
         val avatar: ImageView = binding.avatar
         val name: TextView = binding.name
         val delete: Button = binding.delete
-        private val listenerRef: WeakReference<(PlaceholderContent.ParticipantItem) -> Unit> =
+        private val listenerRef: WeakReference<(User) -> Unit> =
             WeakReference(listener)
 
         override fun toString(): String {

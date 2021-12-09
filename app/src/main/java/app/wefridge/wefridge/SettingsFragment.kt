@@ -18,7 +18,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import app.wefridge.wefridge.databinding.FragmentSettingsBinding
 import app.wefridge.wefridge.databinding.FragmentSettingsParticipantAddBinding
-import app.wefridge.wefridge.placeholder.PlaceholderContent
+import app.wefridge.wefridge.model.User
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
@@ -43,7 +43,7 @@ class SettingsFragment : Fragment() {
     private lateinit var user: FirebaseUser
     private lateinit var email: String
     private lateinit var name: String
-    private val values: ArrayList<PlaceholderContent.ParticipantItem> = arrayListOf()
+    private val values: ArrayList<User> = arrayListOf()
     private val participantsRecyclerViewAdapter = SettingsParticipantsRecyclerViewAdapter(values) {
         // TODO: remove from firestore
         Log.v("Auth", "delete: ${it.name}")
@@ -126,7 +126,7 @@ class SettingsFragment : Fragment() {
                 }
                 if (!it.isEmpty) {
                     val participants = it.documents.map { p ->
-                        PlaceholderContent.ParticipantItem(
+                        User(
                             p.id,
                             p.getString("email") ?: "",
                             p.getString("image")
@@ -284,16 +284,14 @@ class SettingsFragment : Fragment() {
                                 .addOnSuccessListener {
                                     with(values) {
                                         add(
-                                            PlaceholderContent.ParticipantItem(
+                                            size,
+                                            User(
                                                 pData.id,
                                                 pData.getString("email") ?: "",
                                                 pData.getString("image")
                                             )
                                         )
-                                        participantsRecyclerViewAdapter.notifyItemRangeInserted(
-                                            values.size - 2,
-                                            1
-                                        )
+                                        participantsRecyclerViewAdapter.notifyItemInserted(size - 1)
                                     }
                                     Toast.makeText(
                                         context,
