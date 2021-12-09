@@ -20,6 +20,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
@@ -118,7 +119,7 @@ class EditFragment : Fragment() {
                 model?.location = null
                 model?.geohash = null
                 model?.isShared = false
-                displayAlertOnSaveSharedItemWithoutLocation()
+                buildAlert(R.string.ad_title_invalid_address, R.string.ad_title_invalid_address).show()
             } else {
                 setModelLocationAttribute()
                 setModelGeohashAttribute()
@@ -129,11 +130,11 @@ class EditFragment : Fragment() {
             // TODO: put the following condition into a separate function
             if ((model?.contactEmail == null || model?.contactEmail == "") && model?.isShared == true) {
                 model?.isShared = false
-                displayAlertOnSaveSharedItemWithoutContactEmail()
+                buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing).show()
             }
 
             val itemController = ItemController()
-            itemController.saveItem(model!!, { /* do nothing on success */ }, { displayAlertOnSaveItemFailed() })
+            itemController.saveItem(model!!, { /* do nothing on success */ }, { buildAlert(R.string.ad_title_error_save_item, R.string.ad_msg_error_save_item).show() })
         }
     }
 
@@ -250,45 +251,47 @@ class EditFragment : Fragment() {
     }
 
     private fun saveNewItem() {
-        // TODO: put the following condition into a separate function
-        if (itemIsSharedSwitch.isChecked && location == null) {
-            displayAlertOnSaveSharedItemWithoutLocation()
-            itemAddressTextInputLayout.editText?.setText("")
-        } else {
-
-            val ownerController = OwnerController()
-            val ownerRef = ownerController.getCurrentUser()
-            model = Item(ownerReference = ownerRef)
-            setModelNameAttribute()
-            setModelQuantityAttribute()
-            setModelUnitAttribute()
-            setModelBestByDateAttribute()
-            setModelIsSharedAttribute()
-            setModelLocationAttribute()
-            setModelGeohashAttribute()
-            setModelDescriptionAttribute()
-            setModelContactNameAttribute()
-            setModelContactEmailAttribute()
-
+        // TODO: set owner as required attribute for this fragment
+        val ownerRef = OwnerController().getCurrentUser()
+        if (ownerRef != null) {
             // TODO: put the following condition into a separate function
-            if ((model?.contactEmail == null || model?.contactEmail == "") && model?.isShared == true) {
-                model?.isShared = false
-                displayAlertOnSaveSharedItemWithoutContactEmail()
+            if (itemIsSharedSwitch.isChecked && location == null) {
+                buildAlert(R.string.ad_title_invalid_address, R.string.ad_title_invalid_address).show()
+                itemAddressTextInputLayout.editText?.setText("")
             } else {
 
-                val itemController = ItemController()
-                itemController.saveItem(model!!, {
-                    // saving was successful
-                    Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
+                model = Item(ownerReference = ownerRef)
+                setModelNameAttribute()
+                setModelQuantityAttribute()
+                setModelUnitAttribute()
+                setModelBestByDateAttribute()
+                setModelIsSharedAttribute()
+                setModelLocationAttribute()
+                setModelGeohashAttribute()
+                setModelDescriptionAttribute()
+                setModelContactNameAttribute()
+                setModelContactEmailAttribute()
 
-                    // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
-                    activity?.onBackPressed()
-                },
-                    {
-                        // saving newItem failed
-                        displayAlertOnSaveItemFailed()
-                    })
+                // TODO: put the following condition into a separate function
+                if ((model?.contactEmail == null || model?.contactEmail == "") && model?.isShared == true) {
+                    model?.isShared = false
+                    buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing).show()
+                } else {
 
+                    val itemController = ItemController()
+                    itemController.saveItem(model!!, {
+                        // saving was successful
+                        Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
+
+                        // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
+                        activity?.onBackPressed()
+                    },
+                        {
+                            // saving newItem failed
+                            buildAlert(R.string.ad_title_error_save_item, R.string.ad_msg_error_save_item).show()
+                        })
+
+                }
             }
         }
     }
@@ -315,18 +318,25 @@ class EditFragment : Fragment() {
                             setAddressStringToItemAddressTextEdit(GeoPoint(location.latitude, location.longitude))
                             itemAddressTextInputLayout.editText?.clearFocus()
                         } else {
-                            displayAlertDialogOnFailedLocationDetermination()
+                            buildAlert(R.string.ad_title_location_determination_failed, R.string.ad_msg_location_determination_failed).show()
                         }
                     }
 
-                    .addOnFailureListener {
-                        displayAlertDialogOnPermissionDenied()
+                    .addOnFailureListener { exception ->
+                        buildAlert(R.string.ad_title_location_determination_failed, R.string.ad_msg_location_determination_failed).show()
+                        Log.e("EditFragment", "Error after getCurrentLocation: ", exception)
                     }
 
             }
             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
-                // called when permission denied
-                displayAlertDialogOnFailedLocationDetermination()
+                // show Dialog which explains the reason for accessing the user's location
+                // called, when permissions denied
+                buildAlert(R.string.ad_title_location_permission_rationale, R.string.ad_msg_location_permission_rationale)
+                    .setNeutralButton("Open settings") { dialogInterface: DialogInterface, i: Int ->
+                        // this piece of code is based on https://stackoverflow.com/questions/19517417/opening-android-settings-programmatically
+                        dialogInterface.run { startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+                    }
+                    .show()
             }
             else -> {
                 // called when permission settings unspecified (like "ask every time")
@@ -361,7 +371,7 @@ class EditFragment : Fragment() {
             matchedGeoPoint = GeoPoint(chosenAddress.latitude, chosenAddress.longitude)
         } catch (exc: IOException) {
             if (itemIsSharedSwitch.isChecked) itemIsSharedSwitch.toggle()
-            displayAlertOnErrorWhileParsingAddressString()
+            buildAlert(R.string.ad_title_error_parsing_address_string, R.string.ad_msg_error_parsing_address_string).show()
             exc.message?.let { Log.e("EditFragment", it) }
         }
 
@@ -384,7 +394,7 @@ class EditFragment : Fragment() {
 
         } catch (exc: IOException) {
             if (itemIsSharedSwitch.isChecked) itemIsSharedSwitch.toggle()
-            displayAlertOnFetchingAddressFromGeoPointWithoutNetwork()
+            buildAlert(R.string.ad_title_no_network, R.string.ad_msg_no_network).show()
             exc.message?.let { Log.e("EditFragment", it) }
         }
 
@@ -392,66 +402,19 @@ class EditFragment : Fragment() {
 
     }
 
-    private fun displayAlertOnSaveSharedItemWithoutContactEmail() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Contact email missing")
-            .setMessage("In order to share an Item, you have to provide a contact email other users can use to reach out to you. Please state your email address in the settings tab.")
+    private fun buildAlert(title: String, message: String): AlertDialog.Builder {
+        return AlertDialog.Builder(requireContext())
+            .setTitle(title)
+            .setMessage(message)
             .setPositiveButton(android.R.string.ok, null)
-            .show()
     }
 
-    private fun displayAlertOnErrorWhileParsingAddressString() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Location problem")
-            .setMessage("There was an error while we tried to match the location you've entered to real coordinates. Therefore, we disabled the sharing option. Please check your internet connection and try again.")
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
-    }
-
-    private fun displayAlertOnFetchingAddressFromGeoPointWithoutNetwork() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("No internet connection")
-            .setMessage("There was an error while we tried to match the location coordinates to a real address. Therefore, we disabled the sharing option. Please check your internet connection and try again.")
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
-    }
-
-    private fun displayAlertOnSaveSharedItemWithoutLocation() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Please specify a valid address")
-            .setMessage("The address you've entered couldn't be matched to a real location. Please specify a valid address or turn off the sharing option.")
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
-    }
-
-    private fun displayAlertOnSaveItemFailed() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Error while saving your foodstuff")
-            .setMessage("Please check your internet connection and try again.")
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
-    }
-
-    private fun displayAlertDialogOnPermissionDenied() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Unable to determine location")
-            .setMessage("Please try it another time.")
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
-    }
-
-    private fun displayAlertDialogOnFailedLocationDetermination() {
-        // TODO: outsource strings to strings file
+    private fun buildAlert(@StringRes title: Int, @StringRes message: Int): AlertDialog.Builder {
         // this piece of code is based on https://stackoverflow.com/questions/2115758/how-do-i-display-an-alert-dialog-on-android
-        AlertDialog.Builder(requireContext())
-            .setTitle("Permission denied")
-            .setMessage("We have no permission to access your location.\nIf you want to make use of the \"locate me\" functionality, please enable location access in settings.")
-            .setPositiveButton(android.R.string.ok, null)
-            .setNeutralButton("Open settings") { dialogInterface: DialogInterface, i: Int ->
-                // this piece of code is based on https://stackoverflow.com/questions/19517417/opening-android-settings-programmatically
-                dialogInterface.run { startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
-            }
-            .show()
+        return AlertDialog.Builder(requireContext())
+             .setTitle(title)
+             .setMessage(message)
+             .setPositiveButton(android.R.string.ok, null)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

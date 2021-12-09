@@ -23,22 +23,24 @@ class ItemController {
     fun getItems(callbackOnSuccess: (MutableList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
         val ownerController = OwnerController()
         val ownerRef = ownerController.getCurrentUser()
-        itemsRef
-            .whereEqualTo(ITEM_OWNER, ownerRef)
-            .get()
-            .addOnSuccessListener { itemDocuments ->
-                items.clear()
-                for (itemDocument in itemDocuments) {
-                    val item = tryParse(itemDocument)
-                    if (item != null) items.add(item)
+        if (ownerRef != null) {
+            itemsRef
+                .whereEqualTo(ITEM_OWNER, ownerRef)
+                .get()
+                .addOnSuccessListener { itemDocuments ->
+                    items.clear()
+                    for (itemDocument in itemDocuments) {
+                        val item = tryParse(itemDocument)
+                        if (item != null) items.add(item)
+                    }
+                    callbackOnSuccess(items)
                 }
-                callbackOnSuccess(items)
-            }
 
-            .addOnFailureListener { exception ->
-                Log.w(TAG, "Error getting items.", exception)
-                callbackOnFailure(exception)
-            }
+                .addOnFailureListener { exception ->
+                    Log.w(TAG, "Error getting items.", exception)
+                    callbackOnFailure(exception)
+                }
+        }
     }
 
     fun deleteItem(item: Item) {
