@@ -3,6 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'com.gladed.androidgitversion' version '0.4.14'
     id 'com.google.gms.google-services'
+    
 }
 
 android {
@@ -17,11 +18,40 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        debug {
+            keyAlias = 'androiddebugkey'
+            keyPassword = 'android'
+            storeFile = new File("${System.properties['user.home']}/.android/debug.keystore")
+            storePassword = 'android'
+            storeType = "jks"
+        }
+        release {
+            // Load keystore
+            def keystoreProperties = new Properties()
+            try {
+                def keystorePropertiesFile = rootProject.file("keystore.properties");
+                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+            } catch(IOException ignored) {
+                // We don't have release keys, ignoring
+            }
+            if (keystoreProperties['storeFile']) {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {
@@ -35,7 +65,6 @@ android {
         viewBinding true
     }
 }
-
 dependencies {
 
     implementation 'androidx.core:core-ktx:1.7.0'
@@ -47,10 +76,16 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.work:work-runtime-ktx:2.5.0'
+    implementation 'com.google.firebase:firebase-messaging-ktx:23.0.0'
+    implementation 'com.android.volley:volley:1.2.0'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     implementation platform('com.google.firebase:firebase-bom:29.0.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.firebaseui:firebase-ui-auth:7.2.0'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'com.squareup.picasso:picasso:2.71828'
 }
