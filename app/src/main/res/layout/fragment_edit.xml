@@ -18,7 +18,7 @@
             android:id="@+id/itemNameTextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/itemNameHint">
+            android:hint="@string/item_name_hint">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
@@ -39,7 +39,7 @@
                 android:id="@+id/itemQuantityTextInputLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:hint="@string/itemQuantityHint"
+                android:hint="@string/item_quantity_hint"
                 android:layout_weight="1">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -72,7 +72,7 @@
             android:id="@+id/itemBestByDateTextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/itemBestByDateHint">
+            android:hint="@string/item_best_by_date_hint">
 
             <!-- the following partially was taken from https://stackoverflow.com/questions/14933330/datepicker-how-to-popup-datepicker-when-click-on-edittext-->
             <com.google.android.material.textfield.TextInputEditText
@@ -123,7 +123,7 @@
                     android:id="@+id/itemIsSharedSwitchLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/locationSwitchLabel"
+                    android:text="@string/location_switch_label"
                     android:textSize="17sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSecondary">
@@ -138,7 +138,7 @@
                 android:id="@+id/itemAddressTextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/AddressTextInputLayoutHint"
+                android:hint="@string/address_text_input_layout_hint"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_marginVertical="8dp"
                 >
@@ -156,7 +156,7 @@
                 android:id="@+id/locateMeButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/locationPickerLocateButtonText"
+                android:text="@string/location_picker_locate_button_text"
                 android:textAllCaps="false"
                 android:textStyle="normal"
                 android:layout_gravity="center_horizontal"
@@ -171,7 +171,7 @@
                 android:id="@+id/itemDescriptionTextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/itemDescriptionHint">
+                android:hint="@string/item_description_hint">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
@@ -185,7 +185,7 @@
             android:id="@+id/itemSaveButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/itemSaveButtonText"
+            android:text="@string/item_save_button_text"
             android:layout_gravity="center_horizontal"
             android:layout_marginVertical="8dp"
             />

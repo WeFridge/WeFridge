@@ -477,12 +477,12 @@ class EditFragment : Fragment() {
 
     private fun matchUnitValueToUnitDropdownSelection(): String? {
         return when (model?.unit?.value) {
-           Unit.GRAM.value -> getString(R.string.itemUnitGramText)
-            Unit.KILOGRAM.value -> getString(R.string.itemUnitKilogramText)
-            Unit.LITER.value -> getString(R.string.itemUnitLiterText)
-            Unit.MILLILITER.value -> getString(R.string.itemUnitMilliliterText)
-            Unit.OUNCE.value -> getString(R.string.itemUnitOunceText)
-            Unit.PIECE.value -> getString(R.string.itemUnitPieceText)
+           Unit.GRAM.value -> getString(R.string.item_unit_gram)
+            Unit.KILOGRAM.value -> getString(R.string.item_unit_kilogram)
+            Unit.LITER.value -> getString(R.string.item_unit_liter)
+            Unit.MILLILITER.value -> getString(R.string.item_unit_milliliter)
+            Unit.OUNCE.value -> getString(R.string.item_unit_ounce)
+            Unit.PIECE.value -> getString(R.string.item_unit_piece)
             else -> null
         }
 
@@ -490,14 +490,13 @@ class EditFragment : Fragment() {
 
     private fun matchUnitDropdownSelectionToUnit(): Unit {
         Log.d("EditFragment", unit_dropdown.editText?.text.toString())
-        Log.d("EditFragment", R.string.itemUnitGramText.toString())
         return when (unit_dropdown.editText?.text.toString()) {
-            getString(R.string.itemUnitGramText) -> Unit.GRAM
-            getString(R.string.itemUnitKilogramText) -> Unit.KILOGRAM
-            getString(R.string.itemUnitLiterText) -> Unit.LITER
-            getString(R.string.itemUnitMilliliterText) -> Unit.MILLILITER
-            getString(R.string.itemUnitOunceText) -> Unit.OUNCE
-            getString(R.string.itemUnitPieceText) -> Unit.PIECE
+            getString(R.string.item_unit_gram) -> Unit.GRAM
+            getString(R.string.item_unit_kilogram) -> Unit.KILOGRAM
+            getString(R.string.item_unit_liter) -> Unit.LITER
+            getString(R.string.item_unit_milliliter) -> Unit.MILLILITER
+            getString(R.string.item_unit_ounce) -> Unit.OUNCE
+            getString(R.string.item_unit_piece) -> Unit.PIECE
             else -> Unit.PIECE
         }
     }
