@@ -97,4 +97,5 @@
     <string name="ad_msg_location_permission_rationale">Your location is needed as soon as you start sharing this foodstuff. If you want to determine your location conveniently with just a tap, give us the required permission to do so. Other users will not see your exact location.</string>
 
     <string name="ad_btn_retry">Retry</string>
+    <string name="ad_btn_open_settings">Open settings</string>
 </resources>

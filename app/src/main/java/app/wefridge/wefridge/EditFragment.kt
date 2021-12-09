@@ -68,7 +68,7 @@ class EditFragment : Fragment() {
 
 
         (requireActivity() as AppCompatActivity).supportActionBar?.title =
-            model.name ?: getString(R.string.add_new_item)
+            model.firebaseId?.let { model.name } ?: getString(R.string.add_new_item)
 
         // this piece of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
         requestPermissionLauncher =
@@ -113,7 +113,7 @@ class EditFragment : Fragment() {
         super.onDestroy()
         if (!ADD_ITEM_MODE) {  // **new** Items should not be saved automatically, i. e. onDestroy
             // TODO: put the following condition into a separate function
-            if (location == null && model.isShared == true) {
+            if (location == null && model.isShared) {
                 model.location = null
                 model.geohash = null
                 model.isShared = false
@@ -126,12 +126,12 @@ class EditFragment : Fragment() {
             setModelContactEmailAttribute()
 
             // TODO: put the following condition into a separate function
-            if ((model.contactEmail == null || model.contactEmail == "") && model.isShared == true) {
+            if ((model.contactEmail == null || model.contactEmail == "") && model.isShared) {
                 model.isShared = false
                 buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing).show()
             }
 
-            ItemController.saveItem(model!!, { /* do nothing on success */ }, { buildAlert(R.string.ad_title_error_save_item, R.string.ad_msg_error_save_item).show() })
+            ItemController.saveItem(model, { /* do nothing on success */ }, { buildAlert(R.string.ad_title_error_save_item, R.string.ad_msg_error_save_item).show() })
         }
     }
 
@@ -144,8 +144,7 @@ class EditFragment : Fragment() {
             true
         }
 
-        unit_dropdown.editText?.setOnClickListener() {
-            unitDropdownMenu.show() }
+        unit_dropdown.editText?.setOnClickListener { unitDropdownMenu.show() }
 
         locateMeButton.setOnClickListener { getCurrentLocation() }
 
@@ -153,7 +152,7 @@ class EditFragment : Fragment() {
 
         itemIsSharedSwitch.setOnClickListener { setLocationPickerActivation() }
 
-        itemIsSharedSwitchLabel.setOnClickListener { _ -> itemIsSharedSwitch.toggle() ; setLocationPickerActivation() }
+        itemIsSharedSwitchLabel.setOnClickListener { itemIsSharedSwitch.toggle() ; setLocationPickerActivation() }
 
         itemBestByDateTextInputLayout.editText?.setOnClickListener {
             setDatePickerVisibility()
@@ -269,12 +268,12 @@ class EditFragment : Fragment() {
             setModelContactEmailAttribute()
 
             // TODO: put the following condition into a separate function
-            if ((model.contactEmail == null || model.contactEmail == "") && model.isShared == true) {
+            if ((model.contactEmail == null || model.contactEmail == "") && model.isShared) {
                 model.isShared = false
                 buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing).show()
             } else {
 
-                ItemController.saveItem(model!!, {
+                ItemController.saveItem(model, {
                     // saving was successful
                     Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
 
@@ -327,7 +326,7 @@ class EditFragment : Fragment() {
                 // show Dialog which explains the reason for accessing the user's location
                 // called, when permissions denied
                 buildAlert(R.string.ad_title_location_permission_rationale, R.string.ad_msg_location_permission_rationale)
-                    .setNeutralButton("Open settings") { dialogInterface: DialogInterface, i: Int ->
+                    .setNeutralButton(R.string.ad_btn_open_settings) { dialogInterface: DialogInterface, _ ->
                         // this piece of code is based on https://stackoverflow.com/questions/19517417/opening-android-settings-programmatically
                         dialogInterface.run { startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
                     }
@@ -385,7 +384,7 @@ class EditFragment : Fragment() {
             val adminArea = address[0].adminArea
             val postalCode = address[0].postalCode
 
-            addressString = "${addressLine}, ${postalCode} ${locality}, ${adminArea}"
+            addressString = "${addressLine}, $postalCode $locality, $adminArea"
 
         } catch (exc: IOException) {
             if (itemIsSharedSwitch.isChecked) itemIsSharedSwitch.toggle()
@@ -425,23 +424,23 @@ class EditFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fillFieldsWithModelContent() {
         itemNameTextInputLayout.editText?.setText(model.name)
-        model.quantity?.toString()?.let { itemQuantityTextInputLayout.editText?.setText(it) }
-        matchUnitValueToUnitDropdownSelection()?.let { unit_dropdown.editText?.setText(it) }
+        itemQuantityTextInputLayout.editText?.setText(model.quantity.toString())
+        unit_dropdown.editText?.setText(matchUnitValueToUnitDropdownSelection())
         model.bestByDate?.let { setDatePickerDateTo(it); setDateStringToBestByDateEditText() }
-        itemIsSharedSwitch.isChecked = model.isShared ?: false
+        itemIsSharedSwitch.isChecked = model.isShared
         model.location?.let { itemAddressTextInputLayout.editText?.setText(buildAddressString(it)) }
         itemDescriptionTextInputLayout.editText?.setText(model.description)
     }
 
-    private fun matchUnitValueToUnitDropdownSelection(): String? {
-        return when (model.unit?.value) {
+    private fun matchUnitValueToUnitDropdownSelection(): String {
+        return when (model.unit.value) {
            Unit.GRAM.value -> getString(R.string.itemUnitGramText)
             Unit.KILOGRAM.value -> getString(R.string.itemUnitKilogramText)
             Unit.LITER.value -> getString(R.string.itemUnitLiterText)
             Unit.MILLILITER.value -> getString(R.string.itemUnitMilliliterText)
             Unit.OUNCE.value -> getString(R.string.itemUnitOunceText)
             Unit.PIECE.value -> getString(R.string.itemUnitPieceText)
-            else -> null
+            else -> getString(R.string.itemUnitPieceText)
         }
 
     }
