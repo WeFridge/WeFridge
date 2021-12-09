@@ -64,6 +64,7 @@ class EditFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // TODO: set owner without !!. If null, display an alert, that owner is not set and "go back" to last view
         model = arguments?.getParcelable(ARG_MODEL) ?: Item(ownerReference = OwnerController.getCurrentUser()!!)
 
 
@@ -135,6 +136,7 @@ class EditFragment : Fragment() {
         }
     }
 
+    // TODO: create setUp method for each form component
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpOnClickListenersForFormComponents() {
 
@@ -160,6 +162,7 @@ class EditFragment : Fragment() {
         }
     }
 
+    // TODO: remove this method. Instead: call setUpOnChangedListeners every time and set up save button anyway
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpSaveMechanism() {
         if (!ADD_ITEM_MODE) setUpOnChangedListeners()
@@ -175,20 +178,22 @@ class EditFragment : Fragment() {
         unitDropdownMenu.inflate(R.menu.unit_dropdown)
     }
 
-
+    // TODO: move into setUpDatePicker
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpOnDateChangedListenerForDatePicker() {
         itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ -> setDateStringToBestByDateEditText(); setModelBestByDateAttribute() }
 
     }
 
+    // TODO: move into setUpAddressInput
+    // TODO: refactor, so that the location from "locate me" btn can be inserted without calling getGeoPointFromAddressUserInput
     private fun setUpOnFocusChangeListenerForAddressInputEditText() {
         itemAddressTextInputLayout.editText?.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) location = getGeoPointFromAddressUserInput()
         }
     }
 
-
+    // TODO: split up into setUp* methods
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpOnChangedListeners() {
         itemNameTextInputLayout.editText?.addTextChangedListener { setModelNameAttribute() }
@@ -197,6 +202,7 @@ class EditFragment : Fragment() {
         itemDescriptionTextInputLayout.editText?.addTextChangedListener { setModelDescriptionAttribute() }
     }
 
+    // TODO: consider removing this methods and instead call code directly
     private fun setModelNameAttribute() {
         model.name = itemNameTextInputLayout.editText?.text.toString()
     }
@@ -246,8 +252,9 @@ class EditFragment : Fragment() {
         model.description = itemDescriptionTextInputLayout.editText?.text.toString()
     }
 
+    // TODO: simplify the process of checking, if isCheck == true and location ==null
+    // TODO: samle for contactEmail and isShared
     private fun saveNewItem() {
-        // TODO: set owner as required attribute for this fragment
 
         // TODO: put the following condition into a separate function
         if (itemIsSharedSwitch.isChecked && location == null) {
@@ -255,6 +262,7 @@ class EditFragment : Fragment() {
             itemAddressTextInputLayout.editText?.setText("")
         } else {
 
+            // TODO: remove set* method calls
             //model = Item(ownerReference = ownerRef)
             setModelNameAttribute()
             setModelQuantityAttribute()
@@ -290,7 +298,7 @@ class EditFragment : Fragment() {
 
     }
 
-
+    // TODO: move into separate file
     private fun getCurrentLocation() {
 
         // this piece of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
@@ -342,14 +350,15 @@ class EditFragment : Fragment() {
 
     }
 
+    // TODO: move into related setUp method
     private fun setAddressStringToItemAddressTextEdit(location: GeoPoint) {
         // the following code is based on https://stackoverflow.com/questions/9409195/how-to-get-complete-address-from-latitude-and-longitude
 
         itemAddressTextInputLayout.editText?.setText(buildAddressString(location))
     }
 
+    // TODO: refactor (accept string as input) and move to separate file
     private fun getGeoPointFromAddressUserInput(): GeoPoint? {
-
         // the following piece of code is inspired by https://stackoverflow.com/questions/3574644/how-can-i-find-the-latitude-and-longitude-from-address/27834110#27834110
         val userInputAddress = itemAddressTextInputLayout.editText?.text.toString()
         val geocoder = Geocoder(requireContext())
@@ -372,6 +381,8 @@ class EditFragment : Fragment() {
         return matchedGeoPoint
     }
 
+
+    // TODO: move to separate file
     private fun buildAddressString(location: GeoPoint): String {
         val geocoder = Geocoder(requireContext(), Locale.getDefault())
         var addressString = ""
@@ -396,6 +407,7 @@ class EditFragment : Fragment() {
 
     }
 
+    // TODO: move to separate file?
     private fun buildAlert(title: String, message: String): AlertDialog.Builder {
         return AlertDialog.Builder(requireContext())
             .setTitle(title)
@@ -411,16 +423,19 @@ class EditFragment : Fragment() {
              .setPositiveButton(android.R.string.ok, null)
     }
 
+    // TODO: remove and call methods directly
     @RequiresApi(Build.VERSION_CODES.O)
     private fun adaptUIToModel() {
         hideItemSaveButtonOnExistingModelId()
         fillFieldsWithModelContent()
     }
 
+    // TODO: remove and call code directly
     private fun hideItemSaveButtonOnExistingModelId() {
         if (!ADD_ITEM_MODE) itemSaveButton?.isVisible = false
     }
 
+    // TODO: split up into setUp* methods
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fillFieldsWithModelContent() {
         itemNameTextInputLayout.editText?.setText(model.name)
@@ -432,6 +447,7 @@ class EditFragment : Fragment() {
         itemDescriptionTextInputLayout.editText?.setText(model.description)
     }
 
+    // TODO: remove method and add string attribute to Unit. Init strings with resource strings
     private fun matchUnitValueToUnitDropdownSelection(): String {
         return when (model.unit.value) {
            Unit.GRAM.value -> getString(R.string.itemUnitGramText)
@@ -445,9 +461,8 @@ class EditFragment : Fragment() {
 
     }
 
+    // TODO: remove method and add in Unit: get_by_string
     private fun matchUnitDropdownSelectionToUnit(): Unit {
-        Log.d("EditFragment", unit_dropdown.editText?.text.toString())
-        Log.d("EditFragment", R.string.itemUnitGramText.toString())
         return when (unit_dropdown.editText?.text.toString()) {
             getString(R.string.itemUnitGramText) -> Unit.GRAM
             getString(R.string.itemUnitKilogramText) -> Unit.KILOGRAM
@@ -459,12 +474,12 @@ class EditFragment : Fragment() {
         }
     }
 
-
-
+    // TODO: move into setUp* method
     private fun setDateStringToBestByDateEditText() {
         itemBestByDateTextInputLayout.editText?.setText(buildDateStringFromDatePicker())
     }
 
+    // TODO: create extension for DatePicker (or create own class if that doesn't work)
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setDatePickerDateTo(date: Date) {
         val bestByDate = convertToLocalDate(date)
@@ -472,11 +487,13 @@ class EditFragment : Fragment() {
 
     }
 
+    // TODO: move to Utils?
     @RequiresApi(Build.VERSION_CODES.O)
     private fun convertToLocalDate(date: Date): LocalDate {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
     }
 
+    // TODO: create extension with "toSting()"? for DatePicker (or create own class if that doesn't work)
     private fun buildDateStringFromDatePicker(): String {
         val day = itemBestByDatePicker.dayOfMonth
         val month = itemBestByDatePicker.month
@@ -488,6 +505,7 @@ class EditFragment : Fragment() {
         return DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault()).format(calendar.time)
     }
 
+    // TODO: create extension for DatePicker (or create own class if that doesn't work)
     private fun getDateFromDatePicker(): Date {
         val day = itemBestByDatePicker.dayOfMonth
         val month = itemBestByDatePicker.month
@@ -499,6 +517,7 @@ class EditFragment : Fragment() {
         return calendar.time
     }
 
+    // TODO: move into appropriate setUp* method.
     private fun setDatePickerVisibility() {
         when (itemBestByDatePicker.visibility) {
             View.GONE -> showDatePicker()
@@ -508,14 +527,17 @@ class EditFragment : Fragment() {
 
     }
 
+    // TODO: remove?
     private fun showDatePicker() {
         itemBestByDatePicker.visibility = View.VISIBLE
     }
 
+    // TODO: remove?
     private fun hideDatePicker() {
         itemBestByDatePicker.visibility = View.GONE
     }
 
+    // TODO: create setUp* method for LocationPicker and move this code into it
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setLocationPickerActivation() {
         if (itemIsSharedSwitch.isChecked) {
@@ -525,6 +547,7 @@ class EditFragment : Fragment() {
         }
     }
 
+    // TODO: refactor. One generic method for editTexts. Overload with different parameter (button)
     @RequiresApi(Build.VERSION_CODES.O)
     private fun deactivateLocationPickerElements() {
         locateMeButton.isClickable = false
@@ -545,6 +568,7 @@ class EditFragment : Fragment() {
 
     }
 
+    // TODO: refactor. One generic method for editTexts. Overload with different parameter (button)
     @RequiresApi(Build.VERSION_CODES.O)
     private fun activateLocationPickerElements() {
         locateMeButton.isClickable = true
