@@ -28,7 +28,7 @@ class UserController {
             return getUserRef(userID)
         }
 
-        private fun getCurrentUser() = firebaseAuth.currentUser
+        fun getCurrentUser() = firebaseAuth.currentUser
 
         fun getUserRef(userId: String): DocumentReference {
             return usersRef.document(userId)
