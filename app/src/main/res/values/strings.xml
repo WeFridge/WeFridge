@@ -46,6 +46,21 @@
     <string name="location_picker_locate_button_text">Locate me</string>
     <string name="unit_dropdown_hint">Unit</string>
 
+    <string name="item_share_contact_email_missing_title">Contact email missing</string>
+    <string name="item_share_contact_email_missing_text">In order to share an Item, you have to provide a contact email other users can use to reach out to you. Please state your email address in the settings tab.</string>
+    <string name="item_share_location_problem_title">Location problem</string>
+    <string name="item_share_location_problem_text">There was an error while we tried to match the location you\'ve entered to real coordinates. Therefore, we disabled the sharing option. Please check your internet connection and try again.</string>
+    <string name="item_share_no_internet_connection_title">No internet connection</string>
+    <string name="item_share_no_internet_connection_text">There was an error while we tried to match the location coordinates to a real address. Therefore, we disabled the sharing option. Please check your internet connection and try again.</string>
+    <string name="item_share_invalid_address_title">Please specify a valid address</string>
+    <string name="item_share_invalid_address_text">The address you\'ve entered couldn\'t be matched to a real location. Please specify a valid address or turn off the sharing option.</string>
+    <string name="item_share_error_while_saving_title">Error while saving your foodstuff</string>
+    <string name="item_share_error_while_saving_text">Please check your internet connection and try again.</string>
+    <string name="item_share_unable_to_determine_location_title">Unable to determine location</string>
+    <string name="item_share_unable_to_determine_location_text">Please try it another time.</string>
+    <string name="item_share_location_permission_denied_title">Permission denied</string>
+    <string name="item_share_location_permission_denied_text">We have no permission to access your location.\n If you want to make use of the "locate me" functionality, please enable location access in settings.</string>
+
     <string name="best_by_overdue">Expired on %1$s</string>
     <string name="best_by_plural">Best by in %1$s days</string>
     <string name="best_by_singular">Best by in 1 day</string>
