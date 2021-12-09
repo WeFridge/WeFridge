@@ -394,60 +394,59 @@ class EditFragment : Fragment() {
 
     private fun displayAlertOnSaveSharedItemWithoutContactEmail() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Contact email missing")
-            .setMessage("In order to share an Item, you have to provide a contact email other users can use to reach out to you. Please state your email address in the settings tab.")
+            .setTitle(context?.getString(R.string.item_share_contact_email_missing_title))
+            .setMessage(context?.getString(R.string.item_share_contact_email_missing_text))
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
 
     private fun displayAlertOnErrorWhileParsingAddressString() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Location problem")
-            .setMessage("There was an error while we tried to match the location you've entered to real coordinates. Therefore, we disabled the sharing option. Please check your internet connection and try again.")
+            .setTitle(context?.getString(R.string.item_share_location_problem_title))
+            .setMessage(context?.getString(R.string.item_share_location_problem_text))
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
 
     private fun displayAlertOnFetchingAddressFromGeoPointWithoutNetwork() {
         AlertDialog.Builder(requireContext())
-            .setTitle("No internet connection")
-            .setMessage("There was an error while we tried to match the location coordinates to a real address. Therefore, we disabled the sharing option. Please check your internet connection and try again.")
+            .setTitle(context?.getString(R.string.item_share_no_internet_connection_title))
+            .setMessage(context?.getString(R.string.item_share_no_internet_connection_text))
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
 
     private fun displayAlertOnSaveSharedItemWithoutLocation() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Please specify a valid address")
-            .setMessage("The address you've entered couldn't be matched to a real location. Please specify a valid address or turn off the sharing option.")
+            .setTitle(context?.getString(R.string.item_share_invalid_address_title))
+            .setMessage(context?.getString(R.string.item_share_invalid_address_text))
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
 
     private fun displayAlertOnSaveItemFailed() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Error while saving your foodstuff")
-            .setMessage("Please check your internet connection and try again.")
+            .setTitle(context?.getString(R.string.item_share_error_while_saving_title))
+            .setMessage(context?.getString(R.string.item_share_error_while_saving_text))
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
 
     private fun displayAlertDialogOnPermissionDenied() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Unable to determine location")
-            .setMessage("Please try it another time.")
+            .setTitle(context?.getString(R.string.item_share_unable_to_determine_location_title))
+            .setMessage(context?.getString(R.string.item_share_unable_to_determine_location_text))
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
 
     private fun displayAlertDialogOnFailedLocationDetermination() {
-        // TODO: outsource strings to strings file
         // this piece of code is based on https://stackoverflow.com/questions/2115758/how-do-i-display-an-alert-dialog-on-android
         AlertDialog.Builder(requireContext())
-            .setTitle("Permission denied")
-            .setMessage("We have no permission to access your location.\nIf you want to make use of the \"locate me\" functionality, please enable location access in settings.")
+            .setTitle(context?.getString(R.string.item_share_location_permission_denied_title))
+            .setMessage(context?.getString(R.string.item_share_contact_email_missing_text))
             .setPositiveButton(android.R.string.ok, null)
-            .setNeutralButton("Open settings") { dialogInterface: DialogInterface, i: Int ->
+            .setNeutralButton(context?.getString(R.string.item_share_open_settings)) { dialogInterface: DialogInterface, _: Int ->
                 // this piece of code is based on https://stackoverflow.com/questions/19517417/opening-android-settings-programmatically
                 dialogInterface.run { startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
             }

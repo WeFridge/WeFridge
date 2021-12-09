@@ -60,6 +60,7 @@
     <string name="item_share_unable_to_determine_location_text">Please try it another time.</string>
     <string name="item_share_location_permission_denied_title">Permission denied</string>
     <string name="item_share_location_permission_denied_text">We have no permission to access your location.\n If you want to make use of the "locate me" functionality, please enable location access in settings.</string>
+    <string name="item_share_open_settings">Open settings</string>
 
     <string name="best_by_overdue">Expired on %1$s</string>
     <string name="best_by_plural">Best by in %1$s days</string>
