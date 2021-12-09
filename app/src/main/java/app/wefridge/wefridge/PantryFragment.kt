@@ -70,10 +70,10 @@ class PantryFragment : Fragment(), OnItemsChangeListener {
 
     private fun setUpRecyclerViewWithItems() {
         val recyclerView = binding.list
-        recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.adapter =
-                ItemRecyclerViewAdapter(ItemController.items, R.id.action_from_list_to_edit, this)
-
+        with(recyclerView) {
+            layoutManager = LinearLayoutManager(context)
+            adapter = ItemRecyclerViewAdapter(ItemController.items, R.id.action_from_list_to_edit)
+        }
     }
 
 
