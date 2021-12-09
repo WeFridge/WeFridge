@@ -133,8 +133,7 @@ class EditFragment : Fragment() {
                 buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing).show()
             }
 
-            val itemController = ItemController()
-            itemController.saveItem(model!!, { /* do nothing on success */ }, { buildAlert(R.string.ad_title_error_save_item, R.string.ad_msg_error_save_item).show() })
+            ItemController.saveItem(model!!, { /* do nothing on success */ }, { buildAlert(R.string.ad_title_error_save_item, R.string.ad_msg_error_save_item).show() })
         }
     }
 
@@ -252,7 +251,7 @@ class EditFragment : Fragment() {
 
     private fun saveNewItem() {
         // TODO: set owner as required attribute for this fragment
-        val ownerRef = OwnerController().getCurrentUser()
+        val ownerRef = OwnerController.getCurrentUser()
         if (ownerRef != null) {
             // TODO: put the following condition into a separate function
             if (itemIsSharedSwitch.isChecked && location == null) {
@@ -278,8 +277,7 @@ class EditFragment : Fragment() {
                     buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing).show()
                 } else {
 
-                    val itemController = ItemController()
-                    itemController.saveItem(model!!, {
+                    ItemController.saveItem(model!!, {
                         // saving was successful
                         Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
 

@@ -6,12 +6,15 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 
 class OwnerController {
-    private val usersRef = FirebaseFirestore.getInstance().collection(USERS_COLLECTION_NAME)
-    private val firebaseAuth = FirebaseAuth.getInstance()
 
-    fun getCurrentUser(): DocumentReference? {
-        val userID = firebaseAuth.currentUser?.uid
-        return if (userID != null) usersRef.document(userID)
-        else null
+    companion object {
+        private val usersRef = FirebaseFirestore.getInstance().collection(USERS_COLLECTION_NAME)
+        private val firebaseAuth = FirebaseAuth.getInstance()
+
+        fun getCurrentUser(): DocumentReference? {
+            val userID = firebaseAuth.currentUser?.uid
+            return if (userID != null) usersRef.document(userID)
+            else null
+        }
     }
 }
