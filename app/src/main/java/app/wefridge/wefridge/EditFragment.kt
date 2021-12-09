@@ -53,10 +53,10 @@ import java.util.*
 class EditFragment : Fragment() {
     private var _binding: FragmentEditBinding? = null
     private val binding get() = _binding!!
-    private var model: Item? = null
+    private lateinit var model: Item
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
-    private val ADD_ITEM_MODE: Boolean get() = model?.firebaseId.isNullOrEmpty()
+    private val ADD_ITEM_MODE: Boolean get() = model.firebaseId.isNullOrEmpty()
     private var location: GeoPoint? = null
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var unitDropdownMenu: PopupMenu
@@ -64,13 +64,11 @@ class EditFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        arguments?.let {
-            model = it.getParcelable(ARG_MODEL)
-        }
+        model = arguments?.getParcelable(ARG_MODEL) ?: Item(ownerReference = OwnerController.getCurrentUser()!!)
 
 
         (requireActivity() as AppCompatActivity).supportActionBar?.title =
-            model?.name ?: getString(R.string.add_new_item)
+            model.name ?: getString(R.string.add_new_item)
 
         // this piece of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
         requestPermissionLauncher =
@@ -108,17 +106,17 @@ class EditFragment : Fragment() {
         setUpSaveMechanism()
         setUpOnDateChangedListenerForDatePicker()
         setUpOnFocusChangeListenerForAddressInputEditText()
-        location = model?.location
+        location = model.location
     }
 
     override fun onDestroy() {
         super.onDestroy()
         if (!ADD_ITEM_MODE) {  // **new** Items should not be saved automatically, i. e. onDestroy
             // TODO: put the following condition into a separate function
-            if (location == null && model?.isShared == true) {
-                model?.location = null
-                model?.geohash = null
-                model?.isShared = false
+            if (location == null && model.isShared == true) {
+                model.location = null
+                model.geohash = null
+                model.isShared = false
                 buildAlert(R.string.ad_title_invalid_address, R.string.ad_title_invalid_address).show()
             } else {
                 setModelLocationAttribute()
@@ -128,8 +126,8 @@ class EditFragment : Fragment() {
             setModelContactEmailAttribute()
 
             // TODO: put the following condition into a separate function
-            if ((model?.contactEmail == null || model?.contactEmail == "") && model?.isShared == true) {
-                model?.isShared = false
+            if ((model.contactEmail == null || model.contactEmail == "") && model.isShared == true) {
+                model.isShared = false
                 buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing).show()
             }
 
@@ -159,7 +157,7 @@ class EditFragment : Fragment() {
 
         itemBestByDateTextInputLayout.editText?.setOnClickListener {
             setDatePickerVisibility()
-            model?.bestByDate?.let { setDatePickerDateTo(it) }
+            model.bestByDate?.let { setDatePickerDateTo(it) }
         }
     }
 
@@ -201,97 +199,96 @@ class EditFragment : Fragment() {
     }
 
     private fun setModelNameAttribute() {
-        model?.name = itemNameTextInputLayout.editText?.text.toString()
+        model.name = itemNameTextInputLayout.editText?.text.toString()
     }
 
     private fun setModelQuantityAttribute() {
         val quantityString = itemQuantityTextInputLayout.editText?.text.toString()
-        model?.quantity = if (quantityString.isEmpty() || quantityString.isBlank()) 0 else quantityString.toLong()
+        model.quantity = if (quantityString.isEmpty() || quantityString.isBlank()) 0 else quantityString.toLong()
 
     }
 
     private fun setModelUnitAttribute() {
-        model?.unit = matchUnitDropdownSelectionToUnit()
+        model.unit = matchUnitDropdownSelectionToUnit()
     }
 
     private fun setModelLocationAttribute() {
-        model?.location = location
+        model.location = location
     }
 
     private fun setModelGeohashAttribute() {
         if (location != null)
-            model?.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(location!!.latitude, location!!.longitude))
+            model.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(location!!.latitude, location!!.longitude))
     }
 
     private fun setModelContactNameAttribute() {
         val userNameAsFallbackValue = FirebaseAuth.getInstance().currentUser?.displayName
-        model?.contactName = sharedPreferences.getString(SETTINGS_NAME, userNameAsFallbackValue)
+        model.contactName = sharedPreferences.getString(SETTINGS_NAME, userNameAsFallbackValue)
     }
 
     private fun setModelContactEmailAttribute() {
         val userEmailAsFallbackValue = FirebaseAuth.getInstance().currentUser?.email
-        model?.contactEmail = sharedPreferences.getString(SETTINGS_EMAIL, userEmailAsFallbackValue)
+        model.contactEmail = sharedPreferences.getString(SETTINGS_EMAIL, userEmailAsFallbackValue)
     }
 
     private fun setModelBestByDateAttribute() {
         if (itemBestByDateTextInputLayout.editText?.text.toString() != "")
-            model?.bestByDate = getDateFromDatePicker()
+            model.bestByDate = getDateFromDatePicker()
         else
-            model?.bestByDate = null
+            model.bestByDate = null
     }
 
     private fun setModelIsSharedAttribute() {
-        model?.isShared = itemIsSharedSwitch.isChecked
+        model.isShared = itemIsSharedSwitch.isChecked
     }
 
 
     private fun setModelDescriptionAttribute() {
-        model?.description = itemDescriptionTextInputLayout.editText?.text.toString()
+        model.description = itemDescriptionTextInputLayout.editText?.text.toString()
     }
 
     private fun saveNewItem() {
         // TODO: set owner as required attribute for this fragment
-        val ownerRef = OwnerController.getCurrentUser()
-        if (ownerRef != null) {
+
+        // TODO: put the following condition into a separate function
+        if (itemIsSharedSwitch.isChecked && location == null) {
+            buildAlert(R.string.ad_title_invalid_address, R.string.ad_title_invalid_address).show()
+            itemAddressTextInputLayout.editText?.setText("")
+        } else {
+
+            //model = Item(ownerReference = ownerRef)
+            setModelNameAttribute()
+            setModelQuantityAttribute()
+            setModelUnitAttribute()
+            setModelBestByDateAttribute()
+            setModelIsSharedAttribute()
+            setModelLocationAttribute()
+            setModelGeohashAttribute()
+            setModelDescriptionAttribute()
+            setModelContactNameAttribute()
+            setModelContactEmailAttribute()
+
             // TODO: put the following condition into a separate function
-            if (itemIsSharedSwitch.isChecked && location == null) {
-                buildAlert(R.string.ad_title_invalid_address, R.string.ad_title_invalid_address).show()
-                itemAddressTextInputLayout.editText?.setText("")
+            if ((model.contactEmail == null || model.contactEmail == "") && model.isShared == true) {
+                model.isShared = false
+                buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing).show()
             } else {
 
-                model = Item(ownerReference = ownerRef)
-                setModelNameAttribute()
-                setModelQuantityAttribute()
-                setModelUnitAttribute()
-                setModelBestByDateAttribute()
-                setModelIsSharedAttribute()
-                setModelLocationAttribute()
-                setModelGeohashAttribute()
-                setModelDescriptionAttribute()
-                setModelContactNameAttribute()
-                setModelContactEmailAttribute()
+                ItemController.saveItem(model!!, {
+                    // saving was successful
+                    Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
 
-                // TODO: put the following condition into a separate function
-                if ((model?.contactEmail == null || model?.contactEmail == "") && model?.isShared == true) {
-                    model?.isShared = false
-                    buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing).show()
-                } else {
+                    // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
+                    activity?.onBackPressed()
+                },
+                    {
+                        // saving newItem failed
+                        buildAlert(R.string.ad_title_error_save_item, R.string.ad_msg_error_save_item).show()
+                    })
 
-                    ItemController.saveItem(model!!, {
-                        // saving was successful
-                        Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
-
-                        // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
-                        activity?.onBackPressed()
-                    },
-                        {
-                            // saving newItem failed
-                            buildAlert(R.string.ad_title_error_save_item, R.string.ad_msg_error_save_item).show()
-                        })
-
-                }
             }
         }
+
     }
 
 
@@ -427,17 +424,17 @@ class EditFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun fillFieldsWithModelContent() {
-        itemNameTextInputLayout.editText?.setText(model?.name)
-        model?.quantity?.toString()?.let { itemQuantityTextInputLayout.editText?.setText(it) }
+        itemNameTextInputLayout.editText?.setText(model.name)
+        model.quantity?.toString()?.let { itemQuantityTextInputLayout.editText?.setText(it) }
         matchUnitValueToUnitDropdownSelection()?.let { unit_dropdown.editText?.setText(it) }
-        model?.bestByDate?.let { setDatePickerDateTo(it); setDateStringToBestByDateEditText() }
-        itemIsSharedSwitch.isChecked = model?.isShared ?: false
-        model?.location?.let { itemAddressTextInputLayout.editText?.setText(buildAddressString(it)) }
-        itemDescriptionTextInputLayout.editText?.setText(model?.description)
+        model.bestByDate?.let { setDatePickerDateTo(it); setDateStringToBestByDateEditText() }
+        itemIsSharedSwitch.isChecked = model.isShared ?: false
+        model.location?.let { itemAddressTextInputLayout.editText?.setText(buildAddressString(it)) }
+        itemDescriptionTextInputLayout.editText?.setText(model.description)
     }
 
     private fun matchUnitValueToUnitDropdownSelection(): String? {
-        return when (model?.unit?.value) {
+        return when (model.unit?.value) {
            Unit.GRAM.value -> getString(R.string.itemUnitGramText)
             Unit.KILOGRAM.value -> getString(R.string.itemUnitKilogramText)
             Unit.LITER.value -> getString(R.string.itemUnitLiterText)

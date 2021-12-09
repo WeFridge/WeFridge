@@ -22,25 +22,6 @@ class PantryFragment : Fragment(), OnItemsChangeListener {
     private val binding get() = _binding!!
     private var getItemsSuccessfullyCalled = false
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if (savedInstanceState?.getBoolean("getItemsSuccessfullyCalled") == true) {
-            setUpRecyclerViewWithItems()
-        } else {
-            ItemController.getItems({
-                setUpRecyclerViewWithItems()
-                getItemsSuccessfullyCalled = true
-            },
-                {
-                    displayAlertOnGetItemsFailed()
-                    getItemsSuccessfullyCalled = false
-                })
-        }
-
-        ItemController.addOnItemChangedListener(this)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -54,6 +35,23 @@ class PantryFragment : Fragment(), OnItemsChangeListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if (savedInstanceState?.getBoolean("getItemsSuccessfullyCalled") == true) {
+            setUpRecyclerViewWithItems()
+        } else {
+            ItemController.getItems({
+                getItemsSuccessfullyCalled = true
+                setUpRecyclerViewWithItems()
+            },
+                {
+                    getItemsSuccessfullyCalled = false
+                    displayAlertOnGetItemsFailed {
+                        // on retry button pressed, try to set up the list again
+                        onViewCreated(view, savedInstanceState)
+                    }
+                })
+        }
+
+        ItemController.addOnItemChangedListener(this)
 
         binding.fab.setOnClickListener {
            findNavController().navigate(R.id.action_from_list_to_edit)
@@ -81,12 +79,12 @@ class PantryFragment : Fragment(), OnItemsChangeListener {
     }
 
 
-    private fun displayAlertOnGetItemsFailed() {
+    private fun displayAlertOnGetItemsFailed(retryPressed: () -> Unit) {
         AlertDialog.Builder(requireContext())
             .setTitle("Error loading your foodstuff")
             .setMessage("Please check your internet connection and try again.")
-            .setPositiveButton("Retry") { _, _ ->
-                setUpRecyclerViewWithItems()
+            .setPositiveButton(R.string.ad_btn_retry) { _, _ ->
+                retryPressed()
             }
             .show()
     }

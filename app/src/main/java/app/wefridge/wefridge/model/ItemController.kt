@@ -12,6 +12,7 @@ class ItemController {
     companion object {
         private val TAG = "ItemsOnFirebase"
         private val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
+        private val ownerRef = OwnerController.getCurrentUser()
 
 
         /*
@@ -24,24 +25,22 @@ class ItemController {
         * */
         fun getItems(callbackOnSuccess: (MutableList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
             val ownerRef = OwnerController.getCurrentUser()
-            if (ownerRef != null) {
-                itemsRef
-                    .whereEqualTo(ITEM_OWNER, ownerRef)
-                    .get()
-                    .addOnSuccessListener { itemDocuments ->
-                        items.clear()
-                        for (itemDocument in itemDocuments) {
-                            val item = tryParse(itemDocument)
-                            if (item != null) items.add(item)
-                        }
-                        callbackOnSuccess(items)
+            itemsRef
+                .whereEqualTo(ITEM_OWNER, ownerRef)
+                .get()
+                .addOnSuccessListener { itemDocuments ->
+                    items.clear()
+                    for (itemDocument in itemDocuments) {
+                        val item = tryParse(itemDocument)
+                        if (item != null) items.add(item)
                     }
+                    callbackOnSuccess(items)
+                }
 
-                    .addOnFailureListener { exception ->
-                        Log.w(TAG, "Error getting items.", exception)
-                        callbackOnFailure(exception)
-                    }
-            }
+                .addOnFailureListener { exception ->
+                    Log.w(TAG, "Error getting items.", exception)
+                    callbackOnFailure(exception)
+                }
         }
 
         fun deleteItem(item: Item) {
@@ -131,8 +130,6 @@ class ItemController {
         }
 
         private fun setUpSnapshotListener() {
-            val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
-            val ownerRef = OwnerController.getCurrentUser()
             itemsRef
                 .whereEqualTo(ITEM_OWNER, ownerRef)
                 .addSnapshotListener { snapshots, exception ->
