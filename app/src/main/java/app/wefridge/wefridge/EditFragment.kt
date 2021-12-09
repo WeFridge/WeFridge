@@ -1,28 +1,18 @@
 package app.wefridge.wefridge
 
-import android.Manifest
 import android.app.AlertDialog
-import android.content.DialogInterface
-import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.location.Address
-import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -32,10 +22,6 @@ import app.wefridge.wefridge.model.*
 import app.wefridge.wefridge.model.Unit
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.GeoPoint
 import kotlinx.android.synthetic.main.fragment_edit.*
@@ -54,10 +40,8 @@ class EditFragment : Fragment() {
     private var _binding: FragmentEditBinding? = null
     private val binding get() = _binding!!
     private lateinit var model: Item
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+    private lateinit var locationController: LocationController
     private val ADD_ITEM_MODE: Boolean get() = model.firebaseId.isNullOrEmpty()
-    private var location: GeoPoint? = null
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var unitDropdownMenu: PopupMenu
 
@@ -67,10 +51,7 @@ class EditFragment : Fragment() {
         val ownerReference = OwnerController.getCurrentUser()
         if (ownerReference == null) {
             requireActivity().onBackPressed()
-            buildAlert(
-                R.string.ad_title_account_not_verified,
-                R.string.ad_msg_account_not_verified
-            ).show()
+            alertDialogOnAccountNotVerified(this).show()
 
         } else {
             model = arguments?.getParcelable(ARG_MODEL) ?: Item(ownerReference = ownerReference)
@@ -78,22 +59,17 @@ class EditFragment : Fragment() {
             (requireActivity() as AppCompatActivity).supportActionBar?.title =
                 model.firebaseId?.let { model.name } ?: getString(R.string.add_new_item)
 
-            // TODO: move to separate file and call method from here
-            // this piece of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
-            requestPermissionLauncher =
-                registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-                    if (isGranted) {
-                        getCurrentLocation()
-                    } else {
-                        buildAlert(R.string.ad_title_location_permission_denied, R.string.ad_msg_location_permission_denied)
-                            .setNeutralButton(R.string.ad_btn_open_settings) { dialogInterface: DialogInterface, _ ->
-                                // this piece of code is based on https://stackoverflow.com/questions/19517417/opening-android-settings-programmatically
-                                dialogInterface.run { startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
-                            }
-                            .show()
-                        Log.d("EditFragment", "Request for location access denied.")
-                    }
-                }
+            locationController = LocationController(this,
+                callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(this) },
+                callbackForPermissionRationale = { alertDialogForLocationPermissionRationale(this) },
+                callbackOnDeterminationFailed = { alertDialogForLocationDeterminationFailed(this) },
+                callbackOnSuccess = { geoPoint ->
+                    model.location = geoPoint
+                    itemAddressTextInputLayout.editText?.requestFocus()
+                    // the following code is based on https://stackoverflow.com/questions/9409195/how-to-get-complete-address-from-latitude-and-longitude
+                    itemAddressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(geoPoint))
+                    itemAddressTextInputLayout.editText?.clearFocus()
+                })
         }
     }
 
@@ -117,9 +93,9 @@ class EditFragment : Fragment() {
         setUpItemNameTextInputLayout()
         setUpItemQuantityTextInputLayout()
         setUpUnitDropdown()
-        setUpItemBestByDatePicker() // TODO: remove later
+        setUpItemBestByDatePicker() // TODO: remove later when the date for the BestByDateTextInputLayout is set based on the model
         setUpItemBestByDateTextInputLayout()
-        // TODO: uncomment later
+        // TODO: uncomment later when the date for the BestByDateTextInputLayout is set based on the model
         //setUpItemBestByDatePicker()
         setUpLocationPickerBox()
         setUpItemIsSharedSwitch()
@@ -128,8 +104,6 @@ class EditFragment : Fragment() {
         setUpLocateMeButton()
         setUpItemDescriptionTextInputLayout()
         setUpSaveButton()
-
-        location = model.location
     }
 
     // TODO: simplify the process of checking isShared + location and isShared and contactEmail
@@ -137,13 +111,12 @@ class EditFragment : Fragment() {
         super.onDestroy()
         if (!ADD_ITEM_MODE) {  // **new** Items should not be saved automatically, i. e. onDestroy
             // TODO: put the following condition into a separate function
-            if (location == null && model.isShared) {
+            if (model.location == null && model.isShared) {
                 model.location = null
                 model.geohash = null
                 model.isShared = false
-                buildAlert(R.string.ad_title_invalid_address, R.string.ad_title_invalid_address).show()
+                alertDialogOnInvalidAddress(this).show()
             } else {
-                setModelLocationAttribute()
                 setModelGeohashAttribute()
             }
             setModelContactNameAttribute()
@@ -152,10 +125,10 @@ class EditFragment : Fragment() {
             // TODO: put the following condition into a separate function
             if ((model.contactEmail == null || model.contactEmail == "") && model.isShared) {
                 model.isShared = false
-                buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing).show()
+                alertDialogOnContactEmailMissing(this).show()
             }
 
-            ItemController.saveItem(model, { /* do nothing on success */ }, { buildAlert(R.string.ad_title_error_save_item, R.string.ad_msg_error_save_item).show() })
+            ItemController.saveItem(model, { /* do nothing on success */ }, { alertDialogOnSaveItemFailed(this).show() })
         }
     }
 
@@ -222,14 +195,14 @@ class EditFragment : Fragment() {
 
     // TODO: refactor, so that the location from "locate me" btn can be inserted without calling getGeoPointFromAddressUserInput
     private fun setUpItemAddressTextInputLayout() {
-        model.location?.let { itemAddressTextInputLayout.editText?.setText(buildAddressString(it)) }
+        model.location?.let { itemAddressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(it)) }
         itemAddressTextInputLayout.editText?.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) location = getGeoPointFromAddressUserInput()
+            if (!hasFocus) model.location = tryGetGeoPointFromAddressUserInput()
         }
     }
 
     private fun setUpLocateMeButton() {
-        locateMeButton.setOnClickListener { getCurrentLocation() }
+        locateMeButton.setOnClickListener { locationController.getCurrentLocation() }
     }
 
     private fun setUpItemDescriptionTextInputLayout() {
@@ -258,13 +231,9 @@ class EditFragment : Fragment() {
         model.unit = matchUnitDropdownSelectionToUnit()
     }
 
-    private fun setModelLocationAttribute() {
-        model.location = location
-    }
-
     private fun setModelGeohashAttribute() {
-        if (location != null)
-            model.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(location!!.latitude, location!!.longitude))
+        if (model.location != null)
+            model.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(model.location!!.latitude, model.location!!.longitude))
     }
 
     private fun setModelContactNameAttribute() {
@@ -294,12 +263,12 @@ class EditFragment : Fragment() {
     }
 
     // TODO: simplify the process of checking, if isCheck == true and location ==null
-    // TODO: samle for contactEmail and isShared
+    // TODO: sample for contactEmail and isShared
     private fun saveNewItem() {
 
         // TODO: put the following condition into a separate function
-        if (itemIsSharedSwitch.isChecked && location == null) {
-            buildAlert(R.string.ad_title_invalid_address, R.string.ad_title_invalid_address).show()
+        if (itemIsSharedSwitch.isChecked && model.location == null) {
+            alertDialogOnInvalidAddress(this).show()
             itemAddressTextInputLayout.editText?.setText("")
         } else {
 
@@ -310,7 +279,6 @@ class EditFragment : Fragment() {
             setModelUnitAttribute()
             setModelBestByDateAttribute()
             setModelIsSharedAttribute()
-            setModelLocationAttribute()
             setModelGeohashAttribute()
             setModelDescriptionAttribute()
             setModelContactNameAttribute()
@@ -319,7 +287,7 @@ class EditFragment : Fragment() {
             // TODO: put the following condition into a separate function
             if ((model.contactEmail == null || model.contactEmail == "") && model.isShared) {
                 model.isShared = false
-                buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing).show()
+                alertDialogOnContactEmailMissing(this).show()
             } else {
 
                 ItemController.saveItem(model, {
@@ -331,7 +299,7 @@ class EditFragment : Fragment() {
                 },
                     {
                         // saving newItem failed
-                        buildAlert(R.string.ad_title_error_save_item, R.string.ad_msg_error_save_item).show()
+                        alertDialogOnSaveItemFailed(this).show()
                     })
 
             }
@@ -339,129 +307,29 @@ class EditFragment : Fragment() {
 
     }
 
-    // TODO: move into separate file
-    private fun getCurrentLocation() {
-
-        // this piece of code is partially based on https://developer.android.com/training/permissions/requesting#kotlin
-        when {
-            ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                // called when permission was granted
-                fusedLocationClient =
-                    LocationServices.getFusedLocationProviderClient(requireContext())
-                fusedLocationClient.getCurrentLocation(
-                    PRIORITY_HIGH_ACCURACY,
-                    CancellationTokenSource().token
-                )
-                    .addOnSuccessListener { location ->
-                        if (location != null) {
-                            itemAddressTextInputLayout.editText?.requestFocus()
-                            setAddressStringToItemAddressTextEdit(GeoPoint(location.latitude, location.longitude))
-                            itemAddressTextInputLayout.editText?.clearFocus()
-                        } else {
-                            buildAlert(R.string.ad_title_location_determination_failed, R.string.ad_msg_location_determination_failed).show()
-                        }
-                    }
-
-                    .addOnFailureListener { exception ->
-                        buildAlert(R.string.ad_title_location_determination_failed, R.string.ad_msg_location_determination_failed).show()
-                        Log.e("EditFragment", "Error after getCurrentLocation: ", exception)
-                    }
-
-            }
-            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
-                // show Dialog which explains the reason for accessing the user's location
-                // called, when permissions denied
-                buildAlert(R.string.ad_title_location_permission_rationale, R.string.ad_msg_location_permission_rationale)
-                    .setNeutralButton(R.string.ad_btn_open_settings) { dialogInterface: DialogInterface, _ ->
-                        // this piece of code is based on https://stackoverflow.com/questions/19517417/opening-android-settings-programmatically
-                        dialogInterface.run { startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
-                    }
-                    .show()
-            }
-            else -> {
-                // called when permission settings unspecified (like "ask every time")
-                requestPermissionLauncher.launch(
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
-            }
-        }
-
-    }
-
-    // TODO: move into related setUp method
-    private fun setAddressStringToItemAddressTextEdit(location: GeoPoint) {
-        // the following code is based on https://stackoverflow.com/questions/9409195/how-to-get-complete-address-from-latitude-and-longitude
-
-        itemAddressTextInputLayout.editText?.setText(buildAddressString(location))
-    }
-
-    // TODO: refactor (accept string as input) and move to separate file
-    private fun getGeoPointFromAddressUserInput(): GeoPoint? {
-        // the following piece of code is inspired by https://stackoverflow.com/questions/3574644/how-can-i-find-the-latitude-and-longitude-from-address/27834110#27834110
-        val userInputAddress = itemAddressTextInputLayout.editText?.text.toString()
-        val geocoder = Geocoder(requireContext())
+    private fun tryGetGeoPointFromAddressUserInput(): GeoPoint? {
         var matchedGeoPoint: GeoPoint? = null
-
-        if (userInputAddress == "" || userInputAddress.isBlank() || userInputAddress.isEmpty()) return null
-
         try {
-            val matchedAddresses: List<Address> = geocoder.getFromLocationName(userInputAddress, 1)
-            if (matchedAddresses.isEmpty()) return null
-
-            val chosenAddress = matchedAddresses[0]
-            matchedGeoPoint = GeoPoint(chosenAddress.latitude, chosenAddress.longitude)
-        } catch (exc: IOException) {
+            val userInputAddress = itemAddressTextInputLayout.editText?.text.toString()
+            matchedGeoPoint = locationController.getGeoPointFrom(userInputAddress)
+        } catch(exc: Exception) {
             if (itemIsSharedSwitch.isChecked) itemIsSharedSwitch.toggle()
-            buildAlert(R.string.ad_title_error_parsing_address_string, R.string.ad_msg_error_parsing_address_string).show()
-            exc.message?.let { Log.e("EditFragment", it) }
+            alertDialogOnErrorParsingAddressString(this).show()
         }
 
         return matchedGeoPoint
     }
 
-
-    // TODO: move to separate file
-    private fun buildAddressString(location: GeoPoint): String {
-        val geocoder = Geocoder(requireContext(), Locale.getDefault())
-        var addressString = ""
+    private fun tryBuildAddressStringFrom(geoPoint: GeoPoint): String? {
+        var addressString: String? = null
         try {
-            val address =
-                geocoder.getFromLocation(location.latitude, location.longitude, 1)
-
-            val addressLine = address[0].getAddressLine(0)
-            val locality = address[0].locality
-            val adminArea = address[0].adminArea
-            val postalCode = address[0].postalCode
-
-            addressString = "${addressLine}, $postalCode $locality, $adminArea"
-
-        } catch (exc: IOException) {
+            addressString = locationController.buildAddressStringFrom(geoPoint)
+        } catch (exc: IOException){
             if (itemIsSharedSwitch.isChecked) itemIsSharedSwitch.toggle()
-            buildAlert(R.string.ad_title_no_network, R.string.ad_msg_no_network).show()
-            exc.message?.let { Log.e("EditFragment", it) }
+            alertDialogOnLocationNoNetwork(this).show()
         }
 
         return addressString
-
-    }
-
-    // TODO: move to separate file?
-    private fun buildAlert(title: String, message: String): AlertDialog.Builder {
-        return AlertDialog.Builder(requireContext())
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton(android.R.string.ok, null)
-    }
-
-    private fun buildAlert(@StringRes title: Int, @StringRes message: Int): AlertDialog.Builder {
-        // this piece of code is based on https://stackoverflow.com/questions/2115758/how-do-i-display-an-alert-dialog-on-android
-        return AlertDialog.Builder(requireContext())
-             .setTitle(title)
-             .setMessage(message)
-             .setPositiveButton(android.R.string.ok, null)
     }
 
     // TODO: remove method and add string attribute to Unit. Init strings with resource strings
@@ -475,7 +343,6 @@ class EditFragment : Fragment() {
             Unit.PIECE.value -> getString(R.string.itemUnitPieceText)
             else -> getString(R.string.itemUnitPieceText)
         }
-
     }
 
     // TODO: remove method and add in Unit: get_by_string

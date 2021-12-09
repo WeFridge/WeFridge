@@ -1,5 +1,8 @@
 package app.wefridge.wefridge
 
+import android.app.AlertDialog
+import android.content.Context
+import androidx.annotation.StringRes
 import java.math.BigInteger
 import java.security.MessageDigest
 
