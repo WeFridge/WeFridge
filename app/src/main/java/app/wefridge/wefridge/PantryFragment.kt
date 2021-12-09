@@ -22,6 +22,25 @@ class PantryFragment : Fragment(), OnItemsChangeListener {
     private val binding get() = _binding!!
     private var getItemsSuccessfullyCalled = false
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (savedInstanceState?.getBoolean("getItemsSuccessfullyCalled") == true) {
+            setUpRecyclerViewWithItems()
+        } else {
+            ItemController.getItems({
+                setUpRecyclerViewWithItems()
+                getItemsSuccessfullyCalled = true
+            },
+                {
+                    displayAlertOnGetItemsFailed()
+                    getItemsSuccessfullyCalled = false
+                })
+        }
+
+        ItemController.addOnItemChangedListener(this)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -34,22 +53,6 @@ class PantryFragment : Fragment(), OnItemsChangeListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState?.getBoolean("getItemsSuccessfullyCalled") == true) {
-            setUpRecyclerViewWithItems()
-        } else {
-            val itemController = ItemController()
-            itemController.getItems({
-                    setUpRecyclerViewWithItems()
-                    getItemsSuccessfullyCalled = true
-                },
-                {
-                    displayAlertOnGetItemsFailed()
-                    getItemsSuccessfullyCalled = false
-                })
-        }
-
-        ItemController.addOnItemChangedListener(this)
 
 
         binding.fab.setOnClickListener {
