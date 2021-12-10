@@ -20,6 +20,7 @@ import app.wefridge.wefridge.model.*
 import app.wefridge.wefridge.model.Unit
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.GeoPoint
 import kotlinx.android.synthetic.main.fragment_edit.*
@@ -347,56 +348,48 @@ class EditFragment : Fragment() {
         itemBestByDatePicker.visibility = View.GONE
     }
 
-    // TODO: create setUp* method for LocationPicker and move this code into it
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setLocationPickerActivation() {
-        if (model.isShared) activateLocationPickerElements()
-        else deactivateLocationPickerElements()
+        if (model.isShared) {
+            enable(locateMeButton)
+            enable(itemAddressTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
+            enable(itemDescriptionTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
+        }
+        else {
+            disable(locateMeButton)
+            disable(itemAddressTextInputLayout)
+            disable(itemDescriptionTextInputLayout)
+        }
 
     }
 
-    // TODO: refactor. One generic method for editTexts. Overload with different parameter (button)
+    private fun enable(view: View) {
+        view.isClickable = true
+        view.alpha = 1f
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun deactivateLocationPickerElements() {
-        locateMeButton.isClickable = false
-        locateMeButton.alpha = .5f
-
-        itemAddressTextInputLayout.editText?.isEnabled = false
-        itemAddressTextInputLayout.editText?.focusable = View.NOT_FOCUSABLE
-        itemAddressTextInputLayout.editText?.isFocusableInTouchMode = false
-        itemAddressTextInputLayout.editText?.inputType = InputType.TYPE_NULL
-        itemAddressTextInputLayout.alpha = .5f
-
-
-        itemDescriptionTextInputLayout.editText?.isEnabled = false
-        itemDescriptionTextInputLayout.editText?.focusable = View.NOT_FOCUSABLE
-        itemDescriptionTextInputLayout.editText?.isFocusableInTouchMode = false
-        itemDescriptionTextInputLayout.editText?.inputType = InputType.TYPE_NULL
-        itemDescriptionTextInputLayout.alpha = .5f
-
+    private fun enable(textInputLayout: TextInputLayout, inputType: Int) {
+        textInputLayout.editText?.isEnabled = true
+        textInputLayout.editText?.focusable = View.FOCUSABLE
+        textInputLayout.editText?.isFocusableInTouchMode = true
+        inputType?.let { textInputLayout.editText?.inputType = it }
+        textInputLayout.alpha = 1f
     }
 
-    // TODO: refactor. One generic method for editTexts. Overload with different parameter (button)
+    private fun disable(view: View) {
+        view.isClickable = false
+        view.alpha = .5f
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun activateLocationPickerElements() {
-        locateMeButton.isClickable = true
-        locateMeButton.alpha = 1f
-
-        itemAddressTextInputLayout.editText?.isEnabled = true
-        itemAddressTextInputLayout.editText?.focusable = View.FOCUSABLE
-        itemAddressTextInputLayout.editText?.isFocusableInTouchMode = true
-        itemAddressTextInputLayout.editText?.inputType = InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE
-        itemAddressTextInputLayout.alpha = 1f
-
-
-        itemDescriptionTextInputLayout.editText?.isEnabled = true
-        itemDescriptionTextInputLayout.editText?.focusable = View.FOCUSABLE
-        itemDescriptionTextInputLayout.editText?.isFocusableInTouchMode = true
-        itemDescriptionTextInputLayout.editText?.inputType =
-            InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE
-        itemDescriptionTextInputLayout.alpha = 1f
+    private fun disable(textInputLayout: TextInputLayout) {
+        textInputLayout.editText?.isEnabled = false
+        textInputLayout.editText?.focusable = View.NOT_FOCUSABLE
+        textInputLayout.editText?.isFocusableInTouchMode = false
+        textInputLayout.editText?.inputType = InputType.TYPE_NULL
+        textInputLayout.alpha = .5f
     }
-
 
     companion object {
         /**
