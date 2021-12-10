@@ -31,7 +31,7 @@ fun alertDialogOnSaveItemFailed(fragment: Fragment) = buildAlert(R.string.ad_tit
 
 fun alertDialogOnContactEmailMissing(fragment: Fragment) = buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing, fragment.requireContext())
 
-fun alertDialogOnInvalidAddress(fragment: Fragment) = buildAlert(R.string.ad_title_invalid_address, R.string.ad_title_invalid_address, fragment.requireContext())
+fun alertDialogOnInvalidAddress(fragment: Fragment) = buildAlert(R.string.ad_title_invalid_address, R.string.ad_msg_invalid_address, fragment.requireContext())
 
 fun alertDialogOnAccountNotVerified(fragment: Fragment) = buildAlert(R.string.ad_title_account_not_verified, R.string.ad_msg_account_not_verified, fragment.requireContext())
 
