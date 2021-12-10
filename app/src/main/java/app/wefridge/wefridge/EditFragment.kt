@@ -1,6 +1,5 @@
 package app.wefridge.wefridge
 
-import android.app.AlertDialog
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
@@ -11,7 +10,6 @@ import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
@@ -26,10 +24,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.GeoPoint
 import kotlinx.android.synthetic.main.fragment_edit.*
 import java.io.IOException
-import java.text.DateFormat
-import java.time.LocalDate
-import java.time.ZoneId
-import java.util.*
 
 /**
  * A simple [Fragment] subclass.
@@ -93,10 +87,8 @@ class EditFragment : Fragment() {
         setUpItemNameTextInputLayout()
         setUpItemQuantityTextInputLayout()
         setUpUnitDropdown()
-        setUpItemBestByDatePicker() // TODO: remove later when the date for the BestByDateTextInputLayout is set based on the model
         setUpItemBestByDateTextInputLayout()
-        // TODO: uncomment later when the date for the BestByDateTextInputLayout is set based on the model
-        //setUpItemBestByDatePicker()
+        setUpItemBestByDatePicker()
         setUpLocationPickerBox()
         setUpItemIsSharedSwitch()
         setUpItemIsSharedSwitchLabel()
@@ -151,26 +143,25 @@ class EditFragment : Fragment() {
             setModelUnitAttribute()
             true
         }
-        unit_dropdown.editText?.setText(matchUnitValueToUnitDropdownSelection())
+        unit_dropdown.editText?.setText(getString(model.unit.symbolId))
         unit_dropdown.editText?.setOnClickListener { unitDropdownMenu.show() }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpItemBestByDateTextInputLayout() {
-        // TODO: build date string from model
-        if (model.bestByDate != null) itemBestByDateTextInputLayout.editText?.setText(buildDateStringFromDatePicker())
+        itemBestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
         itemBestByDateTextInputLayout.editText?.setOnClickListener {
-            setDatePickerVisibility()
-            model.bestByDate?.let { setDatePickerDateTo(it) }
+            switchDatePickerVisibility()
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpItemBestByDatePicker() {
         hideDatePicker()
-        model.bestByDate?.let { setDatePickerDateTo(it) }
+        model.bestByDate?.let { setDatePickerDate(itemBestByDatePicker, it) }
         itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ ->
-            itemBestByDateTextInputLayout.editText?.setText(buildDateStringFromDatePicker())
+            model.bestByDate = getDateFrom(itemBestByDatePicker)
+            itemBestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
             setModelBestByDateAttribute()
         }
     }
@@ -193,7 +184,6 @@ class EditFragment : Fragment() {
         itemIsSharedSwitchLabel.setOnClickListener { itemIsSharedSwitch.toggle() }
     }
 
-    // TODO: refactor, so that the location from "locate me" btn can be inserted without calling getGeoPointFromAddressUserInput
     private fun setUpItemAddressTextInputLayout() {
         model.location?.let { itemAddressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(it)) }
         itemAddressTextInputLayout.editText?.setOnFocusChangeListener { _, hasFocus ->
@@ -221,6 +211,7 @@ class EditFragment : Fragment() {
         model.name = itemNameTextInputLayout.editText?.text.toString()
     }
 
+    // TODO: check for leading zeros
     private fun setModelQuantityAttribute() {
         val quantityString = itemQuantityTextInputLayout.editText?.text.toString()
         model.quantity = if (quantityString.isEmpty() || quantityString.isBlank()) 0 else quantityString.toLong()
@@ -228,7 +219,7 @@ class EditFragment : Fragment() {
     }
 
     private fun setModelUnitAttribute() {
-        model.unit = matchUnitDropdownSelectionToUnit()
+        model.unit = tryGetUnitByString()
     }
 
     private fun setModelGeohashAttribute() {
@@ -248,7 +239,7 @@ class EditFragment : Fragment() {
 
     private fun setModelBestByDateAttribute() {
         if (itemBestByDateTextInputLayout.editText?.text.toString() != "")
-            model.bestByDate = getDateFromDatePicker()
+            model.bestByDate = getDateFrom(itemBestByDatePicker)
         else
             model.bestByDate = null
     }
@@ -264,6 +255,7 @@ class EditFragment : Fragment() {
 
     // TODO: simplify the process of checking, if isCheck == true and location ==null
     // TODO: sample for contactEmail and isShared
+    // TODO: consider, removing setModel*Attribute methods
     private fun saveNewItem() {
 
         // TODO: put the following condition into a separate function
@@ -332,71 +324,13 @@ class EditFragment : Fragment() {
         return addressString
     }
 
-    // TODO: remove method and add string attribute to Unit. Init strings with resource strings
-    private fun matchUnitValueToUnitDropdownSelection(): String {
-        return when (model.unit.value) {
-           Unit.GRAM.value -> getString(R.string.itemUnitGramText)
-            Unit.KILOGRAM.value -> getString(R.string.itemUnitKilogramText)
-            Unit.LITER.value -> getString(R.string.itemUnitLiterText)
-            Unit.MILLILITER.value -> getString(R.string.itemUnitMilliliterText)
-            Unit.OUNCE.value -> getString(R.string.itemUnitOunceText)
-            Unit.PIECE.value -> getString(R.string.itemUnitPieceText)
-            else -> getString(R.string.itemUnitPieceText)
-        }
+    // TODO: consider moving this into calling function?
+    private fun tryGetUnitByString(): Unit {
+        val symbol = unit_dropdown.editText?.text.toString()
+        return Unit.getByString(symbol, this) ?: Unit.PIECE
     }
 
-    // TODO: remove method and add in Unit: get_by_string
-    private fun matchUnitDropdownSelectionToUnit(): Unit {
-        return when (unit_dropdown.editText?.text.toString()) {
-            getString(R.string.itemUnitGramText) -> Unit.GRAM
-            getString(R.string.itemUnitKilogramText) -> Unit.KILOGRAM
-            getString(R.string.itemUnitLiterText) -> Unit.LITER
-            getString(R.string.itemUnitMilliliterText) -> Unit.MILLILITER
-            getString(R.string.itemUnitOunceText) -> Unit.OUNCE
-            getString(R.string.itemUnitPieceText) -> Unit.PIECE
-            else -> Unit.PIECE
-        }
-    }
-
-    // TODO: create extension for DatePicker (or create own class if that doesn't work)
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun setDatePickerDateTo(date: Date) {
-        val bestByDate = convertToLocalDate(date)
-        itemBestByDatePicker.updateDate(bestByDate.year, bestByDate.monthValue - 1, bestByDate.dayOfMonth)
-
-    }
-
-    // TODO: move to Utils?
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun convertToLocalDate(date: Date): LocalDate {
-        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-    }
-
-    // TODO: create extension with "toSting()"? for DatePicker (or create own class if that doesn't work)
-    private fun buildDateStringFromDatePicker(): String {
-        val day = itemBestByDatePicker.dayOfMonth
-        val month = itemBestByDatePicker.month
-        val year = itemBestByDatePicker.year
-        val calendar = Calendar.getInstance()
-        calendar.set(year, month, day)
-
-        return DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault()).format(calendar.time)
-    }
-
-    // TODO: create extension for DatePicker (or create own class if that doesn't work)
-    private fun getDateFromDatePicker(): Date {
-        val day = itemBestByDatePicker.dayOfMonth
-        val month = itemBestByDatePicker.month
-        val year = itemBestByDatePicker.year
-
-        val calendar = Calendar.getInstance()
-        calendar.set(year, month, day)
-
-        return calendar.time
-    }
-
-    // TODO: move into appropriate setUp* method.
-    private fun setDatePickerVisibility() {
+    private fun switchDatePickerVisibility() {
         when (itemBestByDatePicker.visibility) {
             View.GONE -> showDatePicker()
             View.INVISIBLE -> showDatePicker()
@@ -405,12 +339,10 @@ class EditFragment : Fragment() {
 
     }
 
-    // TODO: remove?
     private fun showDatePicker() {
         itemBestByDatePicker.visibility = View.VISIBLE
     }
 
-    // TODO: remove?
     private fun hideDatePicker() {
         itemBestByDatePicker.visibility = View.GONE
     }
