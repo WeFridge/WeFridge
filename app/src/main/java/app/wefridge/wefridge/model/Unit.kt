@@ -13,4 +13,15 @@ enum class Unit(val value: Int) {
         fun getByValue(value: Int?) = VALUES.firstOrNull { it.value == value }
 
     }
+
+    override fun toString(): String {
+        return when (this) {
+            GRAM -> "g"
+            KILOGRAM -> "kg"
+            LITER -> "l"
+            MILLILITER -> "ml"
+            OUNCE -> "oz"
+            PIECE -> "pcs"
+        }
+    }
 }

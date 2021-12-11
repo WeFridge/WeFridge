@@ -474,17 +474,8 @@ class EditFragment : Fragment() {
         itemDescriptionTextInputLayout.editText?.setText(model?.description)
     }
 
-    private fun matchUnitValueToUnitDropdownSelection(): String? {
-        return when (model?.unit?.value) {
-           Unit.GRAM.value -> getString(R.string.item_unit_gram)
-            Unit.KILOGRAM.value -> getString(R.string.item_unit_kilogram)
-            Unit.LITER.value -> getString(R.string.item_unit_liter)
-            Unit.MILLILITER.value -> getString(R.string.item_unit_milliliter)
-            Unit.OUNCE.value -> getString(R.string.item_unit_ounce)
-            Unit.PIECE.value -> getString(R.string.item_unit_piece)
-            else -> null
-        }
-
+    private fun matchUnitValueToUnitDropdownSelection(): String {
+        return model?.unit.toString()
     }
 
     private fun matchUnitDropdownSelectionToUnit(): Unit {

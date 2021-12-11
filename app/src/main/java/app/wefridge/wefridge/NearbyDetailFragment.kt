@@ -67,11 +67,11 @@ class NearbyDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // TODO: populate textviews with actual datamodel
-        binding.quantity.text = ""
+        binding.quantity.text = "${model.quantity} ${model.unit}"
         binding.bestBy.text = model.bestByDate.toString()
         binding.distance.text = ""
         binding.additionalInformation.text = model.description
-        binding.owner.text = ""
+        binding.owner.text = model.contactName
 
         val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
             type = "text/plain"
