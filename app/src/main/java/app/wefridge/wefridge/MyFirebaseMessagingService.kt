@@ -73,10 +73,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         var builder: NotificationCompat.Builder= NotificationCompat.Builder(applicationContext,
             channelId)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
+            .setColorized(true)
             .setColor(resources.getColor(R.color.fern_green))
+            .setSmallIcon(R.drawable.show_fridge_notification)
             .setContentIntent(pendingIntent)
         builder = builder.setContent(getRemoteView(title,message))
 
