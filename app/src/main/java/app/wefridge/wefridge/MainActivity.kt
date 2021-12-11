@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import app.wefridge.wefridge.databinding.ActivityMainBinding
 import com.firebase.ui.auth.AuthUI
@@ -66,7 +65,7 @@ class MainActivity : AppCompatActivity() {
                 "email" to user.email,
                 "image" to user.photoUrl.toString()
             )
-            db.collection("users").document(user.uid)
+            db.collection(USERS_COLLECTION_NAME).document(user.uid)
                 .set(userDoc)
                 .addOnFailureListener { e ->
                     Log.w("Auth", "Error creating user document", e)
@@ -108,9 +107,8 @@ class MainActivity : AppCompatActivity() {
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()
             .setAvailableProviders(providers)
-            .setLogo(R.mipmap.ic_launcher_round)
-            // TODO: style customization, after #9
-            //            .setTheme(R.style.Theme_WeFridge)
+            .setLogo(R.mipmap.fridge_show_image_round)
+            .setTheme(R.style.Theme_WeFridge)
             .build()
         signInLauncher.launch(signInIntent)
     }
@@ -131,19 +129,21 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // TODO: disable back button from toolbar
         setSupportActionBar(binding.toolbar)
-
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         appBarConfiguration = AppBarConfiguration(navController.graph)
-        setupActionBarWithNavController(navController, appBarConfiguration)
+        navController.addOnDestinationChangedListener { controller, destination, _ ->
+            binding.toolbar.title = controller.graph.findNode(destination.id)?.label
+        }
+
         binding.bottomNav.setupWithNavController(navController)
 
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
+        // Menu is currently unused,
+        // uncomment the following line if the action bar menu should be used again.
+        // menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 

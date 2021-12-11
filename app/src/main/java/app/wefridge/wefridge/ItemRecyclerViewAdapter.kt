@@ -1,39 +1,55 @@
 package app.wefridge.wefridge
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.IdRes
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import app.wefridge.wefridge.databinding.FragmentPantryBinding
-import app.wefridge.wefridge.placeholder.PlaceholderContent.PlaceholderItem
+import app.wefridge.wefridge.model.Item
 
+const val ARG_MODEL = "model"
 /**
- * [RecyclerView.Adapter] that can display a [PlaceholderItem].
+ * [RecyclerView.Adapter] that can display a [Item].
  * TODO: Replace the implementation with code for your data type.
  */
-class MyItemRecyclerViewAdapter(
-    private val values: List<PlaceholderItem>
-) : RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder>() {
+class ItemRecyclerViewAdapter(
+    private val values: List<Item>,
+    @IdRes private val clickAction: Int? = null
+) : RecyclerView.Adapter<ItemRecyclerViewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
-        return ViewHolder(
+        val viewHolder = ViewHolder(
             FragmentPantryBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
                 false
             )
         )
+        if (clickAction != null) {
+            viewHolder.itemView.setOnClickListener {
+                val pos = viewHolder.absoluteAdapterPosition
+                val bundle = Bundle()
+                bundle.putParcelable(ARG_MODEL, values[pos])
+
+                parent.findNavController().navigate(clickAction, bundle)
+            }
+        }
+
+        return viewHolder
 
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
-        holder.contentView.text = item.content
-        holder.bestByView.text = "Best by in ${item.bestByDate} days"
-        holder.sharedIcon.visibility = if (item.shared) View.VISIBLE else View.INVISIBLE
+        holder.contentView.text = item.name
+        holder.bestByView.text = getBestByString(item.bestByDate, holder.itemView.context)
+        holder.sharedIcon.visibility = if (item.isShared) View.VISIBLE else View.INVISIBLE
     }
 
     override fun getItemCount(): Int = values.size
