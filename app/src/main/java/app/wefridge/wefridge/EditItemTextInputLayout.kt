@@ -17,15 +17,13 @@ class EditItemTextInputLayout : TextInputLayout {
         }
     }
 
-    constructor(context: Context?) : super(ContextThemeWrapper(context, DEF_STYLE_ATTR)) {}
+    constructor(context: Context?) : super(ContextThemeWrapper(context, DEF_STYLE_ATTR))
     constructor(context: Context?, attrs: AttributeSet?) : super(
         ContextThemeWrapper(
             context,
             DEF_STYLE_ATTR
         ), attrs
-    ) {
-    }
-
+    )
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(
         ContextThemeWrapper(context, DEF_STYLE_ATTR),
         attrs,

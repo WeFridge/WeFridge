@@ -37,7 +37,7 @@ fun getDateFrom(datePicker: DatePicker): Date {
 }
 
 fun buildDateStringFrom(date: Date?): String {
-    return if (date != null) java.text.DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault()).format(date.time)
+    return if (date != null) java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM, Locale.getDefault()).format(date.time)
     else ""
 }
 

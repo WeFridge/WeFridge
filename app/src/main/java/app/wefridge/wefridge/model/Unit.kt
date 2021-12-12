@@ -2,6 +2,7 @@ package app.wefridge.wefridge.model
 
 import android.content.Context
 import androidx.annotation.StringRes
+import androidx.fragment.app.Fragment
 import app.wefridge.wefridge.R
 
 /*
@@ -22,12 +23,12 @@ enum class Unit(val value: Int, @StringRes val _display: Int) {
 
         fun getByString(symbol: String, callingFragment: Fragment): Unit? {
             return when (symbol) {
-                callingFragment.getString(R.string.itemUnitGramText) -> GRAM
-                callingFragment.getString(R.string.itemUnitKilogramText) -> KILOGRAM
-                callingFragment.getString(R.string.itemUnitLiterText) -> LITER
-                callingFragment.getString(R.string.itemUnitMilliliterText) -> MILLILITER
-                callingFragment.getString(R.string.itemUnitOunceText) -> OUNCE
-                callingFragment.getString(R.string.itemUnitPieceText) -> PIECE
+                callingFragment.getString(R.string.item_unit_gram) -> GRAM
+                callingFragment.getString(R.string.item_unit_kilogram) -> KILOGRAM
+                callingFragment.getString(R.string.item_unit_liter) -> LITER
+                callingFragment.getString(R.string.item_unit_milliliter) -> MILLILITER
+                callingFragment.getString(R.string.item_unit_ounce) -> OUNCE
+                callingFragment.getString(R.string.item_unit_piece) -> PIECE
                 else -> null
             }
         }

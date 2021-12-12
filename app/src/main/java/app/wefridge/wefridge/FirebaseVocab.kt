@@ -3,7 +3,6 @@ package app.wefridge.wefridge
 // collection names
 const val ITEMS_COLLECTION_NAME = "items"
 const val USERS_COLLECTION_NAME = "users"
-const val FAKER_ITEMS_COLLECTION_NAME = "faker_items"
 
 // item document field names
 const val ITEM_NAME = "name"

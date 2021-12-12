@@ -11,10 +11,9 @@ import com.google.firebase.firestore.ListenerRegistration
 class ItemController {
 
     companion object {
-        private val TAG = "ItemsOnFirebase"
+        private const val TAG = "ItemController"
         private val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
-        private val ownerRef = OwnerController.getCurrentUserReference()
-        var items: MutableList<Item> = ArrayList()
+        private var items: MutableList<Item> = ArrayList()
 
 
         /*

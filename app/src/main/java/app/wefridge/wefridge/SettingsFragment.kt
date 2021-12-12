@@ -23,8 +23,6 @@ import app.wefridge.wefridge.model.UserController
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 
 var SETTINGS_EMAIL = "SETTINGS_EMAIL"
 var SETTINGS_NAME = "SETTINGS_NAME"
@@ -36,8 +34,6 @@ class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
     private lateinit var sp: SharedPreferences
-    private val db = Firebase.firestore
-    private val usersRef = db.collection("users")
     private lateinit var email: String
     private lateinit var name: String
     private val values: ArrayList<User> = arrayListOf()

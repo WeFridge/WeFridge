@@ -48,21 +48,16 @@ class EditFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val ownerReference = OwnerController.getCurrentUserReference()
-        if (ownerReference == null) {
-            requireActivity().onBackPressed() // go back immediately if no owner specified
-            alertDialogOnAccountNotVerified(this).show() // show appropriate alert to user
+        val ownerReference = UserController.getCurrentUserRef()
 
-        } else {
-            // this line of code was partially inspired by https://stackoverflow.com/questions/11741270/android-sharedpreferences-in-fragment
-            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity())
-            setModel(ownerReference = ownerReference)
+        // this line of code was partially inspired by https://stackoverflow.com/questions/11741270/android-sharedpreferences-in-fragment
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity())
+        setModel(ownerReference = ownerReference)
 
-            (requireActivity() as AppCompatActivity).supportActionBar?.title =
-                model.firebaseId?.let { model.name } ?: getString(R.string.add_new_item)
+        (requireActivity() as AppCompatActivity).supportActionBar?.title =
+            model.firebaseId?.let { model.name } ?: getString(R.string.add_new_item)
 
-            setUpLocationController()
-        }
+        setUpLocationController()
     }
 
     private fun setUpLocationController() {
@@ -83,7 +78,7 @@ class EditFragment : Fragment() {
     private fun setModel(ownerReference: DocumentReference) {
         model = arguments?.getParcelable(ARG_MODEL) ?: Item(ownerReference = ownerReference)
 
-        OwnerController.getCurrentUser().let {
+        UserController.getCurrentUser().let {
             val userNameAsFallback = it?.displayName
             val userEmailAsFallback = it?.email
             model.contactName = sharedPreferences.getString(SETTINGS_NAME, userNameAsFallback)
@@ -178,7 +173,7 @@ class EditFragment : Fragment() {
             true
         }
 
-        binding.unitDropdown.editText?.setText(getString(model.unit.symbolId))
+        binding.unitDropdown.editText?.setText(model.unit.display(requireContext()))
         binding.unitDropdown.editText?.setOnClickListener { unitDropdownMenu.show() }
         binding.unitDropdown.setEndIconOnClickListener { unitDropdownMenu.show() }
     }
