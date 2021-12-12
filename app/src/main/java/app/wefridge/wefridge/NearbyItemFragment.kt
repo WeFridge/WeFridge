@@ -28,12 +28,12 @@ class NearbyItemFragment : Fragment() {
 
     private val itemsPerPage = 15
     private val values = ArrayList<Item>()
-    private val _adapter = MyItemRecyclerViewAdapter(values, R.id.action_from_nearby_to_detail)
+    private val _adapter = ItemRecyclerViewAdapter(values, R.id.action_from_nearby_to_detail)
     private lateinit var scrollListener: EndlessRecyclerOnScrollListener
     private lateinit var refreshLayout: SwipeRefreshLayout
 
     private val db = Firebase.firestore
-    private val itemDb = db.collection(FAKER_ITEMS_COLLECTION_NAME)
+    private val itemDb = db.collection(ITEMS_COLLECTION_NAME)
     private var lastVisible: DocumentSnapshot? = null
 
     private var loading = false

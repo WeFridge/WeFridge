@@ -3,9 +3,10 @@ package app.wefridge.wefridge.model
 import android.util.Log
 import app.wefridge.wefridge.*
 import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
-import com.google.firebase.firestore.*
-import java.lang.Exception
-import kotlin.collections.ArrayList
+import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 
 class ItemController {
 
@@ -13,29 +14,30 @@ class ItemController {
         private val TAG = "ItemsOnFirebase"
         private val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
         private val ownerRef = OwnerController.getCurrentUserReference()
+        var items: MutableList<Item> = ArrayList()
 
 
         /*
-        * The function getItems is based on an example provided on
-        * https://firebase.google.com/docs/firestore/query-data/get-data
-        *
-        * The functions deleteItem, overrideItem and addItem are partially
-        * based on code snippets provided by the Firebase Documentation:
-        * https://firebase.google.com/docs/firestore/manage-data/add-data
-        * */
-        fun getItems(callbackOnSuccess: (MutableList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
-            val ownerRef = OwnerController.getCurrentUserReference()
-            itemsRef
-                .whereEqualTo(ITEM_OWNER, ownerRef)
-                .get()
-                .addOnSuccessListener { itemDocuments ->
-                    items.clear()
-                    for (itemDocument in itemDocuments) {
-                        val item = tryParse(itemDocument)
-                        if (item != null) items.add(item)
-                    }
-                    callbackOnSuccess(items)
+    * The function getItems is based on an example provided on
+    * https://firebase.google.com/docs/firestore/query-data/get-data
+    *
+    * The functions deleteItem, overrideItem and addItem are partially
+    * based on code snippets provided by the Firebase Documentation:
+    * https://firebase.google.com/docs/firestore/manage-data/add-data
+    * */
+    fun getItems(callbackOnSuccess: (MutableList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
+        val ownerRef = UserController.getCurrentUserRef()
+        itemsRef
+            .whereEqualTo(ITEM_OWNER, ownerRef)
+            .get()
+            .addOnSuccessListener { itemDocuments ->
+                items.clear()
+                for (itemDocument in itemDocuments) {
+                    val item = tryParse(itemDocument)
+                    if (item != null) items.add(item)
                 }
+                callbackOnSuccess(items)
+            }
 
                 .addOnFailureListener { exception ->
                     Log.w(TAG, "Error getting items.", exception)
@@ -85,9 +87,6 @@ class ItemController {
                     }
         }
 
-        var items: MutableList<Item> = ArrayList()
-        private var onItemsChangedListeners: MutableList<OnItemsChangeListener> = ArrayList()
-        private var snapshotListenerSetUp = false
 
         fun tryParse(item: DocumentSnapshot): Item? {
             return try {
@@ -111,79 +110,42 @@ class ItemController {
                     getString(ITEM_GEOHASH),
                     getString(ITEM_CONTACT_NAME),
                     getString(ITEM_CONTACT_EMAIL),
-                    getDocumentReference(ITEM_OWNER) ?: throw ItemOwnerMissingException("Cannot get DocumentReference from owner field."))
+                    getDocumentReference(ITEM_OWNER)
+                        ?: throw ItemOwnerMissingException("Cannot get DocumentReference from owner field.")
+                )
             }
         }
 
-        fun addOnItemChangedListener(listener: OnItemsChangeListener) {
-            if (!snapshotListenerSetUp) {
-                setUpSnapshotListener()
-                snapshotListenerSetUp = true
-            }
-            if (!onItemsChangedListeners.contains(listener)) {
-                onItemsChangedListeners.add(listener)
-            }
-        }
+        fun getItemsSnapshot(
+            onSuccess: (ListenerRegistration) -> kotlin.Unit,
+            listener: (Item, DocumentChange.Type, Int, Int) -> kotlin.Unit
+        ) {
+            UserController.getUser({ user ->
+                val ownerRef = user.ownerReference ?: user.ref
 
-        fun deleteOnItemChangedListener(listener: OnItemsChangeListener) {
-            onItemsChangedListeners.remove(listener)
-        }
+                val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
+                val snapshotListener = itemsRef
+                    .whereEqualTo(ITEM_OWNER, ownerRef)
+                    .addSnapshotListener { snapshots, exception ->
+                        if (exception != null) {
+                            Log.e("ItemController", "Error in SnapshotListener: ", exception)
+                            // TODO: add visual feedback or reload listener
+                            // will throw PERMISSION_DENIED when kicked out of pantry
+                            return@addSnapshotListener
+                        }
 
-        private fun setUpSnapshotListener() {
-            itemsRef
-                .whereEqualTo(ITEM_OWNER, ownerRef)
-                .addSnapshotListener { snapshots, exception ->
-                    if (exception != null) {
-                        Log.e("ItemController", "Error in SnapshotListener: ", exception)
-                        return@addSnapshotListener
-                    }
+                        if (snapshots == null)
+                            return@addSnapshotListener
 
-                    if (snapshots == null)
-                        return@addSnapshotListener
-
-                    for (documentSnapshot in snapshots.documentChanges) {
-                        when (documentSnapshot.type) {
-                            DocumentChange.Type.ADDED -> {
-                                val addedItem = tryParse(documentSnapshot.document)
-                                if (addedItem != null) {
-                                    items.add(documentSnapshot.newIndex, addedItem)
-
-                                    notifyOnItemChangedListeners(
-                                        DocumentChange.Type.ADDED,
-                                        documentSnapshot.newIndex
-                                    )
-                                }
-                            }
-
-                            DocumentChange.Type.MODIFIED -> {
-                                val modifiedItem = tryParse(documentSnapshot.document)
-                                if (modifiedItem != null) {
-                                    items[documentSnapshot.newIndex] = modifiedItem
-                                    notifyOnItemChangedListeners(
-                                        DocumentChange.Type.MODIFIED,
-                                        documentSnapshot.newIndex
-                                    )
-                                }
-
-                            }
-
-                            DocumentChange.Type.REMOVED -> {
-                                items.removeAt(documentSnapshot.oldIndex)
-                                notifyOnItemChangedListeners(
-                                    DocumentChange.Type.REMOVED,
-                                    documentSnapshot.oldIndex
-                                )
+                        for (documentSnapshot in snapshots.documentChanges) {
+                            with(documentSnapshot) {
+                                val item = parse(document)
+                                listener(item, type, oldIndex, newIndex)
                             }
                         }
                     }
-                }
-
-        }
-
-        private fun notifyOnItemChangedListeners(type: DocumentChange.Type, atIndex: Int) {
-            for (listener in onItemsChangedListeners) {
-                listener.onItemChanged(type, atIndex)
-            }
+                onSuccess(snapshotListener)
+            }, {})
         }
     }
 }

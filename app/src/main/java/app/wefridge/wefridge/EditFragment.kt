@@ -17,10 +17,13 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import app.wefridge.wefridge.databinding.FragmentEditBinding
+import app.wefridge.wefridge.model.Item
+import app.wefridge.wefridge.model.ItemController
 import app.wefridge.wefridge.exceptions.ItemIsSharedWithoutContactEmailException
 import app.wefridge.wefridge.exceptions.ItemIsSharedWithoutLocationException
 import app.wefridge.wefridge.model.*
 import app.wefridge.wefridge.model.Unit
+import app.wefridge.wefridge.model.UserController
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.android.material.textfield.TextInputLayout

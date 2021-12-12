@@ -29,23 +29,43 @@
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
     <!-- EditFragment Hints & Texts -->
-    <string name="itemNameHint">Name</string>
-    <string name="itemQuantityHint">Quantity</string>
+    <string name="item_name_hint">Name</string>
+    <string name="item_quantity_hint">Quantity</string>
 
-    <string name="itemUnitGramText">g</string>
-    <string name="itemUnitKilogramText">kg</string>
-    <string name="itemUnitLiterText">L</string>
-    <string name="itemUnitMilliliterText">mL</string>
-    <string name="itemUnitOunceText">oz</string>
-    <string name="itemUnitPieceText">pcs</string>
-    <string name="itemBestByDateHint">Best by</string>
-    <string name="itemSaveButtonText">Save</string>
-    <string name="locationSwitchLabel">Share with your neighbors</string>
-    <string name="AddressTextInputLayoutHint">Address</string>
-    <string name="itemDescriptionHint">Additional information</string>
-    <string name="locationPickerLocateButtonText">Locate me</string>
+    <string name="item_unit_gram">g</string>
+    <string name="item_unit_kilogram">kg</string>
+    <string name="item_unit_liter">L</string>
+    <string name="item_unit_milliliter">mL</string>
+    <string name="item_unit_ounce">oz</string>
+    <string name="item_unit_piece">pcs</string>
+    <string name="item_best_by_date_hint">Best by</string>
+    <string name="item_save_button_text">Save</string>
+    <string name="location_switch_label">Share with your neighbors</string>
+    <string name="address_text_input_layout_hint">Address</string>
+    <string name="item_description_hint">Additional information</string>
+    <string name="location_picker_locate_button_text">Locate me</string>
     <string name="unit_dropdown_hint">Unit</string>
 
+    <string name="item_share_contact_email_missing_title">Contact email missing</string>
+    <string name="item_share_contact_email_missing_text">In order to share an Item, you have to provide a contact email other users can use to reach out to you. Please state your email address in the settings tab.</string>
+    <string name="item_share_location_problem_title">Location problem</string>
+    <string name="item_share_location_problem_text">There was an error while we tried to match the location you\'ve entered to real coordinates. Therefore, we disabled the sharing option. Please check your internet connection and try again.</string>
+    <string name="item_share_no_internet_connection_title">No internet connection</string>
+    <string name="item_share_no_internet_connection_text">There was an error while we tried to match the location coordinates to a real address. Therefore, we disabled the sharing option. Please check your internet connection and try again.</string>
+    <string name="item_share_invalid_address_title">Please specify a valid address</string>
+    <string name="item_share_invalid_address_text">The address you\'ve entered couldn\'t be matched to a real location. Please specify a valid address or turn off the sharing option.</string>
+    <string name="item_share_error_while_saving_title">Error while saving your foodstuff</string>
+    <string name="item_share_error_while_saving_text">Please check your internet connection and try again.</string>
+    <string name="item_share_unable_to_determine_location_title">Unable to determine location</string>
+    <string name="item_share_unable_to_determine_location_text">Please try it another time.</string>
+    <string name="item_share_location_permission_denied_title">Permission denied</string>
+    <string name="item_share_location_permission_denied_text">We have no permission to access your location.\n If you want to make use of the "locate me" functionality, please enable location access in settings.</string>
+    <string name="item_share_open_settings">Open settings</string>
+
+    <string name="best_by_overdue">Expired on %1$s</string>
+    <string name="best_by_plural">Best by in %1$s days</string>
+    <string name="best_by_singular">Best by in 1 day</string>
+    <string name="best_by_today">Best by today</string>
 
     <string name="auth_success_welcome_back">Welcome back, %1$s!</string>
     <string name="auth_success_welcome">Welcome %1$s!</string>
@@ -64,6 +84,11 @@
     <string name="participants_remove_cancel">Cancel</string>
     <string name="participants_remove_confirm">Confirm</string>
     <string name="participants_add_button">Invite Participants</string>
+    <string name="participants_add_not_found">User not found!</string>
+    <string name="participants_add_already_member">User is already member of a pantry!</string>
+    <string name="participants_add_success">User successfully added!</string>
+    <string name="participants_add_failure">Failure while adding user!</string>
+    <string name="participants_manager">Your pantry is managed by %1$s</string>
     <string name="settings_contact_name">Contact Name</string>
     <string name="settings_contact_name_hint">This is shown near your shared items</string>
     <string name="settings_contact_email">Contact Email</string>
@@ -78,6 +103,7 @@
     <string name="nearby_detail_additional_information">Additional information</string>
     <string name="nearby_detail_owner">Owner</string>
     <string name="nearby_detail_contact">Contact</string>
+    <string name="item_quantity_unit">%1$s %2$s</string>
 
     <!-- Alert dialogs -->
     <string name="ad_title_contact_email_missing">Contact email missing</string>
