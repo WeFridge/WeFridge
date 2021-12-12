@@ -27,15 +27,16 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import app.wefridge.wefridge.databinding.FragmentEditBinding
-import app.wefridge.wefridge.model.*
+import app.wefridge.wefridge.model.Item
+import app.wefridge.wefridge.model.ItemController
 import app.wefridge.wefridge.model.Unit
+import app.wefridge.wefridge.model.UserController
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.CancellationTokenSource
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.GeoPoint
 import kotlinx.android.synthetic.main.fragment_edit.*
 import java.io.IOException
@@ -224,13 +225,11 @@ class EditFragment : Fragment() {
     }
 
     private fun setModelContactNameAttribute() {
-        val userNameAsFallbackValue = FirebaseAuth.getInstance().currentUser?.displayName
-        model?.contactName = sharedPreferences.getString(SETTINGS_NAME, userNameAsFallbackValue)
+        model?.contactName = UserController.getLocalName(sharedPreferences)
     }
 
     private fun setModelContactEmailAttribute() {
-        val userEmailAsFallbackValue = FirebaseAuth.getInstance().currentUser?.email
-        model?.contactEmail = sharedPreferences.getString(SETTINGS_EMAIL, userEmailAsFallbackValue)
+        model?.contactEmail = UserController.getLocalEmail(sharedPreferences)
     }
 
     private fun setModelBestByDateAttribute() {
@@ -256,8 +255,7 @@ class EditFragment : Fragment() {
             itemAddressTextInputLayout.editText?.setText("")
         } else {
 
-            val ownerController = OwnerController()
-            val ownerRef = ownerController.getCurrentUser()
+            val ownerRef = UserController.getCurrentUserRef()
             model = Item(ownerReference = ownerRef)
             setModelNameAttribute()
             setModelQuantityAttribute()
