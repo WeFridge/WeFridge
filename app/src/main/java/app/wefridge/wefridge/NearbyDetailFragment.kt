@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -67,8 +68,8 @@ class NearbyDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // TODO: populate textviews with actual datamodel
-        binding.quantity.text = "${model.quantity} ${model.unit}"
-        binding.bestBy.text = model.bestByDate.toString()
+        binding.quantity.text = context?.getString(R.string.item_quantity_unit, model.quantity, model.unit.display(requireContext()))
+        binding.bestBy.text = DateFormat.getDateFormat(context).format(model.bestByDate)
         binding.distance.text = ""
         binding.additionalInformation.text = model.description
         binding.owner.text = model.contactName

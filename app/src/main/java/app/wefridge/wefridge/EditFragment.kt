@@ -475,7 +475,7 @@ class EditFragment : Fragment() {
     }
 
     private fun matchUnitValueToUnitDropdownSelection(): String {
-        return model?.unit.toString()
+        return (model?.unit ?: Unit.PIECE).display(requireContext())
     }
 
     private fun matchUnitDropdownSelectionToUnit(): Unit {
