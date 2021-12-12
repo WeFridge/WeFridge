@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,14 +17,15 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import app.wefridge.wefridge.databinding.FragmentEditBinding
+import app.wefridge.wefridge.exceptions.ItemIsSharedWithoutContactEmailException
+import app.wefridge.wefridge.exceptions.ItemIsSharedWithoutLocationException
 import app.wefridge.wefridge.model.*
 import app.wefridge.wefridge.model.Unit
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.android.material.textfield.TextInputLayout
-import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.GeoPoint
-import kotlinx.android.synthetic.main.fragment_edit.*
 import java.io.IOException
 
 /**
@@ -43,28 +45,46 @@ class EditFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val ownerReference = OwnerController.getCurrentUser()
+        val ownerReference = OwnerController.getCurrentUserReference()
         if (ownerReference == null) {
-            requireActivity().onBackPressed()
-            alertDialogOnAccountNotVerified(this).show()
+            requireActivity().onBackPressed() // go back immediately if no owner specified
+            alertDialogOnAccountNotVerified(this).show() // show appropriate alert to user
 
         } else {
-            model = arguments?.getParcelable(ARG_MODEL) ?: Item(ownerReference = ownerReference)
+            // this line of code was partially inspired by https://stackoverflow.com/questions/11741270/android-sharedpreferences-in-fragment
+            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity())
+            setModel(ownerReference = ownerReference)
 
             (requireActivity() as AppCompatActivity).supportActionBar?.title =
                 model.firebaseId?.let { model.name } ?: getString(R.string.add_new_item)
 
-            locationController = LocationController(this,
-                callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(this) },
-                callbackForPermissionRationale = { alertDialogForLocationPermissionRationale(this) },
-                callbackOnDeterminationFailed = { alertDialogForLocationDeterminationFailed(this) },
-                callbackOnSuccess = { geoPoint ->
-                    model.location = geoPoint
-                    itemAddressTextInputLayout.editText?.requestFocus()
-                    // the following code is based on https://stackoverflow.com/questions/9409195/how-to-get-complete-address-from-latitude-and-longitude
-                    itemAddressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(geoPoint))
-                    itemAddressTextInputLayout.editText?.clearFocus()
-                })
+            setUpLocationController()
+        }
+    }
+
+    private fun setUpLocationController() {
+        locationController = LocationController(this,
+            callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(this) },
+            callbackForPermissionRationale = { alertDialogForLocationPermissionRationale(this) },
+            callbackOnDeterminationFailed = { alertDialogForLocationDeterminationFailed(this) },
+            callbackOnSuccess = { geoPoint ->
+                model.location = geoPoint
+                model.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(model.location!!.latitude, model.location!!.longitude))
+                binding.itemAddressTextInputLayout.editText?.requestFocus()
+                // the following code is based on https://stackoverflow.com/questions/9409195/how-to-get-complete-address-from-latitude-and-longitude
+                binding.itemAddressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(geoPoint))
+                binding.itemAddressTextInputLayout.editText?.clearFocus()
+            })
+    }
+
+    private fun setModel(ownerReference: DocumentReference) {
+        model = arguments?.getParcelable(ARG_MODEL) ?: Item(ownerReference = ownerReference)
+
+        OwnerController.getCurrentUser().let {
+            val userNameAsFallback = it?.displayName
+            val userEmailAsFallback = it?.email
+            model.contactName = sharedPreferences.getString(SETTINGS_NAME, userNameAsFallback)
+            model.contactEmail = sharedPreferences.getString(SETTINGS_EMAIL, userEmailAsFallback)
         }
     }
 
@@ -72,9 +92,6 @@ class EditFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // this line of code was partially inspired by https://stackoverflow.com/questions/11741270/android-sharedpreferences-in-fragment
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity())
-
         // Inflate the layout for this fragment
         _binding = FragmentEditBinding.inflate(inflater, container, false)
 
@@ -99,71 +116,105 @@ class EditFragment : Fragment() {
         setUpSaveButton()
     }
 
-    // TODO: simplify the process of checking isShared + location and isShared and contactEmail
     override fun onDestroy() {
         super.onDestroy()
-        if (!ADD_ITEM_MODE) {  // **new** Items should not be saved automatically, i. e. onDestroy
-            // TODO: put the following condition into a separate function
-            if (model.location == null && model.isShared) {
-                model.location = null
-                model.geohash = null
-                model.isShared = false
-                alertDialogOnInvalidAddress(this).show()
-            } else {
-                setModelGeohashAttribute()
-            }
-            setModelContactNameAttribute()
-            setModelContactEmailAttribute()
+        if (!ADD_ITEM_MODE) {  // **new** Items shall not be saved automatically, i. e. onDestroy
+            try {
+                saveItem(
+                    callbackOnFailure = { alertDialogOnSaveItemFailed(this).show() }
+                )
 
-            // TODO: put the following condition into a separate function
-            if ((model.contactEmail == null || model.contactEmail == "") && model.isShared) {
-                model.isShared = false
-                alertDialogOnContactEmailMissing(this).show()
-            }
+            } catch (exc: ItemIsSharedWithoutContactEmailException) {
+                Log.e("EditFragment", "Error while before saving Item: ", exc)
+                alertDialogOnContactEmailMissingOnDestroy(this).show()
 
-            ItemController.saveItem(model, { /* do nothing on success */ }, { alertDialogOnSaveItemFailed(this).show() })
+            } catch (exc: ItemIsSharedWithoutLocationException) {
+                Log.e("EditFragment", "Error before saving Item: ", exc)
+                alertDialogOnErrorParsingAddressStringOnDestroy(this).show()
+            }
         }
     }
 
     private fun setUpItemNameTextInputLayout() {
-        itemNameTextInputLayout.editText?.addTextChangedListener { setModelNameAttribute() }
-        itemNameTextInputLayout.editText?.setText(model.name)
+        binding.itemNameTextInputLayout.editText?.addTextChangedListener {
+            model.name = binding.itemNameTextInputLayout.editText?.text.toString()
+        }
+
+        binding.itemNameTextInputLayout.editText?.setText(model.name)
 
     }
 
     private fun setUpItemQuantityTextInputLayout() {
-        itemQuantityTextInputLayout.editText?.addTextChangedListener { setModelQuantityAttribute() }
-        itemQuantityTextInputLayout.editText?.setText(model.quantity.toString())
+        binding.itemQuantityTextInputLayout.editText?.addTextChangedListener {
+            val quantityString = binding.itemQuantityTextInputLayout.editText?.text.toString()
+            model.quantity = if (quantityString.isBlank()) 0 else quantityString.toLong()
+        }
+
+        // the following code lines are partially inspired by https://stackoverflow.com/questions/69655474/android-material-text-input-layout-end-icon-not-visible-but-working
+        val originalOnFocusChangeListener = binding.itemQuantityTextInputLayout.editText?.onFocusChangeListener
+        binding.itemQuantityTextInputLayout.editText?.setOnFocusChangeListener { view: View, hasFocus: Boolean ->
+            originalOnFocusChangeListener?.onFocusChange(view, hasFocus)
+            if (!hasFocus) {
+                binding.itemQuantityTextInputLayout.editText?.setText(model.quantity.toString())
+                binding.itemQuantityTextInputLayout.isEndIconVisible = false
+            }
+            if (hasFocus && binding.itemQuantityTextInputLayout.editText?.text?.isNotEmpty() == true) {
+                binding.itemQuantityTextInputLayout.isEndIconVisible = true
+            }
+        }
+
+        binding.itemQuantityTextInputLayout.editText?.setText(model.quantity.toString())
     }
 
     private fun setUpUnitDropdown() {
-        unitDropdownMenu = PopupMenu(requireActivity(), unit_dropdown)
+        unitDropdownMenu = PopupMenu(requireActivity(), binding.unitDropdown)
         unitDropdownMenu.inflate(R.menu.unit_dropdown)
         unitDropdownMenu.setOnMenuItemClickListener { menuItem ->
-            unit_dropdown.editText?.setText(menuItem.title)
-            setModelUnitAttribute()
+            binding.unitDropdown.editText?.setText(menuItem.title)
+            model.unit = tryGetUnitByString()
             true
         }
-        unit_dropdown.editText?.setText(getString(model.unit.symbolId))
-        unit_dropdown.editText?.setOnClickListener { unitDropdownMenu.show() }
+
+        binding.unitDropdown.editText?.setText(getString(model.unit.symbolId))
+        binding.unitDropdown.editText?.setOnClickListener { unitDropdownMenu.show() }
+        binding.unitDropdown.setEndIconOnClickListener { unitDropdownMenu.show() }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpItemBestByDateTextInputLayout() {
-        itemBestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
-        itemBestByDateTextInputLayout.editText?.setOnClickListener {
-            switchDatePickerVisibility()
+        binding.itemBestByDateTextInputLayout.editText?.inputType = InputType.TYPE_NULL
+        binding.itemBestByDateTextInputLayout.editText?.setOnClickListener { _: View ->
+            if (binding.itemBestByDateTextInputLayout.editText?.hasFocus() == true)
+                binding.itemBestByDateTextInputLayout.editText?.clearFocus()
         }
+
+        val originalOnFocusChangeListener = binding.itemBestByDateTextInputLayout.editText?.onFocusChangeListener
+        binding.itemBestByDateTextInputLayout.editText?.setOnFocusChangeListener { view: View, hasFocus: Boolean ->
+            switchDatePickerVisibility()
+            originalOnFocusChangeListener?.onFocusChange(view, hasFocus)
+            if (hasFocus && binding.itemBestByDateTextInputLayout.editText?.text?.isNotEmpty() == true) {
+                binding.itemBestByDateTextInputLayout.isEndIconVisible = true
+            }
+        }
+
+        binding.itemBestByDateTextInputLayout.setEndIconOnClickListener {
+            model.bestByDate = null
+            binding.itemBestByDateTextInputLayout.editText?.setText("")
+            binding.itemBestByDateTextInputLayout.editText?.clearFocus()
+        }
+        binding.itemBestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpItemBestByDatePicker() {
         hideDatePicker()
-        model.bestByDate?.let { setDatePickerDate(itemBestByDatePicker, it) }
-        itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ ->
-            model.bestByDate = getDateFrom(itemBestByDatePicker)
-            itemBestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
-            setModelBestByDateAttribute()
+        model.bestByDate?.let { setDatePickerDate(binding.itemBestByDatePicker, it) }
+        binding.itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ ->
+            model.bestByDate = getDateFrom(binding.itemBestByDatePicker)
+            binding.itemBestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
+
+            if (binding.itemBestByDateTextInputLayout.editText?.text.toString() == "") model.bestByDate = null
+            else model.bestByDate = getDateFrom(binding.itemBestByDatePicker)
         }
     }
 
@@ -174,140 +225,117 @@ class EditFragment : Fragment() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setUpItemIsSharedSwitch() {
-        itemIsSharedSwitch.isChecked = model.isShared
-        itemIsSharedSwitch.setOnCheckedChangeListener { _, _ ->
-            setModelIsSharedAttribute()
-            setLocationPickerActivation()
+        binding.itemIsSharedSwitch.isChecked = model.isShared
+        binding.itemIsSharedSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && model.contactEmail == null) {
+                binding.itemIsSharedSwitch.toggle() // turn off again
+                alertDialogOnContactEmailMissing(this).show()
+            } else {
+                model.isShared = isChecked
+                setLocationPickerActivation()
+            }
         }
     }
 
     private fun setUpItemIsSharedSwitchLabel() {
-        itemIsSharedSwitchLabel.setOnClickListener { itemIsSharedSwitch.toggle() }
+        binding.itemIsSharedSwitchLabel.setOnClickListener {
+            binding.itemIsSharedSwitch.toggle()
+        }
     }
 
     private fun setUpItemAddressTextInputLayout() {
-        model.location?.let { itemAddressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(it)) }
-        itemAddressTextInputLayout.editText?.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) model.location = tryGetGeoPointFromAddressUserInput()
+        model.location?.let { binding.itemAddressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(it)) }
+        binding.itemAddressTextInputLayout.editText?.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                model.location = tryGetGeoPointFromAddressUserInput()
+                if (model.location != null) {
+                    model.geohash = GeoFireUtils.getGeoHashForLocation(
+                        GeoLocation(
+                            model.location!!.latitude,
+                            model.location!!.longitude
+                        )
+                    )
+                } else {
+                    model.geohash = null
+                    alertDialogOnErrorParsingAddressString(this).show()
+                }
+            }
         }
     }
 
     private fun setUpLocateMeButton() {
-        locateMeButton.setOnClickListener { locationController.getCurrentLocation() }
+        binding.locateMeButton.setOnClickListener { locationController.getCurrentLocation() }
     }
 
     private fun setUpItemDescriptionTextInputLayout() {
-        itemDescriptionTextInputLayout.editText?.setText(model.description)
-        itemDescriptionTextInputLayout.editText?.addTextChangedListener { setModelDescriptionAttribute() }
+        binding.itemDescriptionTextInputLayout.editText?.setText(model.description)
+        binding.itemDescriptionTextInputLayout.editText?.addTextChangedListener {
+            model.description = binding.itemDescriptionTextInputLayout.editText?.text.toString()
+        }
     }
 
     private fun setUpSaveButton() {
-        if (!ADD_ITEM_MODE) itemSaveButton?.isVisible = false
-        itemSaveButton.setOnClickListener { itemAddressTextInputLayout.clearFocus(); saveNewItem() }
-
-    }
-
-    // TODO: consider removing this methods and instead call code directly
-    private fun setModelNameAttribute() {
-        model.name = itemNameTextInputLayout.editText?.text.toString()
-    }
-
-    // TODO: check for leading zeros
-    private fun setModelQuantityAttribute() {
-        val quantityString = itemQuantityTextInputLayout.editText?.text.toString()
-        model.quantity = if (quantityString.isEmpty() || quantityString.isBlank()) 0 else quantityString.toLong()
-
-    }
-
-    private fun setModelUnitAttribute() {
-        model.unit = tryGetUnitByString()
-    }
-
-    private fun setModelGeohashAttribute() {
-        if (model.location != null)
-            model.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(model.location!!.latitude, model.location!!.longitude))
-    }
-
-    private fun setModelContactNameAttribute() {
-        val userNameAsFallbackValue = FirebaseAuth.getInstance().currentUser?.displayName
-        model.contactName = sharedPreferences.getString(SETTINGS_NAME, userNameAsFallbackValue)
-    }
-
-    private fun setModelContactEmailAttribute() {
-        val userEmailAsFallbackValue = FirebaseAuth.getInstance().currentUser?.email
-        model.contactEmail = sharedPreferences.getString(SETTINGS_EMAIL, userEmailAsFallbackValue)
-    }
-
-    private fun setModelBestByDateAttribute() {
-        if (itemBestByDateTextInputLayout.editText?.text.toString() != "")
-            model.bestByDate = getDateFrom(itemBestByDatePicker)
-        else
-            model.bestByDate = null
-    }
-
-    private fun setModelIsSharedAttribute() {
-        model.isShared = itemIsSharedSwitch.isChecked
-    }
-
-
-    private fun setModelDescriptionAttribute() {
-        model.description = itemDescriptionTextInputLayout.editText?.text.toString()
-    }
-
-    // TODO: simplify the process of checking, if isCheck == true and location ==null
-    // TODO: sample for contactEmail and isShared
-    // TODO: consider, removing setModel*Attribute methods
-    private fun saveNewItem() {
-
-        // TODO: put the following condition into a separate function
-        if (itemIsSharedSwitch.isChecked && model.location == null) {
-            alertDialogOnInvalidAddress(this).show()
-            itemAddressTextInputLayout.editText?.setText("")
+        if (!ADD_ITEM_MODE) {
+            binding.itemSaveButton.isVisible = false
         } else {
+            binding.itemSaveButton.setOnClickListener {
+                binding.itemAddressTextInputLayout.clearFocus()
 
-            // TODO: remove set* method calls
-            //model = Item(ownerReference = ownerRef)
-            setModelNameAttribute()
-            setModelQuantityAttribute()
-            setModelUnitAttribute()
-            setModelBestByDateAttribute()
-            setModelIsSharedAttribute()
-            setModelGeohashAttribute()
-            setModelDescriptionAttribute()
-            setModelContactNameAttribute()
-            setModelContactEmailAttribute()
+                try {
+                    saveItem(
+                        callbackOnSuccess = {
+                            Toast.makeText(
+                                requireContext(),
+                                "Item was successfully saved!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        callbackOnFailure = { alertDialogOnSaveItemFailed(this).show() }
+                    )
 
-            // TODO: put the following condition into a separate function
-            if ((model.contactEmail == null || model.contactEmail == "") && model.isShared) {
-                model.isShared = false
-                alertDialogOnContactEmailMissing(this).show()
-            } else {
+                } catch (exc: ItemIsSharedWithoutContactEmailException) {
+                    Log.e("EditFragment", "Error while before saving Item: ", exc)
+                    alertDialogOnContactEmailMissing(this).show()
 
-                ItemController.saveItem(model, {
-                    // saving was successful
-                    Toast.makeText(requireContext(), "Item saved", Toast.LENGTH_SHORT).show()
-
-                    // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
-                    activity?.onBackPressed()
-                },
-                    {
-                        // saving newItem failed
-                        alertDialogOnSaveItemFailed(this).show()
-                    })
-
+                } catch (exc: ItemIsSharedWithoutLocationException) {
+                    Log.e("EditFragment", "Error before saving Item: ", exc)
+                    alertDialogOnErrorParsingAddressString(this).show()
+                }
             }
         }
+    }
 
+    private fun saveItem(callbackOnSuccess: (() -> kotlin.Unit)? = null, callbackOnFailure: ((Exception) -> kotlin.Unit)? = null) {
+        if ((model.isShared && model.location != null) || !model.isShared) {
+            if ((model.isShared && model.contactEmail != null) || !model.isShared) {
+                ItemController.saveItem(model, {
+                    // saving was successful
+                    if (callbackOnSuccess != null) callbackOnSuccess()
+
+                    // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
+                    activity?.onBackPressed() // finally, close the EditFragment
+                },
+                    { exception ->
+                        // saving newItem failed
+                        if (callbackOnFailure != null) callbackOnFailure(exception)
+                        Log.e("EditFragment", "Error while saving Item: ", exception)
+                    })
+            } else {
+                throw ItemIsSharedWithoutContactEmailException()
+            }
+
+        } else {
+            throw ItemIsSharedWithoutLocationException()
+        }
     }
 
     private fun tryGetGeoPointFromAddressUserInput(): GeoPoint? {
         var matchedGeoPoint: GeoPoint? = null
         try {
-            val userInputAddress = itemAddressTextInputLayout.editText?.text.toString()
+            val userInputAddress = binding.itemAddressTextInputLayout.editText?.text.toString()
             matchedGeoPoint = locationController.getGeoPointFrom(userInputAddress)
         } catch(exc: Exception) {
-            if (itemIsSharedSwitch.isChecked) itemIsSharedSwitch.toggle()
-            alertDialogOnErrorParsingAddressString(this).show()
+            Log.e("EditFragment", "Error while parsing address from user input: ", exc)
         }
 
         return matchedGeoPoint
@@ -318,21 +346,20 @@ class EditFragment : Fragment() {
         try {
             addressString = locationController.buildAddressStringFrom(geoPoint)
         } catch (exc: IOException){
-            if (itemIsSharedSwitch.isChecked) itemIsSharedSwitch.toggle()
+            if (binding.itemIsSharedSwitch.isChecked) binding.itemIsSharedSwitch.toggle()
             alertDialogOnLocationNoNetwork(this).show()
         }
 
         return addressString
     }
 
-    // TODO: consider moving this into calling function?
     private fun tryGetUnitByString(): Unit {
-        val symbol = unit_dropdown.editText?.text.toString()
+        val symbol = binding.unitDropdown.editText?.text.toString()
         return Unit.getByString(symbol, this) ?: Unit.PIECE
     }
 
     private fun switchDatePickerVisibility() {
-        when (itemBestByDatePicker.visibility) {
+        when (binding.itemBestByDatePicker.visibility) {
             View.GONE -> showDatePicker()
             View.INVISIBLE -> showDatePicker()
             View.VISIBLE -> hideDatePicker()
@@ -341,24 +368,24 @@ class EditFragment : Fragment() {
     }
 
     private fun showDatePicker() {
-        itemBestByDatePicker.visibility = View.VISIBLE
+        binding.itemBestByDatePicker.visibility = View.VISIBLE
     }
 
     private fun hideDatePicker() {
-        itemBestByDatePicker.visibility = View.GONE
+        binding.itemBestByDatePicker.visibility = View.GONE
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setLocationPickerActivation() {
         if (model.isShared) {
-            enable(locateMeButton)
-            enable(itemAddressTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
-            enable(itemDescriptionTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
+            enable(binding.locateMeButton)
+            enable(binding.itemAddressTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
+            enable(binding.itemDescriptionTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
         }
         else {
-            disable(locateMeButton)
-            disable(itemAddressTextInputLayout)
-            disable(itemDescriptionTextInputLayout)
+            disable(binding.locateMeButton)
+            disable(binding.itemAddressTextInputLayout)
+            disable(binding.itemDescriptionTextInputLayout)
         }
 
     }
@@ -373,7 +400,7 @@ class EditFragment : Fragment() {
         textInputLayout.editText?.isEnabled = true
         textInputLayout.editText?.focusable = View.FOCUSABLE
         textInputLayout.editText?.isFocusableInTouchMode = true
-        inputType?.let { textInputLayout.editText?.inputType = it }
+        textInputLayout.editText?.inputType = inputType
         textInputLayout.alpha = 1f
     }
 

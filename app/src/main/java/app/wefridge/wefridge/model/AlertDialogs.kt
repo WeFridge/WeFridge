@@ -27,9 +27,13 @@ fun alertDialogOnLocationNoNetwork(fragment: Fragment) = buildAlert(R.string.ad_
 
 fun alertDialogOnErrorParsingAddressString(fragment: Fragment) = buildAlert(R.string.ad_title_error_parsing_address_string, R.string.ad_msg_error_parsing_address_string, fragment.requireContext())
 
+fun alertDialogOnErrorParsingAddressStringOnDestroy(fragment: Fragment) = buildAlert(R.string.ad_title_error_parsing_address_string, R.string.ad_msg_error_parsing_address_string_on_destroy, fragment.requireContext())
+
 fun alertDialogOnSaveItemFailed(fragment: Fragment) = buildAlert(R.string.ad_title_save_item_failed, R.string.ad_msg_save_item_failed, fragment.requireContext())
 
 fun alertDialogOnContactEmailMissing(fragment: Fragment) = buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing, fragment.requireContext())
+
+fun alertDialogOnContactEmailMissingOnDestroy(fragment: Fragment) = buildAlert(R.string.ad_title_contact_email_missing_on_destroy, R.string.ad_msg_contact_email_missing_on_destroy, fragment.requireContext())
 
 fun alertDialogOnInvalidAddress(fragment: Fragment) = buildAlert(R.string.ad_title_invalid_address, R.string.ad_msg_invalid_address, fragment.requireContext())
 

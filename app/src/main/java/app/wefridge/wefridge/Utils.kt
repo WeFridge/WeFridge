@@ -1,10 +1,8 @@
 package app.wefridge.wefridge
 
 import android.os.Build
-import android.view.View
 import android.widget.DatePicker
 import androidx.annotation.RequiresApi
-import kotlinx.android.synthetic.main.fragment_edit.*
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.text.DateFormat

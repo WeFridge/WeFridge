@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -93,9 +94,17 @@ class PantryFragment : Fragment(), OnItemsChangeListener {
         val recyclerView = binding.list
 
         when(type) {
-            DocumentChange.Type.ADDED -> recyclerView.adapter?.notifyItemInserted(atIndex)
-            DocumentChange.Type.MODIFIED -> recyclerView.adapter?.notifyItemChanged(atIndex)
-            DocumentChange.Type.REMOVED -> recyclerView.adapter?.notifyItemRemoved(atIndex)
+            DocumentChange.Type.ADDED -> {
+                recyclerView.adapter?.notifyItemInserted(atIndex)
+            }
+            DocumentChange.Type.MODIFIED -> {
+                recyclerView.adapter?.notifyItemChanged(atIndex)
+                Toast.makeText(requireContext(), "An item has been updated!", Toast.LENGTH_SHORT).show()
+            }
+            DocumentChange.Type.REMOVED -> {
+                recyclerView.adapter?.notifyItemRemoved(atIndex)
+                Toast.makeText(requireContext(), "An item has been removed!", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

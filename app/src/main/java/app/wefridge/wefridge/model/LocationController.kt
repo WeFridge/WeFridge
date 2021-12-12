@@ -9,13 +9,11 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import app.wefridge.wefridge.R
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.firestore.GeoPoint
-import kotlinx.android.synthetic.main.fragment_edit.*
 import java.io.IOException
 import java.util.*
 import kotlin.Unit

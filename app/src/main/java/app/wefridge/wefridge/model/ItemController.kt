@@ -12,7 +12,7 @@ class ItemController {
     companion object {
         private val TAG = "ItemsOnFirebase"
         private val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
-        private val ownerRef = OwnerController.getCurrentUser()
+        private val ownerRef = OwnerController.getCurrentUserReference()
 
 
         /*
@@ -24,7 +24,7 @@ class ItemController {
         * https://firebase.google.com/docs/firestore/manage-data/add-data
         * */
         fun getItems(callbackOnSuccess: (MutableList<Item>) -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
-            val ownerRef = OwnerController.getCurrentUser()
+            val ownerRef = OwnerController.getCurrentUserReference()
             itemsRef
                 .whereEqualTo(ITEM_OWNER, ownerRef)
                 .get()
