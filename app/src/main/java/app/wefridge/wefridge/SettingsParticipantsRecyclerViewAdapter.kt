@@ -15,7 +15,7 @@ import com.squareup.picasso.Picasso
 import java.lang.ref.WeakReference
 
 /**
- * [RecyclerView.Adapter] that can display a [PlaceholderContent.ParticipantItem].
+ * [RecyclerView.Adapter] that can display a [User].
  */
 class SettingsParticipantsRecyclerViewAdapter(
     private val values: ArrayList<User>,
