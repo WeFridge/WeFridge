@@ -82,7 +82,8 @@ class SettingsFragment : Fragment() {
             if (user.ownerReference != null) {
                 UserController.getUser({ owner ->
                     if (_binding != null) {
-                        binding.ownerEmail.text = "your owner: ${owner.name}"
+                        binding.ownerEmail.text =
+                            getString(R.string.participants_manager, owner.name)
                         binding.ownerEmail.visibility = View.VISIBLE
 
                         // TODO: change "invite participants" button to "leave" (or add a new one)
@@ -215,7 +216,7 @@ class SettingsFragment : Fragment() {
                             Handler(Looper.getMainLooper()).post {
                                 Toast.makeText(
                                     context,
-                                    "User not found!",
+                                    getString(R.string.participants_add_not_found),
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -225,7 +226,7 @@ class SettingsFragment : Fragment() {
                             Handler(Looper.getMainLooper()).post {
                                 Toast.makeText(
                                     context,
-                                    "User is already member of a pantry! ",
+                                    getString(R.string.participants_add_already_member),
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -239,21 +240,21 @@ class SettingsFragment : Fragment() {
                             }
                             Toast.makeText(
                                 context,
-                                "User successfully added!",
+                                getString(R.string.participants_add_success),
                                 Toast.LENGTH_SHORT
                             ).show()
                             // TODO: maybe send a notification to this user?
                         }, {
                             Toast.makeText(
                                 context,
-                                "Failure while adding user!",
+                                getString(R.string.participants_add_failure),
                                 Toast.LENGTH_SHORT
                             ).show()
                         })
                     }, {
                         Toast.makeText(
                             context,
-                            "Failure while adding user!",
+                            getString(R.string.participants_add_failure),
                             Toast.LENGTH_SHORT
                         ).show()
                     })
