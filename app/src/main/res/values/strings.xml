@@ -103,6 +103,6 @@
     <string name="nearby_detail_additional_information">Additional information</string>
     <string name="nearby_detail_owner">Owner</string>
     <string name="nearby_detail_contact">Contact</string>
-    <string name="item_quantity_unit">%1$s %2$s</string>
+    <string name="item_quantity_unit">%1$l %2$s</string>
 
 </resources>
