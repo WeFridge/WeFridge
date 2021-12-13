@@ -123,5 +123,5 @@
     <string name="toast_text_on_item_deleted">Item deleted</string>
 
     <!-- Other -->
-    <string name="accessibility_hint_unit_auto_complete_view">Element for picking the item\'s unit</string>
+    <string name="accessibility_hint_unit_auto_complete_view">Choose a unit</string>
 </resources>

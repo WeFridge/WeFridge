@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
@@ -27,7 +28,6 @@ import app.wefridge.wefridge.model.UserController
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.android.material.textfield.TextInputLayout
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.GeoPoint
 import java.io.IOException
 
@@ -48,11 +48,9 @@ class EditFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val ownerReference = UserController.getCurrentUserRef()
-
         // this line of code was partially inspired by https://stackoverflow.com/questions/11741270/android-sharedpreferences-in-fragment
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity())
-        setModel(ownerReference = ownerReference)
+        setModel()
 
         (requireActivity() as AppCompatActivity).supportActionBar?.title =
             model.firebaseId?.let { model.name } ?: getString(R.string.add_new_item)
@@ -62,9 +60,9 @@ class EditFragment : Fragment() {
 
     private fun setUpLocationController() {
         locationController = LocationController(this,
-            callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(this) },
-            callbackForPermissionRationale = { alertDialogForLocationPermissionRationale(this) },
-            callbackOnDeterminationFailed = { alertDialogOnUnableToDetermineLocation(this) },
+            callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(requireContext()) },
+            callbackForPermissionRationale = { alertDialogForLocationPermissionRationale(requireContext()) },
+            callbackOnDeterminationFailed = { alertDialogOnUnableToDetermineLocation(requireContext()) },
             callbackOnSuccess = { geoPoint ->
                 model.location = geoPoint
                 model.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(model.location!!.latitude, model.location!!.longitude))
@@ -75,15 +73,12 @@ class EditFragment : Fragment() {
             })
     }
 
-    private fun setModel(ownerReference: DocumentReference) {
+    private fun setModel() {
+        val ownerReference = UserController.getCurrentUserRef()
         model = arguments?.getParcelable(ARG_MODEL) ?: Item(ownerReference = ownerReference)
 
-        UserController.getCurrentUser().let {
-            val userNameAsFallback = it?.displayName
-            val userEmailAsFallback = it?.email
-            model.contactName = sharedPreferences.getString(SETTINGS_NAME, userNameAsFallback)
-            model.contactEmail = sharedPreferences.getString(SETTINGS_EMAIL, userEmailAsFallback)
-        }
+        model.contactName = UserController.getLocalName(sharedPreferences)
+        model.contactEmail = UserController.getLocalEmail(sharedPreferences)
     }
 
     override fun onCreateView(
@@ -119,16 +114,16 @@ class EditFragment : Fragment() {
         if (!ADD_ITEM_MODE) {  // **new** Items shall not be saved automatically, i. e. onDestroy
             try {
                 saveItem(
-                    callbackOnFailure = { alertDialogOnItemNotSaved(this).show() }
+                    callbackOnFailure = { alertDialogOnItemNotSaved(requireContext()).show() }
                 )
 
             } catch (exc: ItemIsSharedWithoutContactEmailException) {
                 Log.e("EditFragment", "Error while before saving Item: ", exc)
-                alertDialogOnContactEmailMissingOnDestroy(this).show()
+                alertDialogOnContactEmailMissingOnDestroy(requireContext()).show()
 
             } catch (exc: ItemIsSharedWithoutLocationException) {
                 Log.e("EditFragment", "Error before saving Item: ", exc)
-                alertDialogOnErrorParsingAddressStringOnDestroy(this).show()
+                alertDialogOnErrorParsingAddressStringOnDestroy(requireContext()).show()
             }
         }
     }
@@ -166,10 +161,10 @@ class EditFragment : Fragment() {
 
     private fun setUpUnitDropdown() {
         unitDropdownMenu = PopupMenu(requireActivity(), binding.unitDropdown)
-        for (unit in Unit.values()) unitDropdownMenu.menu.add(unit._display)
+        for (unit in Unit.values()) unitDropdownMenu.menu.add(Menu.NONE, unit.value, Menu.NONE, unit._display)
         unitDropdownMenu.setOnMenuItemClickListener { menuItem ->
             binding.unitDropdown.editText?.setText(menuItem.title)
-            model.unit = tryGetUnitByString()
+            model.unit = Unit.getByValue(menuItem.itemId) ?: Unit.PIECE
             true
         }
 
@@ -227,7 +222,7 @@ class EditFragment : Fragment() {
         binding.isSharedSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked && model.contactEmail == null) {
                 binding.isSharedSwitch.toggle() // turn off again
-                alertDialogOnContactEmailMissing(this).show()
+                alertDialogOnContactEmailMissing(requireContext()).show()
             } else {
                 model.isShared = isChecked
                 setLocationPickerActivation()
@@ -259,7 +254,7 @@ class EditFragment : Fragment() {
                     )
                 } else {
                     model.geohash = null
-                    alertDialogOnErrorParsingAddressString(this).show()
+                    alertDialogOnErrorParsingAddressString(requireContext()).show()
                 }
             }
 
@@ -296,16 +291,16 @@ class EditFragment : Fragment() {
                             Toast.LENGTH_SHORT
                         ).show()
                     },
-                    callbackOnFailure = { alertDialogOnItemNotSaved(this).show() }
+                    callbackOnFailure = { alertDialogOnItemNotSaved(requireContext()).show() }
                 )
 
             } catch (exc: ItemIsSharedWithoutContactEmailException) {
                 Log.e("EditFragment", "Error while before saving Item: ", exc)
-                alertDialogOnContactEmailMissing(this).show()
+                alertDialogOnContactEmailMissing(requireContext()).show()
 
             } catch (exc: ItemIsSharedWithoutLocationException) {
                 Log.e("EditFragment", "Error before saving Item: ", exc)
-                alertDialogOnErrorParsingAddressString(this).show()
+                alertDialogOnErrorParsingAddressString(requireContext()).show()
             }
         }
 
@@ -353,15 +348,10 @@ class EditFragment : Fragment() {
             addressString = locationController.buildAddressStringFrom(geoPoint)
         } catch (exc: IOException){
             if (binding.isSharedSwitch.isChecked) binding.isSharedSwitch.toggle()
-            alertDialogOnLocationNoInternetConnection(this).show()
+            alertDialogOnLocationNoInternetConnection(requireContext()).show()
         }
 
         return addressString
-    }
-
-    private fun tryGetUnitByString(): Unit {
-        val symbol = binding.unitDropdown.editText?.text.toString()
-        return Unit.getByString(symbol, this) ?: Unit.PIECE
     }
 
     private fun switchDatePickerVisibility() {
