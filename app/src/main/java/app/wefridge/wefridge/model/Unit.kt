@@ -2,6 +2,7 @@ package app.wefridge.wefridge.model
 
 import android.content.Context
 import androidx.annotation.StringRes
+import androidx.fragment.app.Fragment
 import app.wefridge.wefridge.R
 
 /*
@@ -19,7 +20,6 @@ enum class Unit(val value: Int, @StringRes val _display: Int) {
         private val VALUES = values()
 
         fun getByValue(value: Int?) = VALUES.firstOrNull { it.value == value }
-
     }
 
     fun display(ctx: Context): String = ctx.getString(_display)

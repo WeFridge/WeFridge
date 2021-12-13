@@ -69,7 +69,7 @@ class NearbyDetailFragment : Fragment() {
 
         // TODO: populate textviews with actual datamodel
         binding.quantity.text = context?.getString(R.string.item_quantity_unit, model.quantity, model.unit.display(requireContext()))
-        binding.bestBy.text = DateFormat.getDateFormat(context).format(model.bestByDate)
+        binding.bestBy.text = model.bestByDate?.let { DateFormat.getDateFormat(context).format(it) } ?: ""
         binding.distance.text = ""
         binding.additionalInformation.text = model.description
         binding.owner.text = model.contactName
