@@ -284,7 +284,7 @@ class EditFragment : Fragment() {
                         callbackOnSuccess = {
                             Toast.makeText(
                                 requireContext(),
-                                "Item was successfully saved!",
+                                "Item saved",
                                 Toast.LENGTH_SHORT
                             ).show()
                         },
