@@ -166,7 +166,7 @@ class EditFragment : Fragment() {
 
     private fun setUpUnitDropdown() {
         unitDropdownMenu = PopupMenu(requireActivity(), binding.unitDropdown)
-        unitDropdownMenu.inflate(R.menu.unit_dropdown)
+        for (unit in Unit.values()) unitDropdownMenu.menu.add(unit._display)
         unitDropdownMenu.setOnMenuItemClickListener { menuItem ->
             binding.unitDropdown.editText?.setText(menuItem.title)
             model.unit = tryGetUnitByString()
