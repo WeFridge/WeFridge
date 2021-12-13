@@ -9,35 +9,35 @@ import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import app.wefridge.wefridge.R
 
-fun alertDialogOnLocationPermissionDenied(fragment: Fragment): AlertDialog.Builder = buildAlert(R.string.ad_title_location_permission_denied, R.string.ad_msg_location_permission_denied, fragment.requireContext())
+fun alertDialogOnLocationPermissionDenied(fragment: Fragment): AlertDialog.Builder = buildAlert(R.string.item_share_location_permission_denied_title, R.string.item_share_location_permission_denied_text, fragment.requireContext())
     .setNeutralButton(R.string.ad_btn_open_settings) { dialogInterface: DialogInterface, _ ->
         // this piece of code is based on https://stackoverflow.com/questions/19517417/opening-android-settings-programmatically
         dialogInterface.run { fragment.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
     }
 
-fun alertDialogForLocationPermissionRationale(fragment: Fragment): AlertDialog.Builder = buildAlert(R.string.ad_title_location_permission_rationale, R.string.ad_msg_location_permission_rationale, fragment.requireContext())
+fun alertDialogForLocationPermissionRationale(fragment: Fragment): AlertDialog.Builder = buildAlert(R.string.item_share_location_rationale_title, R.string.item_share_location_permission_rationale_text, fragment.requireContext())
     .setNeutralButton(R.string.ad_btn_open_settings) { dialogInterface: DialogInterface, _ ->
         // this piece of code is based on https://stackoverflow.com/questions/19517417/opening-android-settings-programmatically
         dialogInterface.run { fragment.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
     }
 
-fun alertDialogForLocationDeterminationFailed(fragment: Fragment) = buildAlert(R.string.ad_title_location_determination_failed, R.string.ad_msg_location_determination_failed, fragment.requireContext())
+fun alertDialogOnUnableToDetermineLocation(fragment: Fragment) = buildAlert(R.string.item_share_unable_to_determine_location_title, R.string.item_share_unable_to_determine_location_text, fragment.requireContext())
 
-fun alertDialogOnLocationNoNetwork(fragment: Fragment) = buildAlert(R.string.ad_title_no_network, R.string.ad_msg_no_network, fragment.requireContext())
+fun alertDialogOnLocationNoInternetConnection(fragment: Fragment) = buildAlert(R.string.item_share_no_internet_connection_title, R.string.item_share_no_internet_connection_text, fragment.requireContext())
 
-fun alertDialogOnErrorParsingAddressString(fragment: Fragment) = buildAlert(R.string.ad_title_error_parsing_address_string, R.string.ad_msg_error_parsing_address_string, fragment.requireContext())
+fun alertDialogOnErrorParsingAddressString(fragment: Fragment) = buildAlert(R.string.item_share_location_problem_title, R.string.item_share_location_problem_text, fragment.requireContext())
 
-fun alertDialogOnErrorParsingAddressStringOnDestroy(fragment: Fragment) = buildAlert(R.string.ad_title_error_parsing_address_string, R.string.ad_msg_error_parsing_address_string_on_destroy, fragment.requireContext())
+fun alertDialogOnErrorParsingAddressStringOnDestroy(fragment: Fragment) = buildAlert(R.string.item_share_location_problem_title, R.string.item_share_location_problem_on_destroy_text, fragment.requireContext())
 
-fun alertDialogOnSaveItemFailed(fragment: Fragment) = buildAlert(R.string.ad_title_save_item_failed, R.string.ad_msg_save_item_failed, fragment.requireContext())
+fun alertDialogOnItemNotSaved(fragment: Fragment) = buildAlert(R.string.item_share_item_not_saved_title, R.string.item_share_item_not_saved_text, fragment.requireContext())
 
-fun alertDialogOnContactEmailMissing(fragment: Fragment) = buildAlert(R.string.ad_title_contact_email_missing, R.string.ad_msg_contact_email_missing, fragment.requireContext())
+fun alertDialogOnContactEmailMissing(fragment: Fragment) = buildAlert(R.string.item_share_contact_email_missing_title, R.string.item_share_contact_email_missing_text, fragment.requireContext())
 
-fun alertDialogOnContactEmailMissingOnDestroy(fragment: Fragment) = buildAlert(R.string.ad_title_contact_email_missing_on_destroy, R.string.ad_msg_contact_email_missing_on_destroy, fragment.requireContext())
+fun alertDialogOnContactEmailMissingOnDestroy(fragment: Fragment) = buildAlert(R.string.item_share_contact_email_missing_on_destroy_title, R.string.item_share_contact_email_missing_on_destroy_text, fragment.requireContext())
 
-fun alertDialogOnInvalidAddress(fragment: Fragment) = buildAlert(R.string.ad_title_invalid_address, R.string.ad_msg_invalid_address, fragment.requireContext())
+fun alertDialogOnInvalidAddress(fragment: Fragment) = buildAlert(R.string.item_share_invalid_address_title, R.string.item_share_invalid_address_text, fragment.requireContext())
 
-fun alertDialogOnAccountNotVerified(fragment: Fragment) = buildAlert(R.string.ad_title_account_not_verified, R.string.ad_msg_account_not_verified, fragment.requireContext())
+fun alertDialogOnUserLoggedOut(fragment: Fragment) = buildAlert(R.string.user_logged_out_title, R.string.user_logged_out_text, fragment.requireContext())
 
 fun buildAlert(title: String, message: String, context: Context): AlertDialog.Builder {
     return AlertDialog.Builder(context)

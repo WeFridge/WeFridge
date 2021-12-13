@@ -64,7 +64,7 @@ class EditFragment : Fragment() {
         locationController = LocationController(this,
             callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(this) },
             callbackForPermissionRationale = { alertDialogForLocationPermissionRationale(this) },
-            callbackOnDeterminationFailed = { alertDialogForLocationDeterminationFailed(this) },
+            callbackOnDeterminationFailed = { alertDialogOnUnableToDetermineLocation(this) },
             callbackOnSuccess = { geoPoint ->
                 model.location = geoPoint
                 model.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(model.location!!.latitude, model.location!!.longitude))
@@ -119,7 +119,7 @@ class EditFragment : Fragment() {
         if (!ADD_ITEM_MODE) {  // **new** Items shall not be saved automatically, i. e. onDestroy
             try {
                 saveItem(
-                    callbackOnFailure = { alertDialogOnSaveItemFailed(this).show() }
+                    callbackOnFailure = { alertDialogOnItemNotSaved(this).show() }
                 )
 
             } catch (exc: ItemIsSharedWithoutContactEmailException) {
@@ -288,7 +288,7 @@ class EditFragment : Fragment() {
                                 Toast.LENGTH_SHORT
                             ).show()
                         },
-                        callbackOnFailure = { alertDialogOnSaveItemFailed(this).show() }
+                        callbackOnFailure = { alertDialogOnItemNotSaved(this).show() }
                     )
 
                 } catch (exc: ItemIsSharedWithoutContactEmailException) {
@@ -345,7 +345,7 @@ class EditFragment : Fragment() {
             addressString = locationController.buildAddressStringFrom(geoPoint)
         } catch (exc: IOException){
             if (binding.itemIsSharedSwitch.isChecked) binding.itemIsSharedSwitch.toggle()
-            alertDialogOnLocationNoNetwork(this).show()
+            alertDialogOnLocationNoInternetConnection(this).show()
         }
 
         return addressString
