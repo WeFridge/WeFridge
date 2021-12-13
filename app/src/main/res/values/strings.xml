@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">WeFridge</string>
     <string name="action_settings">Settings</string>
+
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -46,21 +47,31 @@
     <string name="location_picker_locate_button_text">Locate me</string>
     <string name="unit_dropdown_hint">Unit</string>
 
+    <!-- Alert dialogs -->
     <string name="item_share_contact_email_missing_title">Contact email missing</string>
-    <string name="item_share_contact_email_missing_text">In order to share an Item, you have to provide a contact email other users can use to reach out to you. Please state your email address in the settings tab.</string>
+    <string name="item_share_contact_email_missing_text">In order to share an Item, you have to provide a contact email other users can use to reach out to you. Please state your email address in the settings tab or disable the sharing option.</string>
+    <string name="item_share_contact_email_missing_on_destroy_title">Item not shared</string>
+    <string name="item_share_contact_email_missing_on_destroy_text">In order to share an Item, you have to provide a contact email other users can use to reach out to you. Please state your email address in the settings tab.</string>
     <string name="item_share_location_problem_title">Location problem</string>
-    <string name="item_share_location_problem_text">There was an error while we tried to match the location you\'ve entered to real coordinates. Therefore, we disabled the sharing option. Please check your internet connection and try again.</string>
+    <string name="item_share_location_problem_text">There was an error while we tried to match the location you\'ve entered to real coordinates. Please correct the address you\'ve entered or disable the sharing option. You may also want to check your internet connection and try again.</string>
+    <string name="item_share_location_problem_on_destroy_text">There was an error while we tried to match the location you\'ve entered to real coordinates. Therefore, we disabled the sharing option. Please correct the address you\'ve entered in order to share the foodstuff. You may also want to check your internet connection and try again.</string>
     <string name="item_share_no_internet_connection_title">No internet connection</string>
     <string name="item_share_no_internet_connection_text">There was an error while we tried to match the location coordinates to a real address. Therefore, we disabled the sharing option. Please check your internet connection and try again.</string>
-    <string name="item_share_invalid_address_title">Please specify a valid address</string>
+    <string name="item_share_invalid_address_title">Invalid address</string>
     <string name="item_share_invalid_address_text">The address you\'ve entered couldn\'t be matched to a real location. Please specify a valid address or turn off the sharing option.</string>
-    <string name="item_share_error_while_saving_title">Error while saving your foodstuff</string>
-    <string name="item_share_error_while_saving_text">Please check your internet connection and try again.</string>
+    <string name="item_share_item_not_saved_title">Item not saved</string>
+    <string name="item_share_item_not_saved_text">Please check your internet connection and try again.</string>
     <string name="item_share_unable_to_determine_location_title">Unable to determine location</string>
     <string name="item_share_unable_to_determine_location_text">Please try it another time.</string>
     <string name="item_share_location_permission_denied_title">Permission denied</string>
-    <string name="item_share_location_permission_denied_text">We have no permission to access your location.\n If you want to make use of the "locate me" functionality, please enable location access in settings.</string>
+    <string name="item_share_location_permission_denied_text">In order to use the \"locate me\" functionality you have to grant us access to your precise location. Open settings to do so.</string>
     <string name="item_share_open_settings">Open settings</string>
+    <string name="item_share_location_rationale_title">Why do we need your location?</string>
+    <string name="item_share_location_permission_rationale_text">Your location is needed as soon as you start sharing this foodstuff. If you want to determine your location conveniently with just a tap, give us the required permission to do so. Other users will not see your exact location.</string>
+
+
+    <string name="user_logged_out_title">Account not verified</string>
+    <string name="user_logged_out_text">It seems like you are logged out. Please log in under "Settings" > "Login". Then try again.</string>
 
     <string name="best_by_overdue">Expired on %1$s</string>
     <string name="best_by_plural">Best by in %1$s days</string>
@@ -84,6 +95,11 @@
     <string name="participants_remove_cancel">Cancel</string>
     <string name="participants_remove_confirm">Confirm</string>
     <string name="participants_add_button">Invite Participants</string>
+    <string name="participants_add_not_found">User not found!</string>
+    <string name="participants_add_already_member">User is already member of a pantry!</string>
+    <string name="participants_add_success">User successfully added!</string>
+    <string name="participants_add_failure">Failure while adding user!</string>
+    <string name="participants_manager">Your pantry is managed by %1$s</string>
     <string name="settings_contact_name">Contact Name</string>
     <string name="settings_contact_name_hint">This is shown near your shared items</string>
     <string name="settings_contact_email">Contact Email</string>
@@ -99,6 +115,15 @@
     <string name="nearby_detail_additional_information">Additional information</string>
     <string name="nearby_detail_owner">Owner</string>
     <string name="nearby_detail_contact">Contact</string>
+    <string name="item_quantity_unit">%1$d %2$s</string>
 
+    <string name="ad_btn_retry">Retry</string>
+    <string name="ad_btn_open_settings">Open settings</string>
+
+    <string name="toast_text_on_new_item_saved">Item saved</string>
+    <string name="toast_text_on_item_deleted">Item deleted</string>
+
+
+    <string name="accessibility_hint_unit_auto_complete_view">Choose a unit</string>
 
 </resources>
