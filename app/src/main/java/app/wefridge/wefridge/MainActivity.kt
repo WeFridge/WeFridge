@@ -52,8 +52,6 @@ class MainActivity : AppCompatActivity() {
                     "Subscribed to ${user.uid}" else "Failed to subscribe")
             }
 
-
-
         if (response?.isNewUser == true) {
             // create firestore user document
             val db = Firebase.firestore
