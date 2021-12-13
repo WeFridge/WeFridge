@@ -22,7 +22,7 @@
             android:layout_toRightOf="@id/app_logo"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="15dp"
-            android:text="Title"
+            android:text=""
             android:textSize="20sp"
             android:textStyle="bold"/>
         <TextView
@@ -32,7 +32,7 @@
             android:layout_below="@id/title_logo"
             android:layout_toRightOf="@id/app_logo"
             android:layout_marginLeft="10dp"
-            android:text="the text description"
+            android:text=""
             android:textSize="10sp" />
 
 
