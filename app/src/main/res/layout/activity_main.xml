@@ -37,6 +37,7 @@
         app:itemBackground="?attr/colorPrimary"
         app:itemIconTint="?attr/colorOnPrimary"
         app:itemTextColor="?attr/colorOnPrimary"
+        app:itemTextAppearanceActive="@style/BottomNavigation.ActiveItemTextAppearance"
         app:menu="@menu/bottom_navigation" />
 
 </LinearLayout>

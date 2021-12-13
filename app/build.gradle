@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-android-extensions'
     id 'com.gladed.androidgitversion' version '0.4.14'
     id 'com.google.gms.google-services'
     
@@ -43,7 +44,31 @@ android {
             }
         }
     }
-
+    signingConfigs {
+        debug {
+            keyAlias = 'androiddebugkey'
+            keyPassword = 'android'
+            storeFile = new File("${System.properties['user.home']}/.android/debug.keystore")
+            storePassword = 'android'
+            storeType = "jks"
+        }
+        release {
+            // Load keystore
+            def keystoreProperties = new Properties()
+            try {
+                def keystorePropertiesFile = rootProject.file("keystore.properties")
+                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+            } catch(IOException ignored) {
+                // We don't have release keys, ignoring
+            }
+            if (keystoreProperties['storeFile']) {
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -79,6 +104,7 @@ dependencies {
     implementation 'androidx.work:work-runtime-ktx:2.5.0'
     implementation 'com.google.firebase:firebase-messaging-ktx:23.0.0'
     implementation 'com.android.volley:volley:1.2.0'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
@@ -88,4 +114,6 @@ dependencies {
     implementation 'com.firebaseui:firebase-ui-auth:7.2.0'
     implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'com.firebase:geofire-android-common:3.1.0'
 }
