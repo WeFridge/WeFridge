@@ -200,6 +200,7 @@
             android:text="@string/item_save_button_text"
             android:layout_gravity="center_horizontal"
             android:layout_marginVertical="8dp"
+            android:visibility="gone"
             />
         </LinearLayout>
 </ScrollView>

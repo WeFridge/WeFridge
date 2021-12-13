@@ -273,34 +273,34 @@ class EditFragment : Fragment() {
     }
 
     private fun setUpSaveButton() {
-        if (!ADD_ITEM_MODE) {
-            binding.itemSaveButton.isVisible = false
-        } else {
-            binding.itemSaveButton.setOnClickListener {
-                binding.itemAddressTextInputLayout.clearFocus()
+        if (!ADD_ITEM_MODE) return
 
-                try {
-                    saveItem(
-                        callbackOnSuccess = {
-                            Toast.makeText(
-                                requireContext(),
-                                R.string.toast_text_on_new_item_saved,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                        callbackOnFailure = { alertDialogOnItemNotSaved(this).show() }
-                    )
+        binding.itemSaveButton.isVisible = true
+        binding.itemSaveButton.setOnClickListener {
+            binding.itemAddressTextInputLayout.clearFocus()
 
-                } catch (exc: ItemIsSharedWithoutContactEmailException) {
-                    Log.e("EditFragment", "Error while before saving Item: ", exc)
-                    alertDialogOnContactEmailMissing(this).show()
+            try {
+                saveItem(
+                    callbackOnSuccess = {
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.toast_text_on_new_item_saved,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    callbackOnFailure = { alertDialogOnItemNotSaved(this).show() }
+                )
 
-                } catch (exc: ItemIsSharedWithoutLocationException) {
-                    Log.e("EditFragment", "Error before saving Item: ", exc)
-                    alertDialogOnErrorParsingAddressString(this).show()
-                }
+            } catch (exc: ItemIsSharedWithoutContactEmailException) {
+                Log.e("EditFragment", "Error while before saving Item: ", exc)
+                alertDialogOnContactEmailMissing(this).show()
+
+            } catch (exc: ItemIsSharedWithoutLocationException) {
+                Log.e("EditFragment", "Error before saving Item: ", exc)
+                alertDialogOnErrorParsingAddressString(this).show()
             }
         }
+
     }
 
     private fun saveItem(callbackOnSuccess: (() -> kotlin.Unit)? = null, callbackOnFailure: ((Exception) -> kotlin.Unit)? = null) {
