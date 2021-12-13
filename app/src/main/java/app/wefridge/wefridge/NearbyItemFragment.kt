@@ -11,12 +11,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import app.wefridge.wefridge.databinding.FragmentNerbyItemListBinding
 import app.wefridge.wefridge.model.Item
 import app.wefridge.wefridge.model.ItemController
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * A fragment representing a list of Items.
@@ -26,15 +20,12 @@ class NearbyItemFragment : Fragment() {
     private var _binding: FragmentNerbyItemListBinding? = null
     private val binding get() = _binding!!
 
-    private val itemsPerPage = 15
     private val values = ArrayList<Item>()
     private val _adapter = ItemRecyclerViewAdapter(values, R.id.action_from_nearby_to_detail)
     private lateinit var scrollListener: EndlessRecyclerOnScrollListener
     private lateinit var refreshLayout: SwipeRefreshLayout
 
-    private val db = Firebase.firestore
-    private val itemDb = db.collection(ITEMS_COLLECTION_NAME)
-    private var lastVisible: DocumentSnapshot? = null
+    private var radius: Double = 0.0
 
     private var loading = false
         set(value) {
@@ -68,7 +59,7 @@ class NearbyItemFragment : Fragment() {
         refreshLayout = binding.swipe
         with(refreshLayout) {
             setOnRefreshListener {
-                lastVisible = null
+                radius = 0.0
                 loadPage()
             }
             loadPage()
@@ -79,62 +70,32 @@ class NearbyItemFragment : Fragment() {
         if (loading)
             return
         loading = true
-        Log.v("Auth", "Page: ${lastVisible?.id ?: "new"}")
+//        Log.v("Auth", "Page: ${lastVisible?.id ?: "new"}")
+        ItemController.getNearbyItems({ items ->
+            if (items.isEmpty()) {
+                loading = false
+                return@getNearbyItems
+            }
+            val oldAmount = values.size
 
-        val oldAmount = values.size
-        val query = itemDb.whereEqualTo("is_shared", true)
-            .orderBy("best_by", Query.Direction.ASCENDING)
-            .limit(itemsPerPage.toLong())
+            values.clear()
+            values.addAll(items)
 
-        if (lastVisible == null) {
-            query.get()
-                .addOnSuccessListener {
-                    if (it.isEmpty) {
-                        loading = false
-                        return@addOnSuccessListener
-                    }
-                    values.clear()
+            val newSize = items.size
 
-                    val newValues = it.documents.mapNotNull { item -> ItemController.tryParse(item) }
-                    values.addAll(newValues)
+            if (oldAmount > newSize) {
+                val diff = oldAmount - newSize
+                _adapter.notifyItemRangeRemoved(oldAmount - diff, diff)
+            }
 
-                    val newSize = newValues.size
+            _adapter.notifyItemRangeChanged(0, newSize)
 
-                    if (oldAmount > newSize) {
-                        val diff = oldAmount - newSize
-                        _adapter.notifyItemRangeRemoved(oldAmount - diff, diff)
-                    }
+            radius = items.last().distance + 500.0
 
-                    _adapter.notifyItemRangeChanged(0, newSize)
-                    lastVisible = it.documents[it.size() - 1]
-
-                    loading = false
-                }
-                .addOnFailureListener {
-                    Log.e("Auth", "error", it)
-                }
-        } else {
-            query.startAfter(lastVisible!!.getDate("best_by"))
-                .get()
-                .addOnSuccessListener {
-                    if (it.isEmpty) {
-                        loading = false
-                        return@addOnSuccessListener
-                    }
-
-                    val newValues = it.documents.mapNotNull { item -> ItemController.tryParse(item) }
-
-                    if (values.addAll(newValues)) {
-                        _adapter.notifyItemRangeInserted(oldAmount, newValues.size)
-                    }
-                    lastVisible = it.documents[it.size() - 1]
-
-                    loading = false
-                }
-                .addOnFailureListener {
-                    Log.e("Auth", "error", it)
-                }
-
-        }
+            loading = false
+        }, {
+            Log.e("Auth", "nearbyItems", it)
+            loading = false
+        }, radius)
     }
 }
