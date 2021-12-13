@@ -36,7 +36,7 @@ class WeFridgeFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     /**
-     * Called the FCM registration token at the beginning of the installation.
+     * Calls the FCM registration token at the beginning of the installation.
      * FCM registration token is initially generated so this is where you would retrieve the token.
     }*/
     override fun onNewToken(token: String) {
