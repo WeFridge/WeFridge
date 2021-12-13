@@ -68,7 +68,11 @@ class NearbyDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // TODO: populate textviews with actual datamodel
-        binding.quantity.text = context?.getString(R.string.item_quantity_unit, model.quantity, model.unit.display(requireContext()))
+        binding.quantity.text = context?.getString(
+            R.string.item_quantity_unit,
+            model.quantity.toString(),
+            model.unit.display(requireContext())
+        )
         binding.bestBy.text = DateFormat.getDateFormat(context).format(model.bestByDate)
         binding.distance.text = model.distance.toInt().toString() + " m"
         binding.additionalInformation.text = model.description
