@@ -68,10 +68,10 @@ class EditFragment : Fragment() {
             callbackOnSuccess = { geoPoint ->
                 model.location = geoPoint
                 model.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(model.location!!.latitude, model.location!!.longitude))
-                binding.itemAddressTextInputLayout.editText?.requestFocus()
+                binding.addressTextInputLayout.editText?.requestFocus()
                 // the following code is based on https://stackoverflow.com/questions/9409195/how-to-get-complete-address-from-latitude-and-longitude
-                binding.itemAddressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(geoPoint))
-                binding.itemAddressTextInputLayout.editText?.clearFocus()
+                binding.addressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(geoPoint))
+                binding.addressTextInputLayout.editText?.clearFocus()
             })
     }
 
@@ -100,17 +100,17 @@ class EditFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setUpItemNameTextInputLayout()
+        setUpNameTextInputLayout()
         setUpItemQuantityTextInputLayout()
         setUpUnitDropdown()
-        setUpItemBestByDateTextInputLayout()
-        setUpItemBestByDatePicker()
+        setUpBestByDateTextInputLayout()
+        setUpBestByDatePicker()
         setUpLocationPickerBox()
-        setUpItemIsSharedSwitch()
-        setUpItemIsSharedSwitchLabel()
-        setUpItemAddressTextInputLayout()
+        setUpIsSharedSwitch()
+        setUpIsSharedSwitchLabel()
+        setUpAddressTextInputLayout()
         setUpLocateMeButton()
-        setUpItemDescriptionTextInputLayout()
+        setUpDescriptionTextInputLayout()
         setUpSaveButton()
     }
 
@@ -133,35 +133,35 @@ class EditFragment : Fragment() {
         }
     }
 
-    private fun setUpItemNameTextInputLayout() {
-        binding.itemNameTextInputLayout.editText?.addTextChangedListener {
-            model.name = binding.itemNameTextInputLayout.editText?.text.toString()
+    private fun setUpNameTextInputLayout() {
+        binding.nameTextInputLayout.editText?.addTextChangedListener {
+            model.name = binding.nameTextInputLayout.editText?.text.toString()
         }
 
-        binding.itemNameTextInputLayout.editText?.setText(model.name)
+        binding.nameTextInputLayout.editText?.setText(model.name)
 
     }
 
     private fun setUpItemQuantityTextInputLayout() {
-        binding.itemQuantityTextInputLayout.editText?.addTextChangedListener {
-            val quantityString = binding.itemQuantityTextInputLayout.editText?.text.toString()
+        binding.quantityTextInputLayout.editText?.addTextChangedListener {
+            val quantityString = binding.quantityTextInputLayout.editText?.text.toString()
             model.quantity = if (quantityString.isBlank()) 0 else quantityString.toLong()
         }
 
         // the following code lines are partially inspired by https://stackoverflow.com/questions/69655474/android-material-text-input-layout-end-icon-not-visible-but-working
-        val originalOnFocusChangeListener = binding.itemQuantityTextInputLayout.editText?.onFocusChangeListener
-        binding.itemQuantityTextInputLayout.editText?.setOnFocusChangeListener { view: View, hasFocus: Boolean ->
+        val originalOnFocusChangeListener = binding.quantityTextInputLayout.editText?.onFocusChangeListener
+        binding.quantityTextInputLayout.editText?.setOnFocusChangeListener { view: View, hasFocus: Boolean ->
             originalOnFocusChangeListener?.onFocusChange(view, hasFocus)
             if (!hasFocus) {
-                binding.itemQuantityTextInputLayout.editText?.setText(model.quantity.toString())
-                binding.itemQuantityTextInputLayout.isEndIconVisible = false
+                binding.quantityTextInputLayout.editText?.setText(model.quantity.toString())
+                binding.quantityTextInputLayout.isEndIconVisible = false
             }
-            if (hasFocus && binding.itemQuantityTextInputLayout.editText?.text?.isNotEmpty() == true) {
-                binding.itemQuantityTextInputLayout.isEndIconVisible = true
+            if (hasFocus && binding.quantityTextInputLayout.editText?.text?.isNotEmpty() == true) {
+                binding.quantityTextInputLayout.isEndIconVisible = true
             }
         }
 
-        binding.itemQuantityTextInputLayout.editText?.setText(model.quantity.toString())
+        binding.quantityTextInputLayout.editText?.setText(model.quantity.toString())
     }
 
     private fun setUpUnitDropdown() {
@@ -179,40 +179,40 @@ class EditFragment : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpItemBestByDateTextInputLayout() {
-        binding.itemBestByDateTextInputLayout.editText?.inputType = InputType.TYPE_NULL
-        binding.itemBestByDateTextInputLayout.editText?.setOnClickListener { _: View ->
-            if (binding.itemBestByDateTextInputLayout.editText?.hasFocus() == true)
-                binding.itemBestByDateTextInputLayout.editText?.clearFocus()
+    private fun setUpBestByDateTextInputLayout() {
+        binding.bestByDateTextInputLayout.editText?.inputType = InputType.TYPE_NULL
+        binding.bestByDateTextInputLayout.editText?.setOnClickListener { _: View ->
+            if (binding.bestByDateTextInputLayout.editText?.hasFocus() == true)
+                binding.bestByDateTextInputLayout.editText?.clearFocus()
         }
 
-        val originalOnFocusChangeListener = binding.itemBestByDateTextInputLayout.editText?.onFocusChangeListener
-        binding.itemBestByDateTextInputLayout.editText?.setOnFocusChangeListener { view: View, hasFocus: Boolean ->
+        val originalOnFocusChangeListener = binding.bestByDateTextInputLayout.editText?.onFocusChangeListener
+        binding.bestByDateTextInputLayout.editText?.setOnFocusChangeListener { view: View, hasFocus: Boolean ->
             switchDatePickerVisibility()
             originalOnFocusChangeListener?.onFocusChange(view, hasFocus)
-            if (hasFocus && binding.itemBestByDateTextInputLayout.editText?.text?.isNotEmpty() == true) {
-                binding.itemBestByDateTextInputLayout.isEndIconVisible = true
+            if (hasFocus && binding.bestByDateTextInputLayout.editText?.text?.isNotEmpty() == true) {
+                binding.bestByDateTextInputLayout.isEndIconVisible = true
             }
         }
 
-        binding.itemBestByDateTextInputLayout.setEndIconOnClickListener {
+        binding.bestByDateTextInputLayout.setEndIconOnClickListener {
             model.bestByDate = null
-            binding.itemBestByDateTextInputLayout.editText?.setText("")
-            binding.itemBestByDateTextInputLayout.editText?.clearFocus()
+            binding.bestByDateTextInputLayout.editText?.setText("")
+            binding.bestByDateTextInputLayout.editText?.clearFocus()
         }
-        binding.itemBestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
+        binding.bestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpItemBestByDatePicker() {
+    private fun setUpBestByDatePicker() {
         hideDatePicker()
-        model.bestByDate?.let { setDatePickerDate(binding.itemBestByDatePicker, it) }
-        binding.itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ ->
-            model.bestByDate = getDateFrom(binding.itemBestByDatePicker)
-            binding.itemBestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
+        model.bestByDate?.let { setDatePickerDate(binding.bestByDatePicker, it) }
+        binding.bestByDatePicker.setOnDateChangedListener { _, _, _, _ ->
+            model.bestByDate = getDateFrom(binding.bestByDatePicker)
+            binding.bestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
 
-            if (binding.itemBestByDateTextInputLayout.editText?.text.toString() == "") model.bestByDate = null
-            else model.bestByDate = getDateFrom(binding.itemBestByDatePicker)
+            if (binding.bestByDateTextInputLayout.editText?.text.toString() == "") model.bestByDate = null
+            else model.bestByDate = getDateFrom(binding.bestByDatePicker)
         }
     }
 
@@ -222,11 +222,11 @@ class EditFragment : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpItemIsSharedSwitch() {
-        binding.itemIsSharedSwitch.isChecked = model.isShared
-        binding.itemIsSharedSwitch.setOnCheckedChangeListener { _, isChecked ->
+    private fun setUpIsSharedSwitch() {
+        binding.isSharedSwitch.isChecked = model.isShared
+        binding.isSharedSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked && model.contactEmail == null) {
-                binding.itemIsSharedSwitch.toggle() // turn off again
+                binding.isSharedSwitch.toggle() // turn off again
                 alertDialogOnContactEmailMissing(this).show()
             } else {
                 model.isShared = isChecked
@@ -235,16 +235,20 @@ class EditFragment : Fragment() {
         }
     }
 
-    private fun setUpItemIsSharedSwitchLabel() {
-        binding.itemIsSharedSwitchLabel.setOnClickListener {
-            binding.itemIsSharedSwitch.toggle()
+    private fun setUpIsSharedSwitchLabel() {
+        binding.isSharedSwitchLabel.setOnClickListener {
+            binding.isSharedSwitch.toggle()
         }
     }
 
-    private fun setUpItemAddressTextInputLayout() {
-        model.location?.let { binding.itemAddressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(it)) }
-        binding.itemAddressTextInputLayout.editText?.setOnFocusChangeListener { _, hasFocus ->
+    private fun setUpAddressTextInputLayout() {
+        model.location?.let { binding.addressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(it)) }
+
+        val originalOnFocusChangeListener = binding.addressTextInputLayout.editText?.onFocusChangeListener
+        binding.addressTextInputLayout.editText?.setOnFocusChangeListener { view, hasFocus ->
+            originalOnFocusChangeListener?.onFocusChange(view, hasFocus)
             if (!hasFocus) {
+                binding.addressTextInputLayout.isEndIconVisible = false
                 model.location = tryGetGeoPointFromAddressUserInput()
                 if (model.location != null) {
                     model.geohash = GeoFireUtils.getGeoHashForLocation(
@@ -258,6 +262,10 @@ class EditFragment : Fragment() {
                     alertDialogOnErrorParsingAddressString(this).show()
                 }
             }
+
+            if (hasFocus && binding.addressTextInputLayout.editText?.text?.isNotEmpty() == true) {
+                binding.addressTextInputLayout.isEndIconVisible = true
+            }
         }
     }
 
@@ -265,19 +273,19 @@ class EditFragment : Fragment() {
         binding.locateMeButton.setOnClickListener { locationController.getCurrentLocation() }
     }
 
-    private fun setUpItemDescriptionTextInputLayout() {
-        binding.itemDescriptionTextInputLayout.editText?.setText(model.description)
-        binding.itemDescriptionTextInputLayout.editText?.addTextChangedListener {
-            model.description = binding.itemDescriptionTextInputLayout.editText?.text.toString()
+    private fun setUpDescriptionTextInputLayout() {
+        binding.descriptionTextInputLayout.editText?.setText(model.description)
+        binding.descriptionTextInputLayout.editText?.addTextChangedListener {
+            model.description = binding.descriptionTextInputLayout.editText?.text.toString()
         }
     }
 
     private fun setUpSaveButton() {
         if (!ADD_ITEM_MODE) return
 
-        binding.itemSaveButton.isVisible = true
-        binding.itemSaveButton.setOnClickListener {
-            binding.itemAddressTextInputLayout.clearFocus()
+        binding.saveButton.isVisible = true
+        binding.saveButton.setOnClickListener {
+            binding.addressTextInputLayout.clearFocus()
 
             try {
                 saveItem(
@@ -330,7 +338,7 @@ class EditFragment : Fragment() {
     private fun tryGetGeoPointFromAddressUserInput(): GeoPoint? {
         var matchedGeoPoint: GeoPoint? = null
         try {
-            val userInputAddress = binding.itemAddressTextInputLayout.editText?.text.toString()
+            val userInputAddress = binding.addressTextInputLayout.editText?.text.toString()
             matchedGeoPoint = locationController.getGeoPointFrom(userInputAddress)
         } catch(exc: Exception) {
             Log.e("EditFragment", "Error while parsing address from user input: ", exc)
@@ -344,7 +352,7 @@ class EditFragment : Fragment() {
         try {
             addressString = locationController.buildAddressStringFrom(geoPoint)
         } catch (exc: IOException){
-            if (binding.itemIsSharedSwitch.isChecked) binding.itemIsSharedSwitch.toggle()
+            if (binding.isSharedSwitch.isChecked) binding.isSharedSwitch.toggle()
             alertDialogOnLocationNoInternetConnection(this).show()
         }
 
@@ -357,7 +365,7 @@ class EditFragment : Fragment() {
     }
 
     private fun switchDatePickerVisibility() {
-        when (binding.itemBestByDatePicker.visibility) {
+        when (binding.bestByDatePicker.visibility) {
             View.GONE -> showDatePicker()
             View.INVISIBLE -> showDatePicker()
             View.VISIBLE -> hideDatePicker()
@@ -366,24 +374,24 @@ class EditFragment : Fragment() {
     }
 
     private fun showDatePicker() {
-        binding.itemBestByDatePicker.visibility = View.VISIBLE
+        binding.bestByDatePicker.visibility = View.VISIBLE
     }
 
     private fun hideDatePicker() {
-        binding.itemBestByDatePicker.visibility = View.GONE
+        binding.bestByDatePicker.visibility = View.GONE
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setLocationPickerActivation() {
         if (model.isShared) {
             enable(binding.locateMeButton)
-            enable(binding.itemAddressTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
-            enable(binding.itemDescriptionTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
+            enable(binding.addressTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
+            enable(binding.descriptionTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
         }
         else {
             disable(binding.locateMeButton)
-            disable(binding.itemAddressTextInputLayout)
-            disable(binding.itemDescriptionTextInputLayout)
+            disable(binding.addressTextInputLayout)
+            disable(binding.descriptionTextInputLayout)
         }
 
     }
