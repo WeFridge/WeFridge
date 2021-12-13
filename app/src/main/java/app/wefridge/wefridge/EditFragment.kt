@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
@@ -27,7 +28,6 @@ import app.wefridge.wefridge.model.UserController
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.android.material.textfield.TextInputLayout
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.GeoPoint
 import java.io.IOException
 
@@ -48,11 +48,9 @@ class EditFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val ownerReference = UserController.getCurrentUserRef()
-
         // this line of code was partially inspired by https://stackoverflow.com/questions/11741270/android-sharedpreferences-in-fragment
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireActivity())
-        setModel(ownerReference = ownerReference)
+        setModel()
 
         (requireActivity() as AppCompatActivity).supportActionBar?.title =
             model.firebaseId?.let { model.name } ?: getString(R.string.add_new_item)
@@ -62,28 +60,25 @@ class EditFragment : Fragment() {
 
     private fun setUpLocationController() {
         locationController = LocationController(this,
-            callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(this) },
-            callbackForPermissionRationale = { alertDialogForLocationPermissionRationale(this) },
-            callbackOnDeterminationFailed = { alertDialogForLocationDeterminationFailed(this) },
+            callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(requireContext()) },
+            callbackForPermissionRationale = { alertDialogForLocationPermissionRationale(requireContext()) },
+            callbackOnDeterminationFailed = { alertDialogOnUnableToDetermineLocation(requireContext()) },
             callbackOnSuccess = { geoPoint ->
                 model.location = geoPoint
                 model.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(model.location!!.latitude, model.location!!.longitude))
-                binding.itemAddressTextInputLayout.editText?.requestFocus()
+                binding.addressTextInputLayout.editText?.requestFocus()
                 // the following code is based on https://stackoverflow.com/questions/9409195/how-to-get-complete-address-from-latitude-and-longitude
-                binding.itemAddressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(geoPoint))
-                binding.itemAddressTextInputLayout.editText?.clearFocus()
+                binding.addressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(geoPoint))
+                binding.addressTextInputLayout.editText?.clearFocus()
             })
     }
 
-    private fun setModel(ownerReference: DocumentReference) {
+    private fun setModel() {
+        val ownerReference = UserController.getCurrentUserRef()
         model = arguments?.getParcelable(ARG_MODEL) ?: Item(ownerReference = ownerReference)
 
-        UserController.getCurrentUser().let {
-            val userNameAsFallback = it?.displayName
-            val userEmailAsFallback = it?.email
-            model.contactName = sharedPreferences.getString(SETTINGS_NAME, userNameAsFallback)
-            model.contactEmail = sharedPreferences.getString(SETTINGS_EMAIL, userEmailAsFallback)
-        }
+        model.contactName = UserController.getLocalName(sharedPreferences)
+        model.contactEmail = UserController.getLocalEmail(sharedPreferences)
     }
 
     override fun onCreateView(
@@ -100,17 +95,17 @@ class EditFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setUpItemNameTextInputLayout()
+        setUpNameTextInputLayout()
         setUpItemQuantityTextInputLayout()
         setUpUnitDropdown()
-        setUpItemBestByDateTextInputLayout()
-        setUpItemBestByDatePicker()
+        setUpBestByDateTextInputLayout()
+        setUpBestByDatePicker()
         setUpLocationPickerBox()
-        setUpItemIsSharedSwitch()
-        setUpItemIsSharedSwitchLabel()
-        setUpItemAddressTextInputLayout()
+        setUpIsSharedSwitch()
+        setUpIsSharedSwitchLabel()
+        setUpAddressTextInputLayout()
         setUpLocateMeButton()
-        setUpItemDescriptionTextInputLayout()
+        setUpDescriptionTextInputLayout()
         setUpSaveButton()
     }
 
@@ -119,57 +114,57 @@ class EditFragment : Fragment() {
         if (!ADD_ITEM_MODE) {  // **new** Items shall not be saved automatically, i. e. onDestroy
             try {
                 saveItem(
-                    callbackOnFailure = { alertDialogOnSaveItemFailed(this).show() }
+                    callbackOnFailure = { alertDialogOnItemNotSaved(requireContext()).show() }
                 )
 
             } catch (exc: ItemIsSharedWithoutContactEmailException) {
                 Log.e("EditFragment", "Error while before saving Item: ", exc)
-                alertDialogOnContactEmailMissingOnDestroy(this).show()
+                alertDialogOnContactEmailMissingOnDestroy(requireContext()).show()
 
             } catch (exc: ItemIsSharedWithoutLocationException) {
                 Log.e("EditFragment", "Error before saving Item: ", exc)
-                alertDialogOnErrorParsingAddressStringOnDestroy(this).show()
+                alertDialogOnErrorParsingAddressStringOnDestroy(requireContext()).show()
             }
         }
     }
 
-    private fun setUpItemNameTextInputLayout() {
-        binding.itemNameTextInputLayout.editText?.addTextChangedListener {
-            model.name = binding.itemNameTextInputLayout.editText?.text.toString()
+    private fun setUpNameTextInputLayout() {
+        binding.nameTextInputLayout.editText?.addTextChangedListener {
+            model.name = binding.nameTextInputLayout.editText?.text.toString()
         }
 
-        binding.itemNameTextInputLayout.editText?.setText(model.name)
+        binding.nameTextInputLayout.editText?.setText(model.name)
 
     }
 
     private fun setUpItemQuantityTextInputLayout() {
-        binding.itemQuantityTextInputLayout.editText?.addTextChangedListener {
-            val quantityString = binding.itemQuantityTextInputLayout.editText?.text.toString()
+        binding.quantityTextInputLayout.editText?.addTextChangedListener {
+            val quantityString = binding.quantityTextInputLayout.editText?.text.toString()
             model.quantity = if (quantityString.isBlank()) 0 else quantityString.toLong()
         }
 
         // the following code lines are partially inspired by https://stackoverflow.com/questions/69655474/android-material-text-input-layout-end-icon-not-visible-but-working
-        val originalOnFocusChangeListener = binding.itemQuantityTextInputLayout.editText?.onFocusChangeListener
-        binding.itemQuantityTextInputLayout.editText?.setOnFocusChangeListener { view: View, hasFocus: Boolean ->
+        val originalOnFocusChangeListener = binding.quantityTextInputLayout.editText?.onFocusChangeListener
+        binding.quantityTextInputLayout.editText?.setOnFocusChangeListener { view: View, hasFocus: Boolean ->
             originalOnFocusChangeListener?.onFocusChange(view, hasFocus)
             if (!hasFocus) {
-                binding.itemQuantityTextInputLayout.editText?.setText(model.quantity.toString())
-                binding.itemQuantityTextInputLayout.isEndIconVisible = false
+                binding.quantityTextInputLayout.editText?.setText(model.quantity.toString())
+                binding.quantityTextInputLayout.isEndIconVisible = false
             }
-            if (hasFocus && binding.itemQuantityTextInputLayout.editText?.text?.isNotEmpty() == true) {
-                binding.itemQuantityTextInputLayout.isEndIconVisible = true
+            if (hasFocus && binding.quantityTextInputLayout.editText?.text?.isNotEmpty() == true) {
+                binding.quantityTextInputLayout.isEndIconVisible = true
             }
         }
 
-        binding.itemQuantityTextInputLayout.editText?.setText(model.quantity.toString())
+        binding.quantityTextInputLayout.editText?.setText(model.quantity.toString())
     }
 
     private fun setUpUnitDropdown() {
         unitDropdownMenu = PopupMenu(requireActivity(), binding.unitDropdown)
-        for (unit in Unit.values()) unitDropdownMenu.menu.add(unit._display)
+        for (unit in Unit.values()) unitDropdownMenu.menu.add(Menu.NONE, unit.value, Menu.NONE, unit._display)
         unitDropdownMenu.setOnMenuItemClickListener { menuItem ->
             binding.unitDropdown.editText?.setText(menuItem.title)
-            model.unit = tryGetUnitByString()
+            model.unit = Unit.getByValue(menuItem.itemId) ?: Unit.PIECE
             true
         }
 
@@ -179,40 +174,40 @@ class EditFragment : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpItemBestByDateTextInputLayout() {
-        binding.itemBestByDateTextInputLayout.editText?.inputType = InputType.TYPE_NULL
-        binding.itemBestByDateTextInputLayout.editText?.setOnClickListener { _: View ->
-            if (binding.itemBestByDateTextInputLayout.editText?.hasFocus() == true)
-                binding.itemBestByDateTextInputLayout.editText?.clearFocus()
+    private fun setUpBestByDateTextInputLayout() {
+        binding.bestByDateTextInputLayout.editText?.inputType = InputType.TYPE_NULL
+        binding.bestByDateTextInputLayout.editText?.setOnClickListener { _: View ->
+            if (binding.bestByDateTextInputLayout.editText?.hasFocus() == true)
+                binding.bestByDateTextInputLayout.editText?.clearFocus()
         }
 
-        val originalOnFocusChangeListener = binding.itemBestByDateTextInputLayout.editText?.onFocusChangeListener
-        binding.itemBestByDateTextInputLayout.editText?.setOnFocusChangeListener { view: View, hasFocus: Boolean ->
+        val originalOnFocusChangeListener = binding.bestByDateTextInputLayout.editText?.onFocusChangeListener
+        binding.bestByDateTextInputLayout.editText?.setOnFocusChangeListener { view: View, hasFocus: Boolean ->
             switchDatePickerVisibility()
             originalOnFocusChangeListener?.onFocusChange(view, hasFocus)
-            if (hasFocus && binding.itemBestByDateTextInputLayout.editText?.text?.isNotEmpty() == true) {
-                binding.itemBestByDateTextInputLayout.isEndIconVisible = true
+            if (hasFocus && binding.bestByDateTextInputLayout.editText?.text?.isNotEmpty() == true) {
+                binding.bestByDateTextInputLayout.isEndIconVisible = true
             }
         }
 
-        binding.itemBestByDateTextInputLayout.setEndIconOnClickListener {
+        binding.bestByDateTextInputLayout.setEndIconOnClickListener {
             model.bestByDate = null
-            binding.itemBestByDateTextInputLayout.editText?.setText("")
-            binding.itemBestByDateTextInputLayout.editText?.clearFocus()
+            binding.bestByDateTextInputLayout.editText?.setText("")
+            binding.bestByDateTextInputLayout.editText?.clearFocus()
         }
-        binding.itemBestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
+        binding.bestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpItemBestByDatePicker() {
+    private fun setUpBestByDatePicker() {
         hideDatePicker()
-        model.bestByDate?.let { setDatePickerDate(binding.itemBestByDatePicker, it) }
-        binding.itemBestByDatePicker.setOnDateChangedListener { _, _, _, _ ->
-            model.bestByDate = getDateFrom(binding.itemBestByDatePicker)
-            binding.itemBestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
+        model.bestByDate?.let { setDatePickerDate(binding.bestByDatePicker, it) }
+        binding.bestByDatePicker.setOnDateChangedListener { _, _, _, _ ->
+            model.bestByDate = getDateFrom(binding.bestByDatePicker)
+            binding.bestByDateTextInputLayout.editText?.setText(buildDateStringFrom(model.bestByDate))
 
-            if (binding.itemBestByDateTextInputLayout.editText?.text.toString() == "") model.bestByDate = null
-            else model.bestByDate = getDateFrom(binding.itemBestByDatePicker)
+            if (binding.bestByDateTextInputLayout.editText?.text.toString() == "") model.bestByDate = null
+            else model.bestByDate = getDateFrom(binding.bestByDatePicker)
         }
     }
 
@@ -222,12 +217,12 @@ class EditFragment : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun setUpItemIsSharedSwitch() {
-        binding.itemIsSharedSwitch.isChecked = model.isShared
-        binding.itemIsSharedSwitch.setOnCheckedChangeListener { _, isChecked ->
+    private fun setUpIsSharedSwitch() {
+        binding.isSharedSwitch.isChecked = model.isShared
+        binding.isSharedSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked && model.contactEmail == null) {
-                binding.itemIsSharedSwitch.toggle() // turn off again
-                alertDialogOnContactEmailMissing(this).show()
+                binding.isSharedSwitch.toggle() // turn off again
+                alertDialogOnContactEmailMissing(requireContext()).show()
             } else {
                 model.isShared = isChecked
                 setLocationPickerActivation()
@@ -235,16 +230,20 @@ class EditFragment : Fragment() {
         }
     }
 
-    private fun setUpItemIsSharedSwitchLabel() {
-        binding.itemIsSharedSwitchLabel.setOnClickListener {
-            binding.itemIsSharedSwitch.toggle()
+    private fun setUpIsSharedSwitchLabel() {
+        binding.isSharedSwitchLabel.setOnClickListener {
+            binding.isSharedSwitch.toggle()
         }
     }
 
-    private fun setUpItemAddressTextInputLayout() {
-        model.location?.let { binding.itemAddressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(it)) }
-        binding.itemAddressTextInputLayout.editText?.setOnFocusChangeListener { _, hasFocus ->
+    private fun setUpAddressTextInputLayout() {
+        model.location?.let { binding.addressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(it)) }
+
+        val originalOnFocusChangeListener = binding.addressTextInputLayout.editText?.onFocusChangeListener
+        binding.addressTextInputLayout.editText?.setOnFocusChangeListener { view, hasFocus ->
+            originalOnFocusChangeListener?.onFocusChange(view, hasFocus)
             if (!hasFocus) {
+                binding.addressTextInputLayout.isEndIconVisible = false
                 model.location = tryGetGeoPointFromAddressUserInput()
                 if (model.location != null) {
                     model.geohash = GeoFireUtils.getGeoHashForLocation(
@@ -255,8 +254,12 @@ class EditFragment : Fragment() {
                     )
                 } else {
                     model.geohash = null
-                    alertDialogOnErrorParsingAddressString(this).show()
+                    alertDialogOnErrorParsingAddressString(requireContext()).show()
                 }
+            }
+
+            if (hasFocus && binding.addressTextInputLayout.editText?.text?.isNotEmpty() == true) {
+                binding.addressTextInputLayout.isEndIconVisible = true
             }
         }
     }
@@ -265,40 +268,39 @@ class EditFragment : Fragment() {
         binding.locateMeButton.setOnClickListener { locationController.getCurrentLocation() }
     }
 
-    private fun setUpItemDescriptionTextInputLayout() {
-        binding.itemDescriptionTextInputLayout.editText?.setText(model.description)
-        binding.itemDescriptionTextInputLayout.editText?.addTextChangedListener {
-            model.description = binding.itemDescriptionTextInputLayout.editText?.text.toString()
+    private fun setUpDescriptionTextInputLayout() {
+        binding.descriptionTextInputLayout.editText?.setText(model.description)
+        binding.descriptionTextInputLayout.editText?.addTextChangedListener {
+            model.description = binding.descriptionTextInputLayout.editText?.text.toString()
         }
     }
 
     private fun setUpSaveButton() {
-        if (!ADD_ITEM_MODE) {
-            binding.itemSaveButton.isVisible = false
-        } else {
-            binding.itemSaveButton.setOnClickListener {
-                binding.itemAddressTextInputLayout.clearFocus()
+        if (!ADD_ITEM_MODE) return
 
-                try {
-                    saveItem(
-                        callbackOnSuccess = {
-                            Toast.makeText(
-                                requireContext(),
-                                "Item saved",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                        callbackOnFailure = { alertDialogOnSaveItemFailed(this).show() }
-                    )
+        binding.saveButton.isVisible = true
+        binding.saveButton.setOnClickListener {
+            binding.addressTextInputLayout.clearFocus()
 
-                } catch (exc: ItemIsSharedWithoutContactEmailException) {
-                    Log.e("EditFragment", "Error while before saving Item: ", exc)
-                    alertDialogOnContactEmailMissing(this).show()
+            try {
+                saveItem(
+                    callbackOnSuccess = {
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.toast_text_on_new_item_saved,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    callbackOnFailure = { alertDialogOnItemNotSaved(requireContext()).show() }
+                )
 
-                } catch (exc: ItemIsSharedWithoutLocationException) {
-                    Log.e("EditFragment", "Error before saving Item: ", exc)
-                    alertDialogOnErrorParsingAddressString(this).show()
-                }
+            } catch (exc: ItemIsSharedWithoutContactEmailException) {
+                Log.e("EditFragment", "Error while before saving Item: ", exc)
+                alertDialogOnContactEmailMissing(requireContext()).show()
+
+            } catch (exc: ItemIsSharedWithoutLocationException) {
+                Log.e("EditFragment", "Error before saving Item: ", exc)
+                alertDialogOnErrorParsingAddressString(requireContext()).show()
             }
         }
     }
@@ -330,7 +332,7 @@ class EditFragment : Fragment() {
     private fun tryGetGeoPointFromAddressUserInput(): GeoPoint? {
         var matchedGeoPoint: GeoPoint? = null
         try {
-            val userInputAddress = binding.itemAddressTextInputLayout.editText?.text.toString()
+            val userInputAddress = binding.addressTextInputLayout.editText?.text.toString()
             matchedGeoPoint = locationController.getGeoPointFrom(userInputAddress)
         } catch(exc: Exception) {
             Log.e("EditFragment", "Error while parsing address from user input: ", exc)
@@ -344,20 +346,15 @@ class EditFragment : Fragment() {
         try {
             addressString = locationController.buildAddressStringFrom(geoPoint)
         } catch (exc: IOException){
-            if (binding.itemIsSharedSwitch.isChecked) binding.itemIsSharedSwitch.toggle()
-            alertDialogOnLocationNoNetwork(this).show()
+            if (binding.isSharedSwitch.isChecked) binding.isSharedSwitch.toggle()
+            alertDialogOnLocationNoInternetConnection(requireContext()).show()
         }
 
         return addressString
     }
 
-    private fun tryGetUnitByString(): Unit {
-        val symbol = binding.unitDropdown.editText?.text.toString()
-        return Unit.getByString(symbol, this) ?: Unit.PIECE
-    }
-
     private fun switchDatePickerVisibility() {
-        when (binding.itemBestByDatePicker.visibility) {
+        when (binding.bestByDatePicker.visibility) {
             View.GONE -> showDatePicker()
             View.INVISIBLE -> showDatePicker()
             View.VISIBLE -> hideDatePicker()
@@ -366,24 +363,24 @@ class EditFragment : Fragment() {
     }
 
     private fun showDatePicker() {
-        binding.itemBestByDatePicker.visibility = View.VISIBLE
+        binding.bestByDatePicker.visibility = View.VISIBLE
     }
 
     private fun hideDatePicker() {
-        binding.itemBestByDatePicker.visibility = View.GONE
+        binding.bestByDatePicker.visibility = View.GONE
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setLocationPickerActivation() {
         if (model.isShared) {
             enable(binding.locateMeButton)
-            enable(binding.itemAddressTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
-            enable(binding.itemDescriptionTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
+            enable(binding.addressTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
+            enable(binding.descriptionTextInputLayout, InputType.TYPE_TEXT_VARIATION_SHORT_MESSAGE)
         }
         else {
             disable(binding.locateMeButton)
-            disable(binding.itemAddressTextInputLayout)
-            disable(binding.itemDescriptionTextInputLayout)
+            disable(binding.addressTextInputLayout)
+            disable(binding.descriptionTextInputLayout)
         }
 
     }

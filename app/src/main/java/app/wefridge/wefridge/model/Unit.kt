@@ -20,18 +20,6 @@ enum class Unit(val value: Int, @StringRes val _display: Int) {
         private val VALUES = values()
 
         fun getByValue(value: Int?) = VALUES.firstOrNull { it.value == value }
-
-        fun getByString(symbol: String, callingFragment: Fragment): Unit? {
-            return when (symbol) {
-                callingFragment.getString(R.string.item_unit_gram) -> GRAM
-                callingFragment.getString(R.string.item_unit_kilogram) -> KILOGRAM
-                callingFragment.getString(R.string.item_unit_liter) -> LITER
-                callingFragment.getString(R.string.item_unit_milliliter) -> MILLILITER
-                callingFragment.getString(R.string.item_unit_ounce) -> OUNCE
-                callingFragment.getString(R.string.item_unit_piece) -> PIECE
-                else -> null
-            }
-        }
     }
 
     fun display(ctx: Context): String = ctx.getString(_display)
