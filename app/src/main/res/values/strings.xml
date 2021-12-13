@@ -51,9 +51,5 @@
     <string name="settings_contact_email_hint">This is used, if someone wants to contact you about your shared items</string>
     <string name="avatar_description">Avatar</string>
     <string name="logout">Logout</string>
-    <string name="msg_token_fmt">FCM Token:</string>
-    <string name="TAG_Messservice">Messegingservice:</string>
-    <string name="TAG_Main">Main_Activity:</string>
     <string name="default_notification_channel_id">app.wefridge.wefridge</string>
-    <string name="fcm_message">Hier könnte deine Werbung stehen</string>
 </resources>

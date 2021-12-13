@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         this.onSignInResult(res)
     }
 
-    @SuppressLint("StringFormatInvalid")
+
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse
         if (result.resultCode != RESULT_OK) {
@@ -45,14 +45,12 @@ class MainActivity : AppCompatActivity() {
         }
         // Successfully signed in
         val user = FirebaseAuth.getInstance().currentUser ?: return authWall()
-        Log.d("FCM", "This is the user id: ${user.uid} ")
+
+        //to add the user to a personal Topic
         Firebase.messaging.subscribeToTopic(user.uid)
             .addOnCompleteListener { task ->
-                var msg = "subscribed to:"+user.uid
-                if (!task.isSuccessful) {
-                    msg = "subscribe_failed"
-                }
-                Log.d(R.string.TAG_Main.toString(), msg)
+                Log.d("Main_Activity: ", if (task.isSuccessful)
+                    "Subscribed to ${user.uid}" else "Failed to subscribe")
             }
 
 

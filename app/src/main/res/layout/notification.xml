@@ -13,7 +13,7 @@
             android:layout_marginTop="10dp"
             android:layout_height="70dp"
             android:layout_width="70dp"
-            android:src="@drawable/ic_launcher_foreground"  />
+            android:src="@drawable/show_fridge_notification" />
 
         <TextView
             android:id="@+id/title_logo"
