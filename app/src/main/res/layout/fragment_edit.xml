@@ -15,7 +15,7 @@
         android:paddingVertical="8dp">
 
         <app.wefridge.wefridge.EditItemTextInputLayout
-            android:id="@+id/itemNameTextInputLayout"
+            android:id="@+id/name_text_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/item_name_hint"
@@ -39,7 +39,7 @@
             android:layout_marginVertical="8dp">
 
             <app.wefridge.wefridge.EditItemTextInputLayout
-                android:id="@+id/itemQuantityTextInputLayout"
+                android:id="@+id/quantity_text_input_layout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:hint="@string/item_quantity_hint"
@@ -76,7 +76,7 @@
         </LinearLayout>
 
         <app.wefridge.wefridge.EditItemTextInputLayout
-            android:id="@+id/itemBestByDateTextInputLayout"
+            android:id="@+id/best_by_date_text_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/item_best_by_date_hint"
@@ -93,14 +93,14 @@
         </app.wefridge.wefridge.EditItemTextInputLayout>
 
         <DatePicker
-            android:id="@+id/itemBestByDatePicker"
+            android:id="@+id/best_by_date_picker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:datePickerMode="spinner"
             android:calendarViewShown="false"/>
 
         <LinearLayout
-            android:id="@+id/locationPickerBox"
+            android:id="@+id/location_picker_box"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/location_picker_background"
@@ -119,7 +119,7 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/itemIsSharedSwitch"
+                    android:id="@+id/is_shared_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
@@ -127,7 +127,7 @@
                     style="@style/Widget.App.Switch"/>
 
                 <TextView
-                    android:id="@+id/itemIsSharedSwitchLabel"
+                    android:id="@+id/is_shared_switch_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/location_switch_label"
@@ -142,7 +142,7 @@
 
             <!-- This code snippet for a text field was taken (and modified) from: https://material.io/components/text-fields/android#outlined-text-field-->
             <app.wefridge.wefridge.EditItemTextInputLayout
-                android:id="@+id/itemAddressTextInputLayout"
+                android:id="@+id/address_text_input_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/address_text_input_layout_hint"
@@ -162,7 +162,7 @@
 
             <!-- The textAllCaps property was taken from https://stackoverflow.com/questions/26958909/why-is-my-button-text-forced-to-all-caps-on-lollipop -->
             <Button
-                android:id="@+id/locateMeButton"
+                android:id="@+id/locate_me_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/location_picker_locate_button_text"
@@ -177,7 +177,7 @@
                 />
 
             <app.wefridge.wefridge.EditItemTextInputLayout
-                android:id="@+id/itemDescriptionTextInputLayout"
+                android:id="@+id/description_text_input_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/item_description_hint"
@@ -194,7 +194,7 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/itemSaveButton"
+            android:id="@+id/save_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/item_save_button_text"
