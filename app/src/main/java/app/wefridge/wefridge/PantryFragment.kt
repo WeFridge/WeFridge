@@ -15,9 +15,6 @@ import app.wefridge.wefridge.model.ItemController
 import app.wefridge.wefridge.model.UserController
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.ListenerRegistration
-import androidx.recyclerview.widget.RecyclerView
-
-
 
 
 /**
@@ -54,7 +51,7 @@ class PantryFragment : Fragment() {
             findNavController().navigate(R.id.action_from_list_to_edit)
         }
 
-        val itemSwipeTouchHelper = ItemTouchHelper(ItemSwipeToDeleteCallback(onSwipedToDelete = { position ->
+        val itemSwipeTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(onSwipedToDelete = { position ->
             val deletedItem = values[position]
             ItemController.deleteItem(deletedItem, {
                 if (context != null)
