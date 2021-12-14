@@ -82,16 +82,16 @@ class ItemUnitTest {
 
 
         assertEquals(item.firebaseId, dummyFirebaseId)
-        assertEquals(item.name, itemAsHashMap[ITEM_NAME] as String)
-        assertEquals(item.description, itemAsHashMap[ITEM_DESCRIPTION] as String)
-        assertEquals(item.isShared, itemAsHashMap[ITEM_IS_SHARED] as Boolean)
-        assertEquals(item.quantity, itemAsHashMap[ITEM_QUANTITY] as Long)
-        assertEquals(item.unit.value, itemAsHashMap[ITEM_UNIT] as Int)
+        assertEquals(item.name, itemAsHashMap[ITEM_NAME])
+        assertEquals(item.description, itemAsHashMap[ITEM_DESCRIPTION])
+        assertEquals(item.isShared, itemAsHashMap[ITEM_IS_SHARED])
+        assertEquals(item.quantity, itemAsHashMap[ITEM_QUANTITY])
+        assertEquals(item.unit.value, itemAsHashMap[ITEM_UNIT])
         assertEquals(Timestamp(item.bestByDate!!), itemAsHashMap[ITEM_BEST_BY])
-        assertEquals(item.location, itemAsHashMap[ITEM_LOCATION] as GeoPoint)
-        assertEquals(item.geohash, itemAsHashMap[ITEM_GEOHASH] as String)
-        assertEquals(item.contactName, itemAsHashMap[ITEM_CONTACT_NAME] as String)
-        assertEquals(item.contactEmail, itemAsHashMap[ITEM_CONTACT_EMAIL] as String)
+        assertEquals(item.location, itemAsHashMap[ITEM_LOCATION])
+        assertEquals(item.geohash, itemAsHashMap[ITEM_GEOHASH])
+        assertEquals(item.contactName, itemAsHashMap[ITEM_CONTACT_NAME])
+        assertEquals(item.contactEmail, itemAsHashMap[ITEM_CONTACT_EMAIL])
         assertEquals(item.ownerReference, ownerRef)
     }
 }
