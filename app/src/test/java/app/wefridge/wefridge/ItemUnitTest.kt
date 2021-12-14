@@ -2,21 +2,38 @@ package app.wefridge.wefridge
 
 import app.wefridge.wefridge.model.Item
 import app.wefridge.wefridge.model.Unit
+import com.firebase.geofire.GeoFireUtils
+import com.firebase.geofire.GeoLocation
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FirebaseFirestore
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkStatic
+import com.google.firebase.firestore.GeoPoint
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
-import org.w3c.dom.Document
+import java.util.*
 
 
 class ItemUnitTest {
+
+
     private lateinit var item: Item
     private lateinit var ownerRef: DocumentReference
+
+    private val dummyFirebaseId = "ABC"
+    private val dummyGeoPoint = GeoPoint(59.3294,18.0686)
+    private val dummyHashMap = hashMapOf<String, Any>(
+        ITEM_NAME to "Gouda Cheese",
+        ITEM_DESCRIPTION to "So good!",
+        ITEM_IS_SHARED to true,
+        ITEM_QUANTITY to 10L,
+        ITEM_UNIT to Unit.KILOGRAM,
+        ITEM_BEST_BY to Date(),
+        ITEM_LOCATION to dummyGeoPoint,
+        ITEM_GEOHASH to GeoFireUtils.getGeoHashForLocation(GeoLocation(dummyGeoPoint.latitude, dummyGeoPoint.longitude)),
+        ITEM_CONTACT_NAME to "Karen Anderson",
+        ITEM_CONTACT_EMAIL to "karen@anderson.de"
+    )
 
     @Before
     fun setup() {
@@ -37,8 +54,44 @@ class ItemUnitTest {
         assertEquals(item.unit, Unit.PIECE)
         assertEquals(item.bestByDate, null)
         assertEquals(item.location, null)
+        assertEquals(item.geohash, null)
         assertEquals(item.contactName, null)
         assertEquals(item.contactEmail, null)
+        assertEquals(item.ownerReference, ownerRef)
+    }
+
+    @Test
+    fun testGetHashMap() {
+
+        // arrange
+        item.firebaseId = dummyFirebaseId
+        item.name = dummyHashMap[ITEM_NAME] as String
+        item.description = dummyHashMap[ITEM_DESCRIPTION] as String
+        item.isShared = dummyHashMap[ITEM_IS_SHARED] as Boolean
+        item.quantity = dummyHashMap[ITEM_QUANTITY] as Long
+        item.unit = dummyHashMap[ITEM_UNIT] as Unit
+        item.bestByDate = dummyHashMap[ITEM_BEST_BY] as Date
+        item.location = dummyHashMap[ITEM_LOCATION] as GeoPoint
+        item.geohash = dummyHashMap[ITEM_GEOHASH] as String
+        item.contactName = dummyHashMap[ITEM_CONTACT_NAME] as String
+        item.contactEmail = dummyHashMap[ITEM_CONTACT_EMAIL] as String
+
+
+        // act
+        val itemAsHashMap = item.getHashMap()
+
+
+        assertEquals(item.firebaseId, dummyFirebaseId)
+        assertEquals(item.name, itemAsHashMap[ITEM_NAME] as String)
+        assertEquals(item.description, itemAsHashMap[ITEM_DESCRIPTION] as String)
+        assertEquals(item.isShared, itemAsHashMap[ITEM_IS_SHARED] as Boolean)
+        assertEquals(item.quantity, itemAsHashMap[ITEM_QUANTITY] as Long)
+        assertEquals(item.unit.value, itemAsHashMap[ITEM_UNIT] as Int)
+        assertEquals(Timestamp(item.bestByDate!!), itemAsHashMap[ITEM_BEST_BY])
+        assertEquals(item.location, itemAsHashMap[ITEM_LOCATION] as GeoPoint)
+        assertEquals(item.geohash, itemAsHashMap[ITEM_GEOHASH] as String)
+        assertEquals(item.contactName, itemAsHashMap[ITEM_CONTACT_NAME] as String)
+        assertEquals(item.contactEmail, itemAsHashMap[ITEM_CONTACT_EMAIL] as String)
         assertEquals(item.ownerReference, ownerRef)
     }
 }

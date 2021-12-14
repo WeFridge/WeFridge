@@ -38,10 +38,10 @@ class ItemController {
                 callbackOnSuccess(items)
             }
 
-                .addOnFailureListener { exception ->
-                    Log.w(TAG, "Error getting items.", exception)
-                    callbackOnFailure(exception)
-                }
+            .addOnFailureListener { exception ->
+                Log.w(TAG, "Error getting items.", exception)
+                callbackOnFailure(exception)
+            }
         }
 
         fun deleteItem(item: Item) {
@@ -95,7 +95,6 @@ class ItemController {
             }
         }
 
-        // TODO: set this function to private and adapt UnitTests appropriately
         private fun parse(item: DocumentSnapshot): Item {
             with(item) {
                 return Item(id,
