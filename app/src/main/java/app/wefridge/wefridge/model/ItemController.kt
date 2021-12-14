@@ -91,7 +91,7 @@ class ItemController {
             return try {
                 parse(item)
             } catch (exception: ItemOwnerMissingException) {
-                return null
+                null
             }
         }
 
