@@ -18,6 +18,8 @@ class ItemControllerUnitTest {
 
     @Test
     fun testParsing() {
+        // the following instructions regarding the mockk library were inspired by
+        // https://stackoverflow.com/questions/58158711/android-local-unit-test-mock-firebaseauth-with-mockk/58158712#58158712
         mockkStatic(FirebaseFirestore::class)
         every { FirebaseFirestore.getInstance() } returns mockk(relaxed = true)
 
