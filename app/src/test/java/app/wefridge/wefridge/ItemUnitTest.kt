@@ -36,7 +36,7 @@ class ItemUnitTest {
     )
 
     @Before
-    fun setup() {
+    fun setUp() {
         // arrange
         // set up Item with ownerReference
         ownerRef = Mockito.mock(DocumentReference::class.java)

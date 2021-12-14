@@ -1,17 +1,22 @@
 package app.wefridge.wefridge
 
+import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
 import app.wefridge.wefridge.model.Item
 import app.wefridge.wefridge.model.ItemController
 import app.wefridge.wefridge.model.Unit
+import com.firebase.geofire.GeoFireUtils
+import com.firebase.geofire.GeoLocation
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.*
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkStatic
+import io.mockk.*
 import org.junit.Assert.*
+import org.junit.Before
 import java.util.Date
 import org.junit.Test
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
+import org.mockito.Mockito.verify
+import org.w3c.dom.Document
 
 
 class ItemControllerUnitTest {
@@ -28,9 +33,19 @@ class ItemControllerUnitTest {
         val dr = Mockito.mock(DocumentReference::class.java)
 
         // dummy data
+        val dummyGeoPoint = GeoPoint(59.3294,18.0686)
         val values = mapOf<String, Any>(
             ITEM_OWNER to dr,
-            ITEM_UNIT to Unit.KILOGRAM.value.toLong()
+            ITEM_NAME to "Gouda Cheese",
+            ITEM_DESCRIPTION to "So good!",
+            ITEM_IS_SHARED to true,
+            ITEM_QUANTITY to 10L,
+            ITEM_UNIT to Unit.KILOGRAM.value.toLong(),
+            ITEM_BEST_BY to Date(),
+            ITEM_LOCATION to dummyGeoPoint,
+            ITEM_GEOHASH to GeoFireUtils.getGeoHashForLocation(GeoLocation(dummyGeoPoint.latitude, dummyGeoPoint.longitude)),
+            ITEM_CONTACT_NAME to "Karen Anderson",
+            ITEM_CONTACT_EMAIL to "karen@anderson.de"
         )
         val id = "demo_id"
 
@@ -63,5 +78,69 @@ class ItemControllerUnitTest {
         val item1 = Item(id, unit = Unit.KILOGRAM, ownerReference = dr)
         assertEquals("Parsing unit failed", item!!.unit, item1.unit)
         assertEquals("Parsing id failed", item.firebaseId, item1.firebaseId)
+    }
+
+    @Test
+    fun testParsing_withoutItemOwner() {
+        mockkStatic(FirebaseFirestore::class)
+        every { FirebaseFirestore.getInstance() } returns mockk(relaxed = true)
+        val itemDocSnap = Mockito.mock(DocumentSnapshot::class.java)
+        val dummyGeoPoint = GeoPoint(59.3294,18.0686)
+        val values = mapOf<String, Any>(
+            ITEM_NAME to "Gouda Cheese",
+            ITEM_DESCRIPTION to "So good!",
+            ITEM_IS_SHARED to true,
+            ITEM_QUANTITY to 10L,
+            ITEM_UNIT to Unit.KILOGRAM.value.toLong(),
+            ITEM_BEST_BY to Timestamp(Date()),
+            ITEM_LOCATION to dummyGeoPoint,
+            ITEM_GEOHASH to GeoFireUtils.getGeoHashForLocation(GeoLocation(dummyGeoPoint.latitude, dummyGeoPoint.longitude)),
+            ITEM_CONTACT_NAME to "Karen Anderson",
+            ITEM_CONTACT_EMAIL to "karen@anderson.de"
+        )
+
+        values.forEach { (key, value) ->
+            Mockito.`when`(when (value) {
+                is DocumentReference -> itemDocSnap.getDocumentReference(key)
+                is Boolean -> itemDocSnap.getBoolean(key)
+                is Long -> itemDocSnap.getLong(key)
+                is GeoPoint -> itemDocSnap.getGeoPoint(key)
+                is Timestamp -> itemDocSnap.getTimestamp(key)
+                is Date -> itemDocSnap.getDate(key)
+                is Blob -> itemDocSnap.getBlob(key)
+                else -> itemDocSnap.getString(key)
+            }).thenReturn(value)
+        }
+        Mockito.`when`(itemDocSnap.id).thenReturn("some_id")
+
+        val item = ItemController.tryParse(itemDocSnap)
+
+        assertEquals(null, item)
+    }
+
+    // the following code lines were inspired by
+    // https://stackoverflow.com/questions/66275642/mockk-spy-on-top-level-private-function-in-kotlin
+    // verify, that saveItem calls addItem when a new Item has to be saved
+    @Test
+    fun testSaveItem_newItem() {
+        mockkStatic(FirebaseFirestore::class)
+        every { FirebaseFirestore.getInstance() } returns mockk(relaxed = true)
+        val dr = Mockito.mock(DocumentReference::class.java)
+        val foo = spyk(ItemController, recordPrivateCalls = true)
+        val item = Item(ownerReference = dr)
+        foo.saveItem(item, callbackOnSuccess = {}, callbackOnFailure = {_ -> })
+        verify(exactly = 1) { foo["addItem"](any<Item>(), any<() -> kotlin.Unit>(), any<(Exception) -> kotlin.Unit>()) }
+    }
+
+    // verify, that saveItem calls overrideItem when an existing Item has to be saved
+    @Test
+    fun testSaveItem_existingItem() {
+        mockkStatic(FirebaseFirestore::class)
+        every { FirebaseFirestore.getInstance() } returns mockk(relaxed = true)
+        val dr = Mockito.mock(DocumentReference::class.java)
+        val foo = spyk(ItemController, recordPrivateCalls = true)
+        val item = Item(firebaseId = "some_id", ownerReference = dr)
+        foo.saveItem(item, callbackOnSuccess = {}, callbackOnFailure = {_ -> })
+        verify(exactly = 1) { foo["overrideItem"](any<Item>(), any<() -> kotlin.Unit>(), any<(Exception) -> kotlin.Unit>()) }
     }
 }
