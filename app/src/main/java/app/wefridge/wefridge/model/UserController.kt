@@ -1,6 +1,8 @@
 package app.wefridge.wefridge.model
 
 import android.content.SharedPreferences
+import android.util.Log
+import androidx.core.content.edit
 import app.wefridge.wefridge.SETTINGS_EMAIL
 import app.wefridge.wefridge.SETTINGS_NAME
 import app.wefridge.wefridge.USERS_COLLECTION_NAME
@@ -8,6 +10,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
+
+const val SETTINGS_TOPIC = "SETTINGS_TOPIC"
 
 class UserController {
     companion object {
@@ -116,6 +122,45 @@ class UserController {
                 .addOnFailureListener {
                     onFailure(it)
                 }
+        }
+
+        fun unsubscribeFromMessaging(sp: SharedPreferences) {
+            val oldTopic = sp.getString(SETTINGS_TOPIC, null)
+
+            if (oldTopic != null)
+                Firebase.messaging.unsubscribeFromTopic(oldTopic)
+                    .addOnCompleteListener { task ->
+                        Log.d(
+                            "FCM", if (task.isSuccessful)
+                                "Unsubscribed to $oldTopic" else "Failed to unsubscribe"
+                        )
+                    }
+        }
+
+        fun subscribeToMessaging(sp: SharedPreferences) {
+            val oldTopic = sp.getString(SETTINGS_TOPIC, null)
+            getUser({ user ->
+                val newTopic = (user.ownerReference ?: user.ref).id
+
+                if (oldTopic == newTopic)
+                    return@getUser
+
+                unsubscribeFromMessaging(sp)
+
+                sp.edit {
+                    putString(SETTINGS_TOPIC, newTopic)
+                    apply()
+                }
+
+                Firebase.messaging.subscribeToTopic(newTopic)
+                    .addOnCompleteListener { task ->
+                        Log.d(
+                            "FCM", if (task.isSuccessful)
+                                "Subscribed to $newTopic" else "Failed to subscribe"
+                        )
+                    }
+            }, {})
+
         }
     }
 }

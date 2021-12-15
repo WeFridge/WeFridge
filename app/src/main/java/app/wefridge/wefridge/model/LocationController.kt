@@ -1,6 +1,7 @@
 package app.wefridge.wefridge.model
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
@@ -70,43 +71,49 @@ class LocationController(private val servedFragment: Fragment, private val callb
         }
     }
 
-    fun buildAddressStringFrom(geoPoint: GeoPoint): String {
-        val geocoder = Geocoder(servedFragment.requireContext(), Locale.getDefault())
-        val addressString: String
-        try {
-            val address =
-                geocoder.getFromLocation(geoPoint.latitude, geoPoint.longitude, 1)
+    companion object {
+        fun buildAddressStringFrom(geoPoint: GeoPoint, ctx: Context): String {
+            val geocoder = Geocoder(ctx, Locale.getDefault())
+            val addressString: String
+            try {
+                val address =
+                    geocoder.getFromLocation(geoPoint.latitude, geoPoint.longitude, 1)
 
-            val addressLine = address[0].getAddressLine(0)
-            val locality = address[0].locality
-            val adminArea = address[0].adminArea
-            val postalCode = address[0].postalCode
+                val addressLine = address[0].getAddressLine(0)
+                val locality = address[0].locality
+                val adminArea = address[0].adminArea
+                val postalCode = address[0].postalCode
 
-            addressString = "${addressLine}, $postalCode $locality, $adminArea"
+                addressString = "${addressLine}, $postalCode $locality, $adminArea"
 
-        } catch (exc: IOException) {
-            Log.e("LocationController", "Error while building address string from GeoPoint: ", exc)
-            throw exc
+            } catch (exc: IOException) {
+                Log.e(
+                    "LocationController",
+                    "Error while building address string from GeoPoint: ",
+                    exc
+                )
+                throw exc
+            }
+
+            return addressString
+
         }
 
-        return addressString
+        fun getGeoPointFrom(address: String, ctx: Context): GeoPoint {
+            // the following piece of code is inspired by https://stackoverflow.com/questions/3574644/how-can-i-find-the-latitude-and-longitude-from-address/27834110#27834110
+            val geocoder = Geocoder(ctx)
+            val matchedGeoPoint: GeoPoint
 
-    }
+            try {
+                val matchedAddresses: List<Address> = geocoder.getFromLocationName(address, 1)
+                val chosenAddress = matchedAddresses[0]
+                matchedGeoPoint = GeoPoint(chosenAddress.latitude, chosenAddress.longitude)
+            } catch (exc: Exception) {
+                Log.e("EditFragment", "Error while building GeoPoint from address string: ", exc)
+                throw exc
+            }
 
-    fun getGeoPointFrom(address: String): GeoPoint {
-        // the following piece of code is inspired by https://stackoverflow.com/questions/3574644/how-can-i-find-the-latitude-and-longitude-from-address/27834110#27834110
-        val geocoder = Geocoder(servedFragment.requireContext())
-        val matchedGeoPoint: GeoPoint
-
-        try {
-            val matchedAddresses: List<Address> = geocoder.getFromLocationName(address, 1)
-            val chosenAddress = matchedAddresses[0]
-            matchedGeoPoint = GeoPoint(chosenAddress.latitude, chosenAddress.longitude)
-        } catch (exc: Exception) {
-            Log.e("EditFragment", "Error while building GeoPoint from address string: ", exc)
-            throw exc
+            return matchedGeoPoint
         }
-
-        return matchedGeoPoint
     }
 }

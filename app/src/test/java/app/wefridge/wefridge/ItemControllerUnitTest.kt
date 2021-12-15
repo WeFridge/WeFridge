@@ -1,154 +1,122 @@
 package app.wefridge.wefridge
 
-import app.wefridge.wefridge.model.Item
-import app.wefridge.wefridge.model.ItemController
+import app.wefridge.wefridge.model.*
 import app.wefridge.wefridge.model.Unit
-import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.*
+import io.mockk.*
 import org.junit.Assert.*
-import org.junit.BeforeClass
+import org.junit.Before
 import java.util.Date
 import org.junit.Test
+import org.mockito.Mockito
+
 
 class ItemControllerUnitTest {
 
-    // TODO: fix this unit tests (problem with FirebaseFirestore.getInstance() because it's asynchronous)
+    // TODO: test implementation of listeners in deleteItem (when related branch gets pulled into main)
+    // TODO: consider to delete getItems in ItemController
 
+    // Mock objects have the same methods as the original class
+    private lateinit var itemDocSnap: DocumentSnapshot
+    private val ownerDocRef = Mockito.mock(DocumentReference::class.java)
 
-    companion object {
-        private val firebaseId = "ABC"
-        private val name = "Gouda Cheese"
-        private val description = "So good!"
-        private val isShared = false
-        private val quantity: Long = 0
-        private val unit = Unit.KILOGRAM
-        private val unitValue: Long = unit.value.toLong()
-        private val sharedEmail = "karen@gmail.com"
-        private val bestByDate = Date()
-        private val location = GeoPoint(59.3294,18.0686)
-        private val geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(location.latitude, location.longitude))
-        private val contactName = "Karen Anderson"
-        private val contactEmail = "karen@anderson.de"
-        private val ownerID = "MnYhb6LQbRjdLRjvnYqt"
+    // dummy data
+    private var dummyUserName = "Karen Anderson"
+    private var dummyUserEmail = "karen@anderson.de"
+    private var dummyFirebaseId = "demo_id"
+    private var dummyGeoPoint = GeoPoint(59.3294,18.0686)
+    private var dummyValues = mapOf<String, Any>(
+        ITEM_OWNER to ownerDocRef,
+        ITEM_NAME to "Gouda Cheese",
+        ITEM_DESCRIPTION to "So good!",
+        ITEM_IS_SHARED to true,
+        ITEM_QUANTITY to 10L,
+        ITEM_UNIT to Unit.KILOGRAM.value.toLong(),
+        ITEM_BEST_BY to Date(),
+        ITEM_LOCATION to dummyGeoPoint,
+        ITEM_GEOHASH to GeoFireUtils.getGeoHashForLocation(GeoLocation(dummyGeoPoint.latitude, dummyGeoPoint.longitude)),
+        ITEM_CONTACT_NAME to dummyUserName,
+        ITEM_CONTACT_EMAIL to dummyUserEmail
+    )
 
-        private lateinit var ownerRef: DocumentReference
-        private lateinit var itemData: Map<String, Any>
+    @Before
+    fun setUp() {
+        // the following instructions regarding the mockk library were inspired by
+        // https://stackoverflow.com/questions/58158711/android-local-unit-test-mock-firebaseauth-with-mockk/58158712#58158712
+        mockkStatic(FirebaseFirestore::class)
+        every { FirebaseFirestore.getInstance() } returns mockk(relaxed = true)
+        itemDocSnap = mockDocumentSnapshotWith(dummyValues, dummyFirebaseId)
+    }
 
-        @BeforeClass @JvmStatic
-        fun setUpItemData() {
-            val documentSnapshotTask: Task<DocumentSnapshot> =
-                FirebaseFirestore.getInstance().document("users/${ownerID}").get()
-            val ownerDocumentSnapshot: DocumentSnapshot = Tasks.await(documentSnapshotTask)
-            ownerRef = ownerDocumentSnapshot.reference
+    @Test
+    fun testParsing() {
+        // The resulting DocumentSnapshot can be used as if it came from Firestore.
+        val item = ItemController.tryParse(itemDocSnap)
+        assertNotNull("Item is null, parsing failed", item)
 
-            itemData = mapOf<String, Any>(
-                "name" to name,
-                "description" to description,
-                "is_shared" to isShared,
-                "quantity" to quantity,
-                "unit" to unitValue,
-                "shared_email" to sharedEmail,
-                "best_by" to Timestamp(bestByDate),
-                "location" to location,
-                "geohash" to geohash,
-                "contact_name" to contactName,
-                "contact_email" to contactEmail,
-                "owner" to ownerRef
-            )
+        // Filling a Item "by hand" to compare it to the parsed Item.
+        val item1 = Item(dummyFirebaseId, unit = Unit.KILOGRAM, ownerReference = ownerDocRef)
+        assertEquals("Parsing unit failed", item!!.unit, item1.unit)
+        assertEquals("Parsing id failed", item.firebaseId, item1.firebaseId)
+    }
+
+    @Test
+    fun testParsingWithoutItemOwner() {
+        dummyValues = dummyValues.filter { itemAttribute -> itemAttribute.key != ITEM_OWNER }
+        itemDocSnap = mockDocumentSnapshotWith(dummyValues, dummyFirebaseId)
+
+        val item = ItemController.tryParse(itemDocSnap)
+        assertEquals(null, item)
+
+    }
+
+    // the following code lines were inspired by
+    // https://stackoverflow.com/questions/66275642/mockk-spy-on-top-level-private-function-in-kotlin
+    // verify, that saveItem calls addItem when a new Item has to be saved
+    @Test
+    fun testSaveItemWithNewItem() {
+        val dr = Mockito.mock(DocumentReference::class.java)
+        val foo = spyk(ItemController, recordPrivateCalls = true)
+        val item = Item(ownerReference = dr)
+        foo.saveItem(item, callbackOnSuccess = {}, callbackOnFailure = {_ -> })
+        verify(exactly = 1) { foo["addItem"](any<Item>(), any<() -> kotlin.Unit>(), any<(Exception) -> kotlin.Unit>()) }
+    }
+
+    // verify, that saveItem calls overrideItem when an existing Item has to be saved
+    @Test
+    fun testSaveItemWithExistingItem() {
+        val dr = Mockito.mock(DocumentReference::class.java)
+        val itemController = spyk(ItemController, recordPrivateCalls = true)
+        val item = Item(firebaseId = "some_id", ownerReference = dr)
+        itemController.saveItem(item, callbackOnSuccess = {}, callbackOnFailure = { _ -> })
+        verify(exactly = 1) { itemController["overrideItem"](any<Item>(), any<() -> kotlin.Unit>(), any<(Exception) -> kotlin.Unit>()) }
+    }
+
+    private fun mockDocumentSnapshotWith(values: Map<String, Any>, id: String): DocumentSnapshot {
+        // Mockito works by intercepting method calls.
+        // With "Mockito.`when`(<method call>).thenReturn(<return value>)" a return value can be replaced.
+        // If a method isn't replaced, it will return null.
+        //
+        // Using the values map, the DocumentSnapshot can be "filled" with dummy data,
+        // as long as only those methods below will be used.
+        val dc = Mockito.mock(DocumentSnapshot::class.java)
+        values.forEach { (key, value) ->
+            Mockito.`when`(when (value) {
+                is DocumentReference -> dc.getDocumentReference(key)
+                is Boolean -> dc.getBoolean(key)
+                is Long -> dc.getLong(key)
+                is GeoPoint -> dc.getGeoPoint(key)
+                is Timestamp -> dc.getTimestamp(key)
+                is Date -> dc.getDate(key)
+                is Blob -> dc.getBlob(key)
+                else -> dc.getString(key)
+            }).thenReturn(value)
         }
-    }
+        Mockito.`when`(dc.id).thenReturn(id)
 
-    @Test
-    fun testParsingWithAllFieldsExisting() {
-        val parsedItem = ItemController.parse(itemData, firebaseId)
-
-        val expectedItem = Item(firebaseId, name, description, isShared, quantity.toInt(), unit, sharedEmail, bestByDate, location, geohash, contactName, contactEmail, ownerRef)
-        assertEquals(expectedItem, parsedItem)
-    }
-
-    @Test
-    fun testParsingWithoutFirebaseId() {
-        val parsedItem = ItemController.parse(itemData, null)
-        val expectedItem = Item(null, name, description, isShared, quantity.toInt(), unit, sharedEmail, bestByDate, location, geohash, contactName, contactEmail, ownerRef)
-        assertEquals(expectedItem, parsedItem)
-    }
-
-    @Test
-    fun testParsingWithoutName() {
-        val modifiedItemData = mapWithNullValue(itemData, "name")
-        val parsedItem = ItemController.parse(modifiedItemData, firebaseId)
-        val itemExpected = Item(firebaseId, null, description, isShared, quantity.toInt(), unit, sharedEmail, bestByDate, location, geohash, contactName, contactEmail, ownerRef)
-        assertEquals(itemExpected, parsedItem)
-    }
-
-    @Test
-    fun testParsingWithoutDescription() {
-        val modifiedItemData = mapWithNullValue(itemData, "description")
-        val parsedItem = ItemController.parse(modifiedItemData, firebaseId)
-        val itemExpected = Item(firebaseId, name, null, isShared, quantity.toInt(), unit, sharedEmail, bestByDate, location, geohash, contactName, contactEmail, ownerRef)
-        assertEquals(itemExpected, parsedItem)
-    }
-
-    @Test
-    fun testParsingWithoutIsShared() {
-        val modifiedItemData = mapWithNullValue(itemData, "is_shared")
-        val parsedItem = ItemController.parse(modifiedItemData, firebaseId)
-        val itemExpected = Item(firebaseId, name, description, null, quantity.toInt(), unit, sharedEmail, bestByDate, location, geohash, contactName, contactEmail, ownerRef)
-        assertEquals(itemExpected, parsedItem)
-    }
-
-    @Test
-    fun testParsingWithoutQuantity() {
-        val modifiedItemData = mapWithNullValue(itemData, "quantity")
-        val parsedItem = ItemController.parse(modifiedItemData, firebaseId)
-        val itemExpected = Item(firebaseId, name, description, isShared, null, unit, sharedEmail, bestByDate, location, geohash, contactName, contactEmail, ownerRef)
-        assertEquals(itemExpected, parsedItem)
-    }
-
-    @Test
-    fun testParsingWithoutUnit() {
-        val modifiedItemData = mapWithNullValue(itemData, "unit")
-        val parsedItem = ItemController.parse(modifiedItemData, firebaseId)
-        val itemExpected = Item(firebaseId, name, description, isShared, quantity.toInt(), null, sharedEmail, bestByDate, location, geohash, contactName, contactEmail, ownerRef)
-        assertEquals(itemExpected, parsedItem)
-    }
-
-    @Test
-    fun testParsingWithoutSharedEmail() {
-        val modifiedItemData = mapWithNullValue(itemData, "shared_email")
-        val parsedItem = ItemController.parse(modifiedItemData, firebaseId)
-        val itemExpected = Item(firebaseId, name, description, isShared, quantity.toInt(), unit, null, bestByDate, location, geohash, contactName, contactEmail, ownerRef)
-        assertEquals(itemExpected, parsedItem)
-    }
-
-    @Test
-    fun testParsingWithoutDate() {
-        val modifiedItemData = mapWithNullValue(itemData, "best_by")
-        val parsedItem = ItemController.parse(modifiedItemData, firebaseId)
-        val itemExpected = Item(firebaseId, name, description, isShared, quantity.toInt(), unit, sharedEmail, null, location, geohash, contactName, contactEmail, ownerRef)
-        assertEquals(itemExpected, parsedItem)
-    }
-
-    @Test(expected = ItemOwnerMissingException::class)
-    fun testParsingWithoutOwner() {
-        val modifiedItemData = mapWithNullValue(itemData, "owner")
-        ItemController.parse(modifiedItemData, firebaseId)
-    }
-
-    private fun mapWithNullValue(mutableMap: Map<String, Any>, field: String): MutableMap<String, Any> {
-        var modifiedHashMap = HashMap<String, Any?>()
-        for ((key, value) in mutableMap) {
-            if (key == field) modifiedHashMap[key] = null
-            else modifiedHashMap[key] = value
-        }
-        return modifiedHashMap as MutableMap<String, Any>
+        return dc
     }
 }
