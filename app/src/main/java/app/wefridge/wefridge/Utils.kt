@@ -87,3 +87,8 @@ fun internetAvailable(ctx: Context): Boolean {
 
     return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
 }
+
+@RequiresApi(Build.VERSION_CODES.N)
+fun displayToastOnInternetUnavailable(ctx: Context) {
+    if (!internetAvailable(ctx)) toastOnInternetUnavailable(ctx).show()
+}

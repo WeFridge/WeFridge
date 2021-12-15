@@ -2,6 +2,7 @@ package app.wefridge.wefridge
 
 import android.app.AlertDialog
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -271,6 +272,8 @@ class SettingsFragment : Fragment() {
             }
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            displayToastOnInternetUnavailable(requireContext())
     }
 
     private fun logout() {

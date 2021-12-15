@@ -1,5 +1,6 @@
 package app.wefridge.wefridge
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -51,17 +52,20 @@ class PantryFragment : Fragment() {
             findNavController().navigate(R.id.action_from_list_to_edit)
         }
 
-        val itemSwipeTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(onSwipedToDelete = { position ->
-            val deletedItem = values[position]
-            ItemController.deleteItem(deletedItem, {
-                if (context != null)
-                    Toast.makeText(context, "Item deleted", Toast.LENGTH_SHORT).show()
-            }, { })
-        }, requireContext()))
+        val itemSwipeTouchHelper =
+            ItemTouchHelper(SwipeToDeleteCallback(onSwipedToDelete = { position ->
+                val deletedItem = values[position]
+                ItemController.deleteItem(deletedItem, {
+                    if (context != null)
+                        Toast.makeText(context, "Item deleted", Toast.LENGTH_SHORT).show()
+                }, { })
+            }, requireContext()))
 
         itemSwipeTouchHelper.attachToRecyclerView(recyclerView)
-    }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            displayToastOnInternetUnavailable(requireContext())
+    }
 
 
     override fun onStart() {
