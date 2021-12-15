@@ -73,6 +73,7 @@ class NearbyItemFragment : Fragment() {
             layoutManager = linearLayoutManager
             adapter = _adapter
             scrollListener = EndlessRecyclerOnScrollListener(linearLayoutManager) {
+                radius += 1000.0
                 loadPage()
             }
             addOnScrollListener(scrollListener)
@@ -116,7 +117,7 @@ class NearbyItemFragment : Fragment() {
 
             _adapter.notifyItemRangeChanged(0, newSize)
 
-            radius = items.last().distance + 500.0
+            radius = items.last().distance
 
             loading = false
         }, {
