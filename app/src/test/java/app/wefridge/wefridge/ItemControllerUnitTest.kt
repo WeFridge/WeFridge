@@ -1,16 +1,15 @@
 package app.wefridge.wefridge
 
-import app.wefridge.wefridge.model.Item
-import app.wefridge.wefridge.model.ItemController
+import app.wefridge.wefridge.model.*
 import app.wefridge.wefridge.model.Unit
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.*
 import io.mockk.*
+import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
-import org.junit.BeforeClass
 import java.util.Date
 import org.junit.Test
 import org.mockito.Mockito
@@ -26,6 +25,8 @@ class ItemControllerUnitTest {
     private val ownerDocRef = Mockito.mock(DocumentReference::class.java)
 
     // dummy data
+    private var dummyUserName = "Karen Anderson"
+    private var dummyUserEmail = "karen@anderson.de"
     private var dummyFirebaseId = "demo_id"
     private var dummyGeoPoint = GeoPoint(59.3294,18.0686)
     private var dummyValues = mapOf<String, Any>(
@@ -38,8 +39,8 @@ class ItemControllerUnitTest {
         ITEM_BEST_BY to Date(),
         ITEM_LOCATION to dummyGeoPoint,
         ITEM_GEOHASH to GeoFireUtils.getGeoHashForLocation(GeoLocation(dummyGeoPoint.latitude, dummyGeoPoint.longitude)),
-        ITEM_CONTACT_NAME to "Karen Anderson",
-        ITEM_CONTACT_EMAIL to "karen@anderson.de"
+        ITEM_CONTACT_NAME to dummyUserName,
+        ITEM_CONTACT_EMAIL to dummyUserEmail
     )
 
     @Before
@@ -48,6 +49,11 @@ class ItemControllerUnitTest {
         // https://stackoverflow.com/questions/58158711/android-local-unit-test-mock-firebaseauth-with-mockk/58158712#58158712
         mockkStatic(FirebaseFirestore::class)
         every { FirebaseFirestore.getInstance() } returns mockk(relaxed = true)
+    }
+
+    @After
+    fun tearDown() {
+        setUpDocumentSnapshot(itemDocSnap, dummyValues, dummyFirebaseId)
     }
 
     @Test
@@ -93,10 +99,10 @@ class ItemControllerUnitTest {
         mockkStatic(FirebaseFirestore::class)
         every { FirebaseFirestore.getInstance() } returns mockk(relaxed = true)
         val dr = Mockito.mock(DocumentReference::class.java)
-        val foo = spyk(ItemController, recordPrivateCalls = true)
+        val itemController = spyk(ItemController, recordPrivateCalls = true)
         val item = Item(firebaseId = "some_id", ownerReference = dr)
-        foo.saveItem(item, callbackOnSuccess = {}, callbackOnFailure = {_ -> })
-        verify(exactly = 1) { foo["overrideItem"](any<Item>(), any<() -> kotlin.Unit>(), any<(Exception) -> kotlin.Unit>()) }
+        itemController.saveItem(item, callbackOnSuccess = {}, callbackOnFailure = { _ -> })
+        verify(exactly = 1) { itemController["overrideItem"](any<Item>(), any<() -> kotlin.Unit>(), any<(Exception) -> kotlin.Unit>()) }
     }
 
     private fun setUpDocumentSnapshot(dc: DocumentSnapshot, values: Map<String, Any>, id: String) {
