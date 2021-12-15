@@ -333,7 +333,7 @@ class EditFragment : Fragment() {
         var matchedGeoPoint: GeoPoint? = null
         try {
             val userInputAddress = binding.addressTextInputLayout.editText?.text.toString()
-            matchedGeoPoint = locationController.getGeoPointFrom(userInputAddress)
+            matchedGeoPoint = LocationController.getGeoPointFrom(userInputAddress, requireContext())
         } catch(exc: Exception) {
             Log.e("EditFragment", "Error while parsing address from user input: ", exc)
         }
@@ -344,7 +344,7 @@ class EditFragment : Fragment() {
     private fun tryBuildAddressStringFrom(geoPoint: GeoPoint): String? {
         var addressString: String? = null
         try {
-            addressString = locationController.buildAddressStringFrom(geoPoint)
+            addressString = LocationController.buildAddressStringFrom(geoPoint, requireContext())
         } catch (exc: IOException){
             if (binding.isSharedSwitch.isChecked) binding.isSharedSwitch.toggle()
             alertDialogOnLocationNoInternetConnection(requireContext()).show()

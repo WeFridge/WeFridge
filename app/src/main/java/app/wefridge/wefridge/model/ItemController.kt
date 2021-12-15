@@ -38,10 +38,10 @@ class ItemController {
                 callbackOnSuccess(items)
             }
 
-                .addOnFailureListener { exception ->
-                    Log.w(TAG, "Error getting items.", exception)
-                    callbackOnFailure(exception)
-                }
+            .addOnFailureListener { exception ->
+                Log.w(TAG, "Error getting items.", exception)
+                callbackOnFailure(exception)
+            }
         }
 
         fun deleteItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
@@ -99,7 +99,7 @@ class ItemController {
             return try {
                 parse(item)
             } catch (exception: ItemOwnerMissingException) {
-                return null
+                null
             }
         }
 
