@@ -1,36 +1,25 @@
 package app.wefridge.wefridge
 
 
-import androidx.test.espresso.DataInteraction
-import androidx.test.espresso.ViewInteraction
 import androidx.test.filters.LargeTest
 import androidx.test.rule.ActivityTestRule
 import androidx.test.runner.AndroidJUnit4
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewParent
 
-import androidx.test.InstrumentationRegistry.getInstrumentation
-import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.pressBack
-import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.*
 import androidx.test.espresso.matcher.ViewMatchers.*
 
-import app.wefridge.wefridge.R
-
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.TypeSafeMatcher
-import org.hamcrest.core.IsInstanceOf
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 import org.hamcrest.Matchers.allOf
-import org.hamcrest.Matchers.anything
 import org.hamcrest.Matchers.`is`
 
 @LargeTest
@@ -42,9 +31,10 @@ class MainActivityTest {
     var mActivityTestRule = ActivityTestRule(MainActivity::class.java)
 
     // Test requires device language to be English to match strings
+    // Test requires a user account with credentials "test@example.com/12345678" to exist
     @Test
     fun mainActivityTest() {
-        val supportVectorDrawablesButton = onView(
+        val signInWithEmailButton = onView(
             allOf(
                 withId(R.id.email_button), withText("Sign in with email"),
                 childAtPosition(
@@ -59,54 +49,30 @@ class MainActivityTest {
                 )
             )
         )
-        supportVectorDrawablesButton.perform(scrollTo(), click())
+        signInWithEmailButton.perform(scrollTo(), click())
 
-        val textInputEditText = onView(
+        val emailInputField = onView(
             allOf(
-                withId(R.id.email),
-                childAtPosition(
-                    childAtPosition(
-                        withId(R.id.email_layout),
-                        0
-                    ),
-                    0
-                )
+                withId(R.id.email)
             )
         )
-        textInputEditText.perform(scrollTo(), replaceText("test@example.com"), closeSoftKeyboard())
+        emailInputField.perform(scrollTo(), replaceText("test@example.com"), closeSoftKeyboard())
 
-        val materialButton = onView(
+        val emailNextButton = onView(
             allOf(
                 withId(R.id.button_next), withText("Next"),
-                childAtPosition(
-                    allOf(
-                        withId(R.id.email_top_layout),
-                        childAtPosition(
-                            withClassName(`is`("android.widget.ScrollView")),
-                            0
-                        )
-                    ),
-                    2
-                )
             )
         )
-        materialButton.perform(scrollTo(), click())
+        emailNextButton.perform(scrollTo(), click())
 
-        val textInputEditText2 = onView(
+        val passwordInputField = onView(
             allOf(
                 withId(R.id.password),
-                childAtPosition(
-                    childAtPosition(
-                        withId(R.id.password_layout),
-                        0
-                    ),
-                    0
-                )
             )
         )
-        textInputEditText2.perform(scrollTo(), replaceText("12345678"), closeSoftKeyboard())
+        passwordInputField.perform(scrollTo(), replaceText("12345678"), closeSoftKeyboard())
 
-        val materialButton2 = onView(
+        val signInButton = onView(
             allOf(
                 withId(R.id.button_done), withText("Sign in"),
                 childAtPosition(
@@ -118,43 +84,44 @@ class MainActivityTest {
                 )
             )
         )
-        materialButton2.perform(scrollTo(), click())
+        signInButton.perform(scrollTo(), click())
 
-        val imageButton = onView(
+        val fab = onView(
             allOf(
                 withId(R.id.fab),
                 withParent(withParent(withId(R.id.nav_host_fragment_content_main))),
                 isDisplayed()
             )
         )
-        imageButton.check(matches(isDisplayed()))
+        fab.check(matches(isDisplayed()))
 
-        val frameLayout = onView(
+        // Test that pantry, nearby items, and settings fragment are in the bottom navigation
+        val pantryFragment = onView(
             allOf(
                 withId(R.id.PantryFragment), withContentDescription("Pantry"),
                 withParent(withParent(withId(R.id.bottom_nav))),
                 isDisplayed()
             )
         )
-        frameLayout.check(matches(isDisplayed()))
+        pantryFragment.check(matches(isDisplayed()))
 
-        val frameLayout2 = onView(
+        val nearbyItemsFragment = onView(
             allOf(
                 withId(R.id.NearbyItemsFragment), withContentDescription("Nearby"),
                 withParent(withParent(withId(R.id.bottom_nav))),
                 isDisplayed()
             )
         )
-        frameLayout2.check(matches(isDisplayed()))
+        nearbyItemsFragment.check(matches(isDisplayed()))
 
-        val frameLayout3 = onView(
+        val settingsFragment = onView(
             allOf(
                 withId(R.id.SettingsFragment), withContentDescription("Settings"),
                 withParent(withParent(withId(R.id.bottom_nav))),
                 isDisplayed()
             )
         )
-        frameLayout3.check(matches(isDisplayed()))
+        settingsFragment.check(matches(isDisplayed()))
     }
 
     private fun childAtPosition(

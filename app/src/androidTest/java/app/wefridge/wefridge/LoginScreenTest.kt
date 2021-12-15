@@ -1,9 +1,6 @@
 package app.wefridge.wefridge
 
 
-import android.content.res.Configuration
-import android.content.res.Resources
-import android.os.LocaleList
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
@@ -11,11 +8,9 @@ import androidx.test.filters.LargeTest
 import androidx.test.rule.ActivityTestRule
 import androidx.test.runner.AndroidJUnit4
 import org.hamcrest.Matchers.allOf
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.*
 
 @LargeTest
 @RunWith(AndroidJUnit4::class)
@@ -28,7 +23,7 @@ class LoginScreenTest {
     // Test requires device language to be English to match strings
     @Test
     fun loginScreenTest() {
-        val imageView = onView(
+        val appLogo = onView(
             allOf(
                 withId(R.id.logo), withContentDescription("App logo"),
                 withParent(
@@ -40,9 +35,9 @@ class LoginScreenTest {
                 isDisplayed()
             )
         )
-        imageView.check(matches(isDisplayed()))
+        appLogo.check(matches(isDisplayed()))
 
-        val textView = onView(
+        val titleText = onView(
             allOf(
                 withText("WeFridge"),
                 withParent(
@@ -54,9 +49,9 @@ class LoginScreenTest {
                 isDisplayed()
             )
         )
-        textView.check(matches(withText("WeFridge")))
+        titleText.check(matches(withText("WeFridge")))
 
-        val button = onView(
+        val emailSignInButton = onView(
             allOf(
                 withId(R.id.email_button), withText("Sign in with email"),
                 withParent(
@@ -68,6 +63,6 @@ class LoginScreenTest {
                 isDisplayed()
             )
         )
-        button.check(matches(isDisplayed()))
+        emailSignInButton.check(matches(isDisplayed()))
     }
 }
