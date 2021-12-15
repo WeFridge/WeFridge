@@ -18,6 +18,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import app.wefridge.wefridge.databinding.FragmentEditBinding
+import app.wefridge.wefridge.exceptions.InternetUnavailableException
 import app.wefridge.wefridge.model.Item
 import app.wefridge.wefridge.model.ItemController
 import app.wefridge.wefridge.exceptions.ItemIsSharedWithoutContactEmailException
@@ -107,6 +108,9 @@ class EditFragment : Fragment() {
         setUpLocateMeButton()
         setUpDescriptionTextInputLayout()
         setUpSaveButton()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !internetAvailable(requireContext()))
+            toastOnSaveItemWithInternetUnavailable(requireContext()).show()
     }
 
     override fun onDestroy() {
@@ -116,9 +120,12 @@ class EditFragment : Fragment() {
                 saveItem(
                     callbackOnFailure = { alertDialogOnItemNotSaved(requireContext()).show() }
                 )
+            } catch (exc: InternetUnavailableException) {
+                Log.e("EditFragment", "Error before saving Item: ", exc)
+                alertDialogOnItemNotSaved(requireContext()).show()
 
             } catch (exc: ItemIsSharedWithoutContactEmailException) {
-                Log.e("EditFragment", "Error while before saving Item: ", exc)
+                Log.e("EditFragment", "Error before saving Item: ", exc)
                 alertDialogOnContactEmailMissingOnDestroy(requireContext()).show()
 
             } catch (exc: ItemIsSharedWithoutLocationException) {
@@ -287,15 +294,18 @@ class EditFragment : Fragment() {
                     callbackOnSuccess = {
                         Toast.makeText(
                             requireContext(),
-                            R.string.toast_text_on_new_item_saved,
+                            R.string.new_item_saved_toast,
                             Toast.LENGTH_SHORT
                         ).show()
                     },
                     callbackOnFailure = { alertDialogOnItemNotSaved(requireContext()).show() }
                 )
 
+            } catch (exc: InternetUnavailableException) {
+                Log.e("EditFragment", "Error before saving Item: ", exc)
+                toastOnSaveItemWithInternetUnavailable(requireContext()).show()
             } catch (exc: ItemIsSharedWithoutContactEmailException) {
-                Log.e("EditFragment", "Error while before saving Item: ", exc)
+                Log.e("EditFragment", "Error before saving Item: ", exc)
                 alertDialogOnContactEmailMissing(requireContext()).show()
 
             } catch (exc: ItemIsSharedWithoutLocationException) {
@@ -306,27 +316,31 @@ class EditFragment : Fragment() {
     }
 
     private fun saveItem(callbackOnSuccess: (() -> kotlin.Unit)? = null, callbackOnFailure: ((Exception) -> kotlin.Unit)? = null) {
-        if ((model.isShared && model.location != null) || !model.isShared) {
-            if ((model.isShared && model.contactEmail != null) || !model.isShared) {
-                ItemController.saveItem(model, {
-                    // saving was successful
-                    if (callbackOnSuccess != null) callbackOnSuccess()
+        // for devices running Android 7.0 or higher, check additionally if internet is available.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !internetAvailable(requireContext()))
+            throw InternetUnavailableException("Failed to save Item: Internet unavailable.")
 
-                    // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
-                    activity?.onBackPressed() // finally, close the EditFragment
-                },
-                    { exception ->
-                        // saving newItem failed
-                        if (callbackOnFailure != null) callbackOnFailure(exception)
-                        Log.e("EditFragment", "Error while saving Item: ", exception)
-                    })
+            if ((model.isShared && model.location != null) || !model.isShared) {
+                if ((model.isShared && model.contactEmail != null) || !model.isShared) {
+                    ItemController.saveItem(model, {
+                        // saving was successful
+                        if (callbackOnSuccess != null) callbackOnSuccess()
+
+                        // this line of code is based on https://www.codegrepper.com/code-examples/kotlin/android+go+back+to+previous+activity+programmatically
+                        activity?.onBackPressed() // finally, close the EditFragment
+                    },
+                        { exception ->
+                            // saving newItem failed
+                            if (callbackOnFailure != null) callbackOnFailure(exception)
+                            Log.e("EditFragment", "Error while saving Item: ", exception)
+                        })
+                } else {
+                    throw ItemIsSharedWithoutContactEmailException()
+                }
+
             } else {
-                throw ItemIsSharedWithoutContactEmailException()
+                throw ItemIsSharedWithoutLocationException()
             }
-
-        } else {
-            throw ItemIsSharedWithoutLocationException()
-        }
     }
 
     private fun tryGetGeoPointFromAddressUserInput(): GeoPoint? {
