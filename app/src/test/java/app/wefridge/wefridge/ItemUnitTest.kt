@@ -80,7 +80,7 @@ class ItemUnitTest {
         // act
         val itemAsHashMap = item.getHashMap()
 
-
+        // assert
         assertEquals(item.firebaseId, dummyFirebaseId)
         assertEquals(item.name, itemAsHashMap[ITEM_NAME])
         assertEquals(item.description, itemAsHashMap[ITEM_DESCRIPTION])

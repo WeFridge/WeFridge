@@ -7,7 +7,6 @@ import com.firebase.geofire.GeoLocation
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.*
 import io.mockk.*
-import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import java.util.Date
@@ -21,7 +20,7 @@ class ItemControllerUnitTest {
     // TODO: consider to delete getItems in ItemController
 
     // Mock objects have the same methods as the original class
-    private val itemDocSnap = Mockito.mock(DocumentSnapshot::class.java)
+    private lateinit var itemDocSnap: DocumentSnapshot
     private val ownerDocRef = Mockito.mock(DocumentReference::class.java)
 
     // dummy data
@@ -49,16 +48,11 @@ class ItemControllerUnitTest {
         // https://stackoverflow.com/questions/58158711/android-local-unit-test-mock-firebaseauth-with-mockk/58158712#58158712
         mockkStatic(FirebaseFirestore::class)
         every { FirebaseFirestore.getInstance() } returns mockk(relaxed = true)
-    }
-
-    @After
-    fun tearDown() {
-        setUpDocumentSnapshot(itemDocSnap, dummyValues, dummyFirebaseId)
+        itemDocSnap = mockDocumentSnapshotWith(dummyValues, dummyFirebaseId)
     }
 
     @Test
     fun testParsing() {
-        setUpDocumentSnapshot(itemDocSnap, dummyValues, dummyFirebaseId)
         // The resulting DocumentSnapshot can be used as if it came from Firestore.
         val item = ItemController.tryParse(itemDocSnap)
         assertNotNull("Item is null, parsing failed", item)
@@ -70,9 +64,9 @@ class ItemControllerUnitTest {
     }
 
     @Test
-    fun testParsing_withoutItemOwner() {
+    fun testParsingWithoutItemOwner() {
         dummyValues = dummyValues.filter { itemAttribute -> itemAttribute.key != ITEM_OWNER }
-        setUpDocumentSnapshot(itemDocSnap, dummyValues, dummyFirebaseId)
+        itemDocSnap = mockDocumentSnapshotWith(dummyValues, dummyFirebaseId)
 
         val item = ItemController.tryParse(itemDocSnap)
         assertEquals(null, item)
@@ -83,9 +77,7 @@ class ItemControllerUnitTest {
     // https://stackoverflow.com/questions/66275642/mockk-spy-on-top-level-private-function-in-kotlin
     // verify, that saveItem calls addItem when a new Item has to be saved
     @Test
-    fun testSaveItem_newItem() {
-        mockkStatic(FirebaseFirestore::class)
-        every { FirebaseFirestore.getInstance() } returns mockk(relaxed = true)
+    fun testSaveItemWithNewItem() {
         val dr = Mockito.mock(DocumentReference::class.java)
         val foo = spyk(ItemController, recordPrivateCalls = true)
         val item = Item(ownerReference = dr)
@@ -95,9 +87,7 @@ class ItemControllerUnitTest {
 
     // verify, that saveItem calls overrideItem when an existing Item has to be saved
     @Test
-    fun testSaveItem_existingItem() {
-        mockkStatic(FirebaseFirestore::class)
-        every { FirebaseFirestore.getInstance() } returns mockk(relaxed = true)
+    fun testSaveItemWithExistingItem() {
         val dr = Mockito.mock(DocumentReference::class.java)
         val itemController = spyk(ItemController, recordPrivateCalls = true)
         val item = Item(firebaseId = "some_id", ownerReference = dr)
@@ -105,13 +95,14 @@ class ItemControllerUnitTest {
         verify(exactly = 1) { itemController["overrideItem"](any<Item>(), any<() -> kotlin.Unit>(), any<(Exception) -> kotlin.Unit>()) }
     }
 
-    private fun setUpDocumentSnapshot(dc: DocumentSnapshot, values: Map<String, Any>, id: String) {
-        // Mockito works, by intercepting method calls.
+    private fun mockDocumentSnapshotWith(values: Map<String, Any>, id: String): DocumentSnapshot {
+        // Mockito works by intercepting method calls.
         // With "Mockito.`when`(<method call>).thenReturn(<return value>)" a return value can be replaced.
         // If a method isn't replaced, it will return null.
         //
         // Using the values map, the DocumentSnapshot can be "filled" with dummy data,
         // as long as only those methods below will be used.
+        val dc = Mockito.mock(DocumentSnapshot::class.java)
         values.forEach { (key, value) ->
             Mockito.`when`(when (value) {
                 is DocumentReference -> dc.getDocumentReference(key)
@@ -125,5 +116,7 @@ class ItemControllerUnitTest {
             }).thenReturn(value)
         }
         Mockito.`when`(dc.id).thenReturn(id)
+
+        return dc
     }
 }
