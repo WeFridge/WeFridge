@@ -16,9 +16,14 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.firestore.GeoPoint
 import java.io.IOException
 import java.util.*
-import kotlin.Unit
 
-class LocationController(private val servedFragment: Fragment, private val callbackOnPermissionDenied: () -> Unit, private val callbackForPermissionRationale: () -> Unit, private val callbackOnDeterminationFailed: () -> Unit, private val callbackOnSuccess: (geoPoint: GeoPoint) -> Unit) {
+class LocationController(
+    private val servedFragment: Fragment,
+    private val callbackOnPermissionDenied: () -> kotlin.Unit,
+    private val callbackForPermissionRationale: ((Boolean) -> kotlin.Unit) -> kotlin.Unit,
+    private val callbackOnDeterminationFailed: () -> kotlin.Unit,
+    private val callbackOnSuccess: (geoPoint: GeoPoint) -> kotlin.Unit
+) {
     private val requestPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -59,7 +64,12 @@ class LocationController(private val servedFragment: Fragment, private val callb
             servedFragment.shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
                 // show Dialog which explains the reason for accessing the user's location
                 // called, when permissions denied
-                callbackForPermissionRationale()
+                callbackForPermissionRationale { shouldRequestPermission ->
+                    if (shouldRequestPermission)
+                        requestPermissionLauncher.launch(
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        )
+                }
             }
             else -> {
                 // called when permission settings unspecified (like "ask every time")

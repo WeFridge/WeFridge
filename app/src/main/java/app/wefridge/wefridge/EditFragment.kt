@@ -59,7 +59,14 @@ class EditFragment : Fragment() {
     private fun setUpLocationController() {
         locationController = LocationController(this,
             callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(requireContext()) },
-            callbackForPermissionRationale = { alertDialogForLocationPermissionRationale(requireContext()) },
+            callbackForPermissionRationale = { callback ->
+                alertDialogForLocationPermissionRationale(requireContext()).setPositiveButton(
+                    android.R.string.ok
+                ) { _, _ ->
+                    callback(true)
+                    locationController.getCurrentLocation()
+                }
+            },
             callbackOnDeterminationFailed = { alertDialogOnUnableToDetermineLocation(requireContext()) },
             callbackOnSuccess = { geoPoint ->
                 model.location = geoPoint

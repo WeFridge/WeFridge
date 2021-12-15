@@ -9,8 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import app.wefridge.wefridge.databinding.FragmentNerbyItemListBinding
-import app.wefridge.wefridge.model.Item
-import app.wefridge.wefridge.model.ItemController
+import app.wefridge.wefridge.model.*
+import com.firebase.geofire.GeoLocation
 
 /**
  * A fragment representing a list of Items.
@@ -24,6 +24,8 @@ class NearbyItemFragment : Fragment() {
     private val _adapter = ItemRecyclerViewAdapter(values, R.id.action_from_nearby_to_detail)
     private lateinit var scrollListener: EndlessRecyclerOnScrollListener
     private lateinit var refreshLayout: SwipeRefreshLayout
+    private lateinit var locationController: LocationController
+    private var geoLocation: GeoLocation? = null
 
     private var radius: Double = 0.0
 
@@ -33,6 +35,26 @@ class NearbyItemFragment : Fragment() {
             refreshLayout.isRefreshing = field
             scrollListener.loading = field
         }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        locationController = LocationController(this,
+            callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(requireContext()).show() },
+            callbackForPermissionRationale = { callback ->
+                alertDialogForLocationPermissionRationale(requireContext()).setPositiveButton(
+                    android.R.string.ok
+                ) { _, _ ->
+                    callback(true)
+                    locationController.getCurrentLocation()
+                }.show()
+            },
+            callbackOnDeterminationFailed = { alertDialogOnUnableToDetermineLocation(requireContext()).show() },
+            callbackOnSuccess = { geoPoint ->
+                geoLocation = GeoLocation(geoPoint.latitude, geoPoint.longitude)
+                loading = false
+                loadPage()
+            })
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -70,6 +92,9 @@ class NearbyItemFragment : Fragment() {
         if (loading)
             return
         loading = true
+        if (geoLocation == null)
+            return locationController.getCurrentLocation()
+
 //        Log.v("Auth", "Page: ${lastVisible?.id ?: "new"}")
         ItemController.getNearbyItems({ items ->
             if (items.isEmpty()) {
@@ -96,6 +121,6 @@ class NearbyItemFragment : Fragment() {
         }, {
             Log.e("Auth", "nearbyItems", it)
             loading = false
-        }, radius)
+        }, radius, geoLocation!!)
     }
 }

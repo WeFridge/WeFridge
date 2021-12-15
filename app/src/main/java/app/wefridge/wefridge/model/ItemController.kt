@@ -159,12 +159,10 @@ class ItemController {
         fun getNearbyItems(
             onSuccess: (MutableList<Item>) -> kotlin.Unit,
             onFailure: (Exception) -> kotlin.Unit,
-            radius: Double
+            radius: Double,
+            center: GeoLocation
         ) {
             val actualRadius = if (radius == 0.0) 500.0 else radius
-
-            // TODO: get actual location
-            val center = GeoLocation(56.1662, 15.584)
 
             val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
 
