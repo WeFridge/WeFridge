@@ -1,7 +1,6 @@
 package app.wefridge.wefridge
 
 
-import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -9,14 +8,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 
-const val channelId="notification_channel"
-const val channelName="app.wefridge.wefridge"
 
 class WeFridgeFirebaseMessagingService : FirebaseMessagingService() {
     /**
@@ -45,48 +41,57 @@ class WeFridgeFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     /**
-     * @param title, message
-     * creates the view of a message with the notification layout
-     */
-    @SuppressLint("RemoteViewLayout")
-    fun getRemoteView(title: String, message: String): RemoteViews {
-        val remoteView= RemoteViews("app.wefridge.wefridge",R.layout.notification)
-        remoteView.setTextViewText(R.id.title_logo,title)
-        remoteView.setTextViewText(R.id.message,message)
-        remoteView.setImageViewResource(R.id.app_logo,R.drawable.show_fridge_notification)
-        return remoteView
-
-    }
-    /**
      *@param title, message are taken from the payload and displayed in a created channel.
      * it will use the function getRemoteView to create the notification layout
      * it is an edit version from firebase, the changes are the chanel and the call of the funktion
      * getRemoteView
      */
-    @SuppressLint("UnspecifiedImmutableFlag")
     private fun generateNotification(title:String, message: String) {
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        val pendingIntent = PendingIntent.getActivity(this, 0 , intent,
-            PendingIntent.FLAG_ONE_SHOT)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_ONE_SHOT or (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        )
 
-        var builder: NotificationCompat.Builder= NotificationCompat.Builder(applicationContext,
-            channelId)
-            .setSmallIcon(R.drawable.show_fridge_notification)
-            .setAutoCancel(true)
-            .setOnlyAlertOnce(true)
-            .setColor(resources.getColor(R.color.fern_green))
-            .setContentIntent(pendingIntent)
-        builder = builder.setContent(getRemoteView(title,message))
+        val builder: NotificationCompat.Builder =
+            NotificationCompat.Builder(applicationContext, channelId)
+                .setSmallIcon(R.drawable.show_fridge_notification)
+                .setAutoCancel(true)
+                .setOnlyAlertOnce(true)
+                .setColor(
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) getColor(R.color.fern_green) else resources.getColor(
+                        R.color.fern_green
+                    )
+                )
+                .setContentTitle(title)
+                .setContentText(message)
+                .setContentIntent(pendingIntent)
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChannel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
-            notificationManager.createNotificationChannel(notificationChannel)
+        createNotificationChannel(this)
+        notificationManager.notify(channelId, 0, builder.build())
+
+    }
+
+    companion object {
+        const val channelId = "notification_channel"
+
+        fun createNotificationChannel(ctx: Context) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val notificationChannel = NotificationChannel(
+                    channelId,
+                    ctx.getString(R.string.notification_channel_name),
+                    NotificationManager.IMPORTANCE_HIGH
+                )
+
+                val notificationManager =
+                    ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                notificationManager.createNotificationChannel(notificationChannel)
+            }
         }
-        notificationManager.notify(channelId,0 , builder.build())
-
     }
 
 }

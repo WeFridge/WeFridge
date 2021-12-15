@@ -2,30 +2,11 @@
     <string name="app_name">WeFridge</string>
     <string name="action_settings">Settings</string>
 
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
 
     <string name="Pantry">Pantry</string>
     <string name="Nearby">Nearby</string>
     <string name="Settings">Settings</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
-
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="EditItem">Edit Item</string>
 
     <!-- EditFragment Hints & Texts -->
     <string name="item_name_hint">Name</string>
@@ -104,7 +85,6 @@
     <string name="settings_contact_email_hint">This is used, if someone wants to contact you about your shared items</string>
     <string name="avatar_description">Avatar</string>
     <string name="logout">Logout</string>
-    <string name="default_notification_channel_id">app.wefridge.wefridge</string>
     <string name="nav_label_nearby">Nearby Shared Items</string>
     <string name="add_new_item">Add new item</string>
     <string name="nearby_detail_quantity">Quantity</string>
@@ -123,5 +103,6 @@
 
 
     <string name="accessibility_hint_unit_auto_complete_view">Choose a unit</string>
+    <string name="notification_channel_name">Pantry Updates</string>
 
 </resources>

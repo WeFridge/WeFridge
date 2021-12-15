@@ -274,6 +274,8 @@ class SettingsFragment : Fragment() {
     }
 
     private fun logout() {
+        UserController.unsubscribeFromMessaging(sp)
+
         // clear preferences on logout
         sp.edit {
             clear()

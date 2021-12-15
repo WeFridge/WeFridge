@@ -1,6 +1,5 @@
 package app.wefridge.wefridge
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -11,16 +10,15 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
+import androidx.preference.PreferenceManager
 import app.wefridge.wefridge.databinding.ActivityMainBinding
+import app.wefridge.wefridge.model.UserController
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.ktx.messaging
 
 
 class MainActivity : AppCompatActivity() {
@@ -44,13 +42,6 @@ class MainActivity : AppCompatActivity() {
         }
         // Successfully signed in
         val user = FirebaseAuth.getInstance().currentUser ?: return authWall()
-
-        //to add the user to a personal Topic
-        Firebase.messaging.subscribeToTopic(user.uid)
-            .addOnCompleteListener { task ->
-                Log.d("Main_Activity: ", if (task.isSuccessful)
-                    "Subscribed to ${user.uid}" else "Failed to subscribe")
-            }
 
         if (response?.isNewUser == true) {
             // create firestore user document
@@ -111,11 +102,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        WeFridgeFirebaseMessagingService.createNotificationChannel(this)
+
         // Check if user is signed in
-        val currentUser = auth.currentUser
-        if (currentUser == null) {
-            authWall()
-        }
+        auth.currentUser ?: return authWall()
+        UserController.subscribeToMessaging(PreferenceManager.getDefaultSharedPreferences(this))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
