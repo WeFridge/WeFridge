@@ -45,20 +45,16 @@ class ItemController {
         }
 
         fun deleteItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
-            callbackOnFailure(Exception())
-            UserController.getUser({ user ->
-                val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
+            val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
 
-                if (item.firebaseId == null)
-                    return@getUser
+            if (item.firebaseId == null)
+                return callbackOnFailure(Exception())
 
-                itemsRef
-                    .document(item.firebaseId!!)
-                    .delete()
-                    .addOnSuccessListener { callbackOnSuccess() }
-                    .addOnFailureListener { exception -> callbackOnFailure(exception) }
-
-            }, {})
+            itemsRef
+                .document(item.firebaseId!!)
+                .delete()
+                .addOnSuccessListener { callbackOnSuccess() }
+                .addOnFailureListener { exception -> callbackOnFailure(exception) }
         }
 
         fun saveItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
