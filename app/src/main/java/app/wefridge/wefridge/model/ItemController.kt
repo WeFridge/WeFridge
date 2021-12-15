@@ -125,7 +125,7 @@ class ItemController {
         }
 
         fun getItemsSnapshot(
-            onSuccess: (ListenerRegistration) -> kotlin.Unit,
+            onSuccess: (ListenerRegistration, DocumentReference) -> kotlin.Unit,
             listener: (Item, DocumentChange.Type, Int, Int) -> kotlin.Unit
         ) {
             UserController.getUser({ user ->
@@ -152,7 +152,7 @@ class ItemController {
                             }
                         }
                     }
-                onSuccess(snapshotListener)
+                onSuccess(snapshotListener, ownerRef)
             }, {})
         }
 
