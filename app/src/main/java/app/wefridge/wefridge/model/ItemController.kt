@@ -44,12 +44,20 @@ class ItemController {
                 }
         }
 
-        fun deleteItem(item: Item) {
-            TODO("Not yet implemented")
+        fun deleteItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
+            val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
+
+            if (item.firebaseId == null)
+                return callbackOnFailure(Exception())
+
+            itemsRef
+                .document(item.firebaseId!!)
+                .delete()
+                .addOnSuccessListener { callbackOnSuccess() }
+                .addOnFailureListener { exception -> callbackOnFailure(exception) }
         }
 
         fun saveItem(item: Item, callbackOnSuccess: () -> kotlin.Unit, callbackOnFailure: (Exception) -> kotlin.Unit) {
-            // TODO: insert condition: when isShared == true location coordinates have to be != null!!!
             if (item.firebaseId != null) overrideItem(item, { callbackOnSuccess() }, { exception -> callbackOnFailure(exception) })
             else addItem(item, { callbackOnSuccess() }, { exception -> callbackOnFailure(exception) })
         }
@@ -86,7 +94,7 @@ class ItemController {
                     }
         }
 
-
+        // TODO: adapt UnitTests appropriately
         fun tryParse(item: DocumentSnapshot): Item? {
             return try {
                 parse(item)
@@ -95,7 +103,6 @@ class ItemController {
             }
         }
 
-        // TODO: set this function to private and adapt UnitTests appropriately
         private fun parse(item: DocumentSnapshot): Item {
             with(item) {
                 return Item(id,

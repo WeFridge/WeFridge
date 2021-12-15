@@ -303,7 +303,6 @@ class EditFragment : Fragment() {
                 alertDialogOnErrorParsingAddressString(requireContext()).show()
             }
         }
-
     }
 
     private fun saveItem(callbackOnSuccess: (() -> kotlin.Unit)? = null, callbackOnFailure: ((Exception) -> kotlin.Unit)? = null) {
