@@ -162,45 +162,53 @@ class ItemController {
             radius: Double,
             center: GeoLocation
         ) {
-            val actualRadius = if (radius == 0.0) 500.0 else radius
+            UserController.getUser({ user ->
+                val ownerRef = user.ownerReference ?: user.ref
 
-            val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
+                val actualRadius = if (radius == 0.0) 500.0 else radius
 
-            val bounds = GeoFireUtils.getGeoHashQueryBounds(center, actualRadius)
-            val tasks: MutableList<Task<QuerySnapshot>> = ArrayList()
-            for (b in bounds) {
-                val q: Query = itemsRef.whereEqualTo("is_shared", true)
-                    .orderBy("geohash")
-                    .startAt(b.startHash)
-                    .endAt(b.endHash)
-                tasks.add(q.get())
-            }
-            Tasks.whenAllComplete(tasks)
-                .addOnCompleteListener {
-                    val matchingDocs: MutableList<Item> = ArrayList()
-                    for (task in tasks) {
-                        val snap = task.result
-                        for (doc in snap.documents) {
-                            val item = parse(doc)
+                val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
 
-                            val lat = item.location?.latitude ?: continue
-                            val lng = item.location?.longitude ?: continue
+                val bounds = GeoFireUtils.getGeoHashQueryBounds(center, actualRadius)
+                val tasks: MutableList<Task<QuerySnapshot>> = ArrayList()
+                for (b in bounds) {
+                    val q: Query = itemsRef.whereEqualTo(ITEM_IS_SHARED, true)
+                        .orderBy(ITEM_GEOHASH)
+                        .startAt(b.startHash)
+                        .endAt(b.endHash)
+                    tasks.add(q.get())
+                }
+                Tasks.whenAllComplete(tasks)
+                    .addOnCompleteListener {
+                        val matchingDocs: MutableList<Item> = ArrayList()
+                        for (task in tasks) {
+                            val snap = task.result
+                            for (doc in snap.documents) {
+                                val item = parse(doc)
 
-                            // We have to filter out a few false positives due to GeoHash
-                            // accuracy, but most will match
-                            val docLocation = GeoLocation(lat, lng)
-                            val distanceInM = GeoFireUtils.getDistanceBetween(docLocation, center)
-                            if (distanceInM <= actualRadius) {
-                                item.distance = distanceInM
-                                matchingDocs.add(item)
+                                if (item.ownerReference == ownerRef)
+                                    continue
+
+                                val lat = item.location?.latitude ?: continue
+                                val lng = item.location?.longitude ?: continue
+
+                                // We have to filter out a few false positives due to GeoHash
+                                // accuracy, but most will match
+                                val docLocation = GeoLocation(lat, lng)
+                                val distanceInM =
+                                    GeoFireUtils.getDistanceBetween(docLocation, center)
+                                if (distanceInM <= actualRadius) {
+                                    item.distance = distanceInM
+                                    matchingDocs.add(item)
+                                }
                             }
                         }
+                        matchingDocs.sortBy { it.distance }
+                        onSuccess(matchingDocs)
                     }
-                    matchingDocs.sortBy { it.distance }
-                    onSuccess(matchingDocs)
-                }
-                .addOnFailureListener { onFailure(it) }
+                    .addOnFailureListener { onFailure(it) }
 
+            }, onFailure)
         }
     }
 }
