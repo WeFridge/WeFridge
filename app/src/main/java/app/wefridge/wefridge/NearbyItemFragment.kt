@@ -82,6 +82,7 @@ class NearbyItemFragment : Fragment() {
         with(refreshLayout) {
             setOnRefreshListener {
                 radius = 0.0
+                geoLocation = null
                 loadPage()
             }
             loadPage()
