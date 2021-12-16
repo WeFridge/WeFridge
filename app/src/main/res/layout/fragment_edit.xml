@@ -14,6 +14,13 @@
         android:paddingHorizontal="16dp"
         android:paddingVertical="8dp">
 
+        <DatePicker
+            android:id="@+id/best_by_date_picker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:calendarViewShown="false"
+            android:datePickerMode="spinner" />
+
         <LinearLayout
             android:baselineAligned="false"
             android:layout_width="match_parent"
@@ -51,13 +58,45 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="none"
-                    android:hint="@string/accessibility_hint_unit_auto_complete_view"
-                    />
+                    android:hint="@string/accessibility_hint_unit_auto_complete_view" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
 
         </LinearLayout>
+
+        <app.wefridge.wefridge.presentation.EditItemTextInputLayout
+            android:id="@+id/best_by_date_text_input_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/item_best_by_date_hint"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- the following partially was taken from https://stackoverflow.com/questions/14933330/datepicker-how-to-popup-datepicker-when-click-on-edittext-->
+            <app.wefridge.wefridge.presentation.EditItemEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="8dp"
+                android:cursorVisible="false" />
+        </app.wefridge.wefridge.presentation.EditItemTextInputLayout>
+
+        <app.wefridge.wefridge.presentation.EditItemTextInputLayout
+            android:id="@+id/name_text_input_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/item_name_hint"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <app.wefridge.wefridge.presentation.EditItemEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="8dp"
+                android:inputType="textShortMessage" />
+        </app.wefridge.wefridge.presentation.EditItemTextInputLayout>
 
         <LinearLayout
             android:id="@+id/location_picker_box"
@@ -151,46 +190,6 @@
                     android:inputType="textShortMessage" />
             </app.wefridge.wefridge.presentation.EditItemTextInputLayout>
         </LinearLayout>
-
-        <app.wefridge.wefridge.presentation.EditItemTextInputLayout
-            android:id="@+id/best_by_date_text_input_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/item_best_by_date_hint"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <!-- the following partially was taken from https://stackoverflow.com/questions/14933330/datepicker-how-to-popup-datepicker-when-click-on-edittext-->
-            <app.wefridge.wefridge.presentation.EditItemEditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="8dp"
-                android:cursorVisible="false" />
-        </app.wefridge.wefridge.presentation.EditItemTextInputLayout>
-
-        <DatePicker
-            android:id="@+id/best_by_date_picker"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:datePickerMode="spinner"
-            android:calendarViewShown="false" />
-
-        <app.wefridge.wefridge.presentation.EditItemTextInputLayout
-            android:id="@+id/name_text_input_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/item_name_hint"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <app.wefridge.wefridge.presentation.EditItemEditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="8dp"
-                android:inputType="textShortMessage" />
-        </app.wefridge.wefridge.presentation.EditItemTextInputLayout>
 
         <Button
             android:id="@+id/save_button"
