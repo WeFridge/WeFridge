@@ -3,10 +3,9 @@ package app.wefridge.wefridge.model
 import android.util.Log
 import app.wefridge.wefridge.*
 import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
-import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.*
+import kotlinx.android.parcel.RawValue
 
 class ItemController {
 
@@ -94,7 +93,6 @@ class ItemController {
                     }
         }
 
-        // TODO: adapt UnitTests appropriately
         fun tryParse(item: DocumentSnapshot): Item? {
             return try {
                 parse(item)
@@ -104,19 +102,20 @@ class ItemController {
         }
 
         private fun parse(item: DocumentSnapshot): Item {
+
             with(item) {
                 return Item(id,
-                    getString(ITEM_NAME) ?: "",
-                    getString(ITEM_DESCRIPTION),
-                    getBoolean(ITEM_IS_SHARED) ?: false,
-                    getLong(ITEM_QUANTITY) ?: 0,
-                    Unit.getByValue(getLong(ITEM_UNIT)?.toInt()) ?: Unit.PIECE,
-                    getTimestamp(ITEM_BEST_BY)?.toDate(),
-                    getGeoPoint(ITEM_LOCATION),
-                    getString(ITEM_GEOHASH),
-                    getString(ITEM_CONTACT_NAME),
-                    getString(ITEM_CONTACT_EMAIL),
-                    getDocumentReference(ITEM_OWNER)
+                    get(ITEM_NAME) as? String ?: "",
+                    get(ITEM_DESCRIPTION) as? String,
+                    get(ITEM_IS_SHARED) as? Boolean ?: false,
+                    get(ITEM_QUANTITY) as? Long ?: 0,
+                    Unit.getByValue((item.get(ITEM_UNIT) as? Long)?.toInt()) ?: Unit.PIECE,
+                    (get(ITEM_BEST_BY) as? Timestamp)?.toDate(),
+                    get(ITEM_LOCATION) as? @RawValue GeoPoint,
+                    get(ITEM_GEOHASH) as? String,
+                    get(ITEM_CONTACT_NAME) as? String,
+                    get(ITEM_CONTACT_EMAIL) as? String,
+                    get(ITEM_OWNER) as? @RawValue DocumentReference
                         ?: throw ItemOwnerMissingException("Cannot get DocumentReference from owner field.")
                 )
             }
@@ -145,8 +144,9 @@ class ItemController {
 
                         for (documentSnapshot in snapshots.documentChanges) {
                             with(documentSnapshot) {
-                                val item = parse(document)
-                                listener(item, type, oldIndex, newIndex)
+                                val item = tryParse(document)
+                                if (item != null)
+                                    listener(item, type, oldIndex, newIndex)
                             }
                         }
                     }
