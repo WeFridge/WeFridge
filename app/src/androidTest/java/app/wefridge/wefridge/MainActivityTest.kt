@@ -17,6 +17,7 @@ import org.junit.runner.RunWith
 import org.hamcrest.Matchers.allOf
 
 import app.wefridge.wefridge.UITestUtils.Companion.signInUser
+import app.wefridge.wefridge.application.MainActivity
 
 @LargeTest
 @RunWith(AndroidJUnit4::class)
