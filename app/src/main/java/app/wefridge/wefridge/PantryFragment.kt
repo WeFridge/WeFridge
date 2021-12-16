@@ -90,11 +90,11 @@ class PantryFragment : Fragment() {
         }) { item, type, oldIndex, newIndex ->
             when (type) {
                 DocumentChange.Type.ADDED -> {
-                    values.add(newIndex, item)
+                    values.add(newIndex, item!!)
                     recyclerViewAdapter.notifyItemInserted(newIndex)
                 }
                 DocumentChange.Type.MODIFIED -> {
-                    values[newIndex] = item
+                    values[newIndex] = item!!
                     recyclerViewAdapter.notifyItemChanged(newIndex)
                 }
                 DocumentChange.Type.REMOVED -> {

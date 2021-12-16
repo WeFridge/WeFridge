@@ -123,7 +123,7 @@ class ItemController {
 
         fun getItemsSnapshot(
             onSuccess: (ListenerRegistration) -> kotlin.Unit,
-            listener: (Item, DocumentChange.Type, Int, Int) -> kotlin.Unit
+            listener: (Item?, DocumentChange.Type, Int, Int) -> kotlin.Unit
         ) {
             UserController.getUser({ user ->
                 val ownerRef = user.ownerReference ?: user.ref
@@ -145,8 +145,7 @@ class ItemController {
                         for (documentSnapshot in snapshots.documentChanges) {
                             with(documentSnapshot) {
                                 val item = tryParse(document)
-                                if (item != null)
-                                    listener(item, type, oldIndex, newIndex)
+                                listener(item, type, oldIndex, newIndex)
                             }
                         }
                     }
