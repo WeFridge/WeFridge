@@ -1,4 +1,4 @@
-package app.wefridge.wefridge.exceptions
+package app.wefridge.wefridge.application.exceptions
 
 // This code was partially taken (and modified) from: https://stackoverflow.com/questions/45162869/kotlin-throw-custom-exception
 class ItemOwnerMissingException: Exception {

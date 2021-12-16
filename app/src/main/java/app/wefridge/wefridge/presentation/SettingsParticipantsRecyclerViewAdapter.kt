@@ -1,4 +1,4 @@
-package app.wefridge.wefridge
+package app.wefridge.wefridge.presentation
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,8 +8,9 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import app.wefridge.wefridge.R
+import app.wefridge.wefridge.application.model.User
 import app.wefridge.wefridge.databinding.FragmentSettingsParticipantBinding
-import app.wefridge.wefridge.model.User
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.squareup.picasso.Picasso
 import java.lang.ref.WeakReference

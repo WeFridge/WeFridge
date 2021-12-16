@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/NearbyItemsFragment"
-        android:name="app.wefridge.wefridge.NearbyItemFragment"
+        android:name="app.wefridge.wefridge.presentation.NearbyItemFragment"
         android:label="@string/nav_label_nearby"
         tools:layout="@layout/fragment_nerby_item_list">
 
@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/SettingsFragment"
-        android:name="app.wefridge.wefridge.SettingsFragment"
+        android:name="app.wefridge.wefridge.presentation.SettingsFragment"
         android:label="@string/Settings"
         tools:layout="@layout/fragment_settings">
 
@@ -27,7 +27,7 @@
 
     <fragment
         android:id="@+id/EditFragment"
-        android:name="app.wefridge.wefridge.EditFragment"
+        android:name="app.wefridge.wefridge.presentation.EditFragment"
         android:label="@string/EditItem"
         tools:layout="@layout/fragment_edit">
 
@@ -36,14 +36,14 @@
 
     <fragment
         android:id="@+id/NearbyDetailFragment"
-        android:name="app.wefridge.wefridge.NearbyDetailFragment"
+        android:name="app.wefridge.wefridge.presentation.NearbyDetailFragment"
         tools:layout="@layout/fragment_nearby_detail">
 
     </fragment>
 
     <fragment
         android:id="@+id/PantryFragment"
-        android:name="app.wefridge.wefridge.PantryFragment"
+        android:name="app.wefridge.wefridge.presentation.PantryFragment"
         android:label="Pantry"
         tools:layout="@layout/fragment_pantry_list">
 

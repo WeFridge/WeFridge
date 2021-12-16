@@ -9,26 +9,10 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:context=".EditFragment"
+        tools:context=".presentation.EditFragment"
         android:orientation="vertical"
         android:paddingHorizontal="16dp"
         android:paddingVertical="8dp">
-
-        <app.wefridge.wefridge.EditItemTextInputLayout
-            android:id="@+id/name_text_input_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/item_name_hint"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <app.wefridge.wefridge.EditItemEditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="8dp"
-                android:inputType="textShortMessage"/>
-        </app.wefridge.wefridge.EditItemTextInputLayout>
 
         <LinearLayout
             android:baselineAligned="false"
@@ -38,7 +22,7 @@
             android:weightSum="2"
             android:layout_marginVertical="8dp">
 
-            <app.wefridge.wefridge.EditItemTextInputLayout
+            <app.wefridge.wefridge.presentation.EditItemTextInputLayout
                 android:id="@+id/quantity_text_input_layout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -48,12 +32,12 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <app.wefridge.wefridge.EditItemEditText
+                <app.wefridge.wefridge.presentation.EditItemEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:inputType="number"/>
-            </app.wefridge.wefridge.EditItemTextInputLayout>
+                    android:inputType="number" />
+            </app.wefridge.wefridge.presentation.EditItemTextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/unit_dropdown"
@@ -74,30 +58,6 @@
 
 
         </LinearLayout>
-
-        <app.wefridge.wefridge.EditItemTextInputLayout
-            android:id="@+id/best_by_date_text_input_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/item_best_by_date_hint"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <!-- the following partially was taken from https://stackoverflow.com/questions/14933330/datepicker-how-to-popup-datepicker-when-click-on-edittext-->
-            <app.wefridge.wefridge.EditItemEditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginVertical="8dp"
-                android:cursorVisible="false" />
-        </app.wefridge.wefridge.EditItemTextInputLayout>
-
-        <DatePicker
-            android:id="@+id/best_by_date_picker"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:datePickerMode="spinner"
-            android:calendarViewShown="false"/>
 
         <LinearLayout
             android:id="@+id/location_picker_box"
@@ -141,7 +101,7 @@
 
 
             <!-- This code snippet for a text field was taken (and modified) from: https://material.io/components/text-fields/android#outlined-text-field-->
-            <app.wefridge.wefridge.EditItemTextInputLayout
+            <app.wefridge.wefridge.presentation.EditItemTextInputLayout
                 android:id="@+id/address_text_input_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -152,13 +112,12 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <app.wefridge.wefridge.EditItemEditText
+                <app.wefridge.wefridge.presentation.EditItemEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textShortMessage"
-                    />
+                    android:inputType="textShortMessage" />
 
-            </app.wefridge.wefridge.EditItemTextInputLayout>
+            </app.wefridge.wefridge.presentation.EditItemTextInputLayout>
 
             <!-- The textAllCaps property was taken from https://stackoverflow.com/questions/26958909/why-is-my-button-text-forced-to-all-caps-on-lollipop -->
             <Button
@@ -176,7 +135,7 @@
                 app:icon="@drawable/ic_baseline_location_on_24"
                 />
 
-            <app.wefridge.wefridge.EditItemTextInputLayout
+            <app.wefridge.wefridge.presentation.EditItemTextInputLayout
                 android:id="@+id/description_text_input_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -185,13 +144,53 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <app.wefridge.wefridge.EditItemEditText
+                <app.wefridge.wefridge.presentation.EditItemEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:inputType="textShortMessage"/>
-            </app.wefridge.wefridge.EditItemTextInputLayout>
+                    android:inputType="textShortMessage" />
+            </app.wefridge.wefridge.presentation.EditItemTextInputLayout>
         </LinearLayout>
+
+        <app.wefridge.wefridge.presentation.EditItemTextInputLayout
+            android:id="@+id/best_by_date_text_input_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/item_best_by_date_hint"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- the following partially was taken from https://stackoverflow.com/questions/14933330/datepicker-how-to-popup-datepicker-when-click-on-edittext-->
+            <app.wefridge.wefridge.presentation.EditItemEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="8dp"
+                android:cursorVisible="false" />
+        </app.wefridge.wefridge.presentation.EditItemTextInputLayout>
+
+        <DatePicker
+            android:id="@+id/best_by_date_picker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:datePickerMode="spinner"
+            android:calendarViewShown="false" />
+
+        <app.wefridge.wefridge.presentation.EditItemTextInputLayout
+            android:id="@+id/name_text_input_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/item_name_hint"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <app.wefridge.wefridge.presentation.EditItemEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="8dp"
+                android:inputType="textShortMessage" />
+        </app.wefridge.wefridge.presentation.EditItemTextInputLayout>
 
         <Button
             android:id="@+id/save_button"
@@ -200,7 +199,6 @@
             android:text="@string/item_save_button_text"
             android:layout_gravity="center_horizontal"
             android:layout_marginVertical="8dp"
-            android:visibility="gone"
-            />
+            android:visibility="gone" />
         </LinearLayout>
 </ScrollView>

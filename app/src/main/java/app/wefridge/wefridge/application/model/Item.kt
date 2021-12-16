@@ -1,4 +1,4 @@
-package app.wefridge.wefridge.model
+package app.wefridge.wefridge.application.model
 
 import android.os.Parcel
 import android.os.Parcelable

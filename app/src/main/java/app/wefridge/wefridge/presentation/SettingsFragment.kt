@@ -1,4 +1,4 @@
-package app.wefridge.wefridge
+package app.wefridge.wefridge.presentation
 
 import android.app.AlertDialog
 import android.content.SharedPreferences
@@ -17,10 +17,13 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import app.wefridge.wefridge.R
+import app.wefridge.wefridge.application.MainActivity
+import app.wefridge.wefridge.application.model.User
+import app.wefridge.wefridge.application.model.UserController
 import app.wefridge.wefridge.databinding.FragmentSettingsBinding
 import app.wefridge.wefridge.databinding.FragmentSettingsParticipantAddBinding
-import app.wefridge.wefridge.model.User
-import app.wefridge.wefridge.model.UserController
+import app.wefridge.wefridge.displayToastOnInternetUnavailable
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth

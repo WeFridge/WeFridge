@@ -1,4 +1,4 @@
-package app.wefridge.wefridge
+package app.wefridge.wefridge.presentation
 
 import android.os.Build
 import android.os.Bundle
@@ -10,10 +10,12 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import app.wefridge.wefridge.R
+import app.wefridge.wefridge.application.model.Item
+import app.wefridge.wefridge.application.model.ItemController
+import app.wefridge.wefridge.application.model.UserController
 import app.wefridge.wefridge.databinding.FragmentPantryListBinding
-import app.wefridge.wefridge.model.Item
-import app.wefridge.wefridge.model.ItemController
-import app.wefridge.wefridge.model.UserController
+import app.wefridge.wefridge.displayToastOnInternetUnavailable
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ListenerRegistration

@@ -1,4 +1,4 @@
-package app.wefridge.wefridge.model
+package app.wefridge.wefridge.application.model
 
 import android.Manifest
 import android.content.Context

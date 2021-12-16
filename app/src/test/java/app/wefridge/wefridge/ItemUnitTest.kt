@@ -1,7 +1,7 @@
 package app.wefridge.wefridge
 
-import app.wefridge.wefridge.model.Item
-import app.wefridge.wefridge.model.Unit
+import app.wefridge.wefridge.application.model.Item
+import app.wefridge.wefridge.application.model.Unit
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.firebase.Timestamp

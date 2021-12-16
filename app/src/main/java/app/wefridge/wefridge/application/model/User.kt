@@ -1,4 +1,4 @@
-package app.wefridge.wefridge.model
+package app.wefridge.wefridge.application.model
 
 import app.wefridge.wefridge.md5
 import com.google.firebase.firestore.DocumentReference

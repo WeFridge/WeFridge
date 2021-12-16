@@ -1,4 +1,4 @@
-package app.wefridge.wefridge
+package app.wefridge.wefridge.application
 
 import android.os.Bundle
 import android.util.Log
@@ -11,8 +11,10 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
+import app.wefridge.wefridge.R
+import app.wefridge.wefridge.USERS_COLLECTION_NAME
+import app.wefridge.wefridge.application.model.UserController
 import app.wefridge.wefridge.databinding.ActivityMainBinding
-import app.wefridge.wefridge.model.UserController
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult

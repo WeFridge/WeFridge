@@ -1,13 +1,13 @@
 package app.wefridge.wefridge
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import android.text.format.DateFormat
 import android.widget.DatePicker
 import androidx.annotation.RequiresApi
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import app.wefridge.wefridge.model.toastOnInternetUnavailable
+import app.wefridge.wefridge.application.model.toastOnInternetUnavailable
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.time.LocalDate

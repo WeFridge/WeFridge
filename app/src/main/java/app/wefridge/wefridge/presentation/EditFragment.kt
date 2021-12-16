@@ -1,4 +1,4 @@
-package app.wefridge.wefridge
+package app.wefridge.wefridge.presentation
 
 import android.content.SharedPreferences
 import android.os.Build
@@ -17,12 +17,13 @@ import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
+import app.wefridge.wefridge.*
+import app.wefridge.wefridge.application.exceptions.InternetUnavailableException
+import app.wefridge.wefridge.application.exceptions.ItemIsSharedWithoutContactEmailException
+import app.wefridge.wefridge.application.exceptions.ItemIsSharedWithoutLocationException
+import app.wefridge.wefridge.application.model.*
+import app.wefridge.wefridge.application.model.Unit
 import app.wefridge.wefridge.databinding.FragmentEditBinding
-import app.wefridge.wefridge.exceptions.InternetUnavailableException
-import app.wefridge.wefridge.exceptions.ItemIsSharedWithoutContactEmailException
-import app.wefridge.wefridge.exceptions.ItemIsSharedWithoutLocationException
-import app.wefridge.wefridge.model.*
-import app.wefridge.wefridge.model.Unit
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.android.material.textfield.TextInputLayout
