@@ -80,8 +80,7 @@ class NearbyDetailFragment : Fragment() {
         val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
             type = "text/plain"
             data = Uri.parse("mailto:")
-            // TODO: get mail from model
-            putExtra(Intent.EXTRA_EMAIL, arrayOf("support@arboristapp.com"))
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(model.contactEmail))
             putExtra(Intent.EXTRA_SUBJECT, "WeFridge: ${model.name}")
             putExtra(
                 Intent.EXTRA_TEXT, """Hello,
