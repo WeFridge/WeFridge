@@ -1,8 +1,7 @@
-package app.wefridge.wefridge.model
+package app.wefridge.wefridge.application.model
 
 import android.content.Context
 import androidx.annotation.StringRes
-import androidx.fragment.app.Fragment
 import app.wefridge.wefridge.R
 
 /*

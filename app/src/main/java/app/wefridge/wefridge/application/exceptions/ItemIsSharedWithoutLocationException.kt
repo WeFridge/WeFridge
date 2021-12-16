@@ -1,4 +1,4 @@
-package app.wefridge.wefridge.exceptions
+package app.wefridge.wefridge.application.exceptions
 
 class ItemIsSharedWithoutLocationException: Exception {
     constructor() : super("The Item was set to 'is shared' though without a location.")

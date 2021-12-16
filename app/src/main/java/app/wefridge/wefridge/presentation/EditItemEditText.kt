@@ -1,4 +1,4 @@
-package app.wefridge.wefridge
+package app.wefridge.wefridge.presentation
 
 // this file was inspired by https://stackoverflow.com/questions/29744313/detect-dismiss-keyboard-event-in-android
 

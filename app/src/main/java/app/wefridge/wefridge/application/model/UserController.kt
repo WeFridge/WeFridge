@@ -1,11 +1,11 @@
-package app.wefridge.wefridge.model
+package app.wefridge.wefridge.application.model
 
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
-import app.wefridge.wefridge.SETTINGS_EMAIL
-import app.wefridge.wefridge.SETTINGS_NAME
 import app.wefridge.wefridge.USERS_COLLECTION_NAME
+import app.wefridge.wefridge.presentation.SETTINGS_EMAIL
+import app.wefridge.wefridge.presentation.SETTINGS_NAME
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FieldValue

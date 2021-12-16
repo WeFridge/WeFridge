@@ -1,15 +1,15 @@
-package app.wefridge.wefridge.model
+package app.wefridge.wefridge.application.model
 
 import android.util.Log
 import app.wefridge.wefridge.*
-import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
-import com.google.firebase.Timestamp
-import com.google.firebase.firestore.*
-import kotlinx.android.parcel.RawValue
+import app.wefridge.wefridge.application.exceptions.ItemOwnerMissingException
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.*
+import kotlinx.android.parcel.RawValue
 
 
 class ItemController {

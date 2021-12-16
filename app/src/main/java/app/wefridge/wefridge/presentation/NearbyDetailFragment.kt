@@ -1,4 +1,4 @@
-package app.wefridge.wefridge
+package app.wefridge.wefridge.presentation
 
 import android.content.Intent
 import android.content.SharedPreferences
@@ -11,8 +11,10 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
+import app.wefridge.wefridge.R
+import app.wefridge.wefridge.application.model.Item
 import app.wefridge.wefridge.databinding.FragmentNearbyDetailBinding
-import app.wefridge.wefridge.model.Item
+import app.wefridge.wefridge.formatDistance
 import com.google.firebase.auth.FirebaseAuth
 
 

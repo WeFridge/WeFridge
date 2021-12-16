@@ -1,11 +1,13 @@
-package app.wefridge.wefridge
+package app.wefridge.wefridge.presentation
 
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import android.content.Context
-import android.graphics.*
-import androidx.core.content.ContextCompat
+import app.wefridge.wefridge.R
 
 
 class SwipeToDeleteCallback(private val onSwipedToDelete: (position: Int) -> Unit, ctx: Context) :

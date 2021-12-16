@@ -1,14 +1,14 @@
 package app.wefridge.wefridge
 
 import android.content.Context
-import app.wefridge.wefridge.model.LocationController
-import com.google.firebase.firestore.GeoPoint
-import org.junit.Test
-import androidx.test.platform.app.InstrumentationRegistry
-import org.junit.Assert.assertEquals
-import org.junit.runner.RunWith
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import app.wefridge.wefridge.application.model.LocationController
+import com.google.firebase.firestore.GeoPoint
+import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 
 
 /*

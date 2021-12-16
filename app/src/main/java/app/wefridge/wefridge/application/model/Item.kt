@@ -1,18 +1,17 @@
-package app.wefridge.wefridge.model
+package app.wefridge.wefridge.application.model
 
+import android.os.Parcel
 import android.os.Parcelable
 import app.wefridge.wefridge.*
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.GeoPoint
-import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
 import java.util.*
 
 // The solution regarding the position of
 // @RawValue was found on: https://stackoverflow.com/questions/49606163/rawvalue-annotation-is-not-applicable-to-target-value-parameter
 
-@Parcelize
 data class Item(
     var firebaseId: String? = null,
     var name: String = "",
@@ -54,4 +53,52 @@ data class Item(
         )
     }
 
+    companion object {
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<Item> {
+            override fun createFromParcel(parcel: Parcel) = Item(parcel)
+            override fun newArray(size: Int) = arrayOfNulls<Item>(size)
+        }
+    }
+
+    private constructor(parcel: Parcel) : this(
+        parcel.readString(),
+        parcel.readString() ?: "",
+        parcel.readString(),
+        parcel.readInt() != 0,
+        parcel.readLong(),
+        Unit.getByValue(parcel.readInt()) ?: Unit.PIECE,
+        parcel.readValue(Date::class.java.classLoader) as? Date?,
+        if (parcel.readInt() != 0) GeoPoint(parcel.readDouble(), parcel.readDouble()) else null,
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
+        UserController.getUserRef(parcel.readString()!!),
+        parcel.readDouble()
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        with(parcel) {
+            writeString(firebaseId)
+            writeString(name)
+            writeString(description)
+            writeInt(if (isShared) 1 else 0)
+            writeLong(quantity)
+            writeInt(unit.value)
+            if (location == null) {
+                writeInt(0)
+            } else {
+                writeInt(1)
+                writeDouble(location!!.latitude)
+                writeDouble(location!!.longitude)
+            }
+            writeString(geohash)
+            writeString(contactName)
+            writeString(contactEmail)
+            writeString(ownerReference.id)
+            writeDouble(distance)
+        }
+    }
+
+    override fun describeContents() = 0
 }

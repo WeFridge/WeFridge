@@ -1,17 +1,22 @@
 package app.wefridge.wefridge
 
-import app.wefridge.wefridge.model.*
-import app.wefridge.wefridge.model.Unit
+import app.wefridge.wefridge.application.model.Item
+import app.wefridge.wefridge.application.model.ItemController
+import app.wefridge.wefridge.application.model.Unit
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.*
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
 import io.mockk.*
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
-import java.util.Date
 import org.junit.Test
 import org.mockito.Mockito
+import java.util.*
 
 
 class ItemControllerUnitTest {

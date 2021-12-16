@@ -24,7 +24,7 @@
             android:resource="@drawable/show_fridge_notification" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".application.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.WeFridge.NoActionBar">
@@ -35,7 +35,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".WeFridgeFirebaseMessagingService"
+            android:name=".application.WeFridgeFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />

@@ -1,4 +1,4 @@
-package app.wefridge.wefridge
+package app.wefridge.wefridge.presentation
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,8 +9,9 @@ import android.widget.TextView
 import androidx.annotation.IdRes
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import app.wefridge.wefridge.application.model.Item
 import app.wefridge.wefridge.databinding.FragmentPantryBinding
-import app.wefridge.wefridge.model.Item
+import app.wefridge.wefridge.getBestByString
 
 const val ARG_MODEL = "model"
 /**

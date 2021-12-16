@@ -1,4 +1,4 @@
-package app.wefridge.wefridge.exceptions
+package app.wefridge.wefridge.application.exceptions
 
 class InternetUnavailableException: Exception {
     constructor() : super("Internet unavailable")

@@ -1,4 +1,4 @@
-package app.wefridge.wefridge
+package app.wefridge.wefridge.presentation
 
 import android.os.Build
 import android.os.Bundle
@@ -9,8 +9,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import app.wefridge.wefridge.R
+import app.wefridge.wefridge.application.model.*
 import app.wefridge.wefridge.databinding.FragmentNerbyItemListBinding
-import app.wefridge.wefridge.model.*
+import app.wefridge.wefridge.displayToastOnInternetUnavailable
 import com.firebase.geofire.GeoLocation
 
 /**
