@@ -1,10 +1,10 @@
 package app.wefridge.wefridge
 
+import android.content.Context
 import android.os.Build
+import android.text.format.DateFormat
 import android.widget.DatePicker
 import androidx.annotation.RequiresApi
-import android.content.Context
-import android.text.format.DateFormat
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.time.LocalDate
@@ -12,6 +12,7 @@ import java.time.ZoneId
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * Generate the md5 hash.
@@ -20,6 +21,23 @@ import kotlin.math.abs
 fun String.md5(): String {
     val md = MessageDigest.getInstance("MD5")
     return BigInteger(1, md.digest(trim().lowercase().toByteArray())).toString(16).padStart(32, '0')
+}
+
+/**
+ * Format a distance with m and km.
+ * Based on https://stackoverflow.com/a/33958851/11271734
+ */
+fun formatDistance(distance: Double): String {
+    if (distance < 1000) {
+        return distance.roundToInt().toString() + "m"
+    }
+    val d = distance / 1000
+
+    if (d > 100) {
+        return d.roundToInt().toString() + "km"
+    }
+
+    return String.format("%.1fkm", d)
 }
 
 // DatePicker and Date Utils

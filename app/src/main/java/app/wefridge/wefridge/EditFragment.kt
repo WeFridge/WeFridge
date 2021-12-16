@@ -18,19 +18,17 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import app.wefridge.wefridge.databinding.FragmentEditBinding
-import app.wefridge.wefridge.model.Item
-import app.wefridge.wefridge.model.ItemController
 import app.wefridge.wefridge.exceptions.ItemIsSharedWithoutContactEmailException
 import app.wefridge.wefridge.exceptions.ItemIsSharedWithoutLocationException
 import app.wefridge.wefridge.model.*
 import app.wefridge.wefridge.model.Unit
-import app.wefridge.wefridge.model.UserController
 import com.firebase.geofire.GeoFireUtils
 import com.firebase.geofire.GeoLocation
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.firestore.GeoPoint
 import java.io.IOException
 
+const val ARG_OWNER = "owner"
 /**
  * A simple [Fragment] subclass.
  * Use the [EditFragment.newInstance] factory method to
@@ -61,7 +59,14 @@ class EditFragment : Fragment() {
     private fun setUpLocationController() {
         locationController = LocationController(this,
             callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(requireContext()) },
-            callbackForPermissionRationale = { alertDialogForLocationPermissionRationale(requireContext()) },
+            callbackForPermissionRationale = { callback ->
+                alertDialogForLocationPermissionRationale(requireContext()).setPositiveButton(
+                    android.R.string.ok
+                ) { _, _ ->
+                    callback(true)
+                    locationController.getCurrentLocation()
+                }
+            },
             callbackOnDeterminationFailed = { alertDialogOnUnableToDetermineLocation(requireContext()) },
             callbackOnSuccess = { geoPoint ->
                 model.location = geoPoint
@@ -74,7 +79,8 @@ class EditFragment : Fragment() {
     }
 
     private fun setModel() {
-        val ownerReference = UserController.getCurrentUserRef()
+        val ownerReference = arguments?.getString(ARG_OWNER)?.let { UserController.getUserRef(it) }
+            ?: UserController.getCurrentUserRef()
         model = arguments?.getParcelable(ARG_MODEL) ?: Item(ownerReference = ownerReference)
 
         model.contactName = UserController.getLocalName(sharedPreferences)

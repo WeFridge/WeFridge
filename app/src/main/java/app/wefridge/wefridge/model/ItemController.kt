@@ -3,10 +3,12 @@ package app.wefridge.wefridge.model
 import android.util.Log
 import app.wefridge.wefridge.*
 import app.wefridge.wefridge.exceptions.ItemOwnerMissingException
-import com.google.firebase.firestore.DocumentChange
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
+import com.firebase.geofire.GeoFireUtils
+import com.firebase.geofire.GeoLocation
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.firestore.*
+
 
 class ItemController {
 
@@ -123,7 +125,7 @@ class ItemController {
         }
 
         fun getItemsSnapshot(
-            onSuccess: (ListenerRegistration) -> kotlin.Unit,
+            onSuccess: (ListenerRegistration, DocumentReference) -> kotlin.Unit,
             listener: (Item, DocumentChange.Type, Int, Int) -> kotlin.Unit
         ) {
             UserController.getUser({ user ->
@@ -150,8 +152,63 @@ class ItemController {
                             }
                         }
                     }
-                onSuccess(snapshotListener)
+                onSuccess(snapshotListener, ownerRef)
             }, {})
+        }
+
+        fun getNearbyItems(
+            onSuccess: (MutableList<Item>) -> kotlin.Unit,
+            onFailure: (Exception) -> kotlin.Unit,
+            radius: Double,
+            center: GeoLocation
+        ) {
+            UserController.getUser({ user ->
+                val ownerRef = user.ownerReference ?: user.ref
+
+                val actualRadius = if (radius == 0.0) 500.0 else radius
+
+                val itemsRef = FirebaseFirestore.getInstance().collection(ITEMS_COLLECTION_NAME)
+
+                val bounds = GeoFireUtils.getGeoHashQueryBounds(center, actualRadius)
+                val tasks: MutableList<Task<QuerySnapshot>> = ArrayList()
+                for (b in bounds) {
+                    val q: Query = itemsRef.whereEqualTo(ITEM_IS_SHARED, true)
+                        .orderBy(ITEM_GEOHASH)
+                        .startAt(b.startHash)
+                        .endAt(b.endHash)
+                    tasks.add(q.get())
+                }
+                Tasks.whenAllComplete(tasks)
+                    .addOnCompleteListener {
+                        val matchingDocs: MutableList<Item> = ArrayList()
+                        for (task in tasks) {
+                            val snap = task.result
+                            for (doc in snap.documents) {
+                                val item = parse(doc)
+
+                                if (item.ownerReference == ownerRef)
+                                    continue
+
+                                val lat = item.location?.latitude ?: continue
+                                val lng = item.location?.longitude ?: continue
+
+                                // We have to filter out a few false positives due to GeoHash
+                                // accuracy, but most will match
+                                val docLocation = GeoLocation(lat, lng)
+                                val distanceInM =
+                                    GeoFireUtils.getDistanceBetween(docLocation, center)
+                                if (distanceInM <= actualRadius) {
+                                    item.distance = distanceInM
+                                    matchingDocs.add(item)
+                                }
+                            }
+                        }
+                        matchingDocs.sortBy { it.distance }
+                        onSuccess(matchingDocs)
+                    }
+                    .addOnFailureListener { onFailure(it) }
+
+            }, onFailure)
         }
     }
 }
