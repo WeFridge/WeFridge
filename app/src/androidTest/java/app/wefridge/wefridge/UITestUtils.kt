@@ -1,14 +1,27 @@
 package app.wefridge.wefridge
 
+import android.app.Activity
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.matcher.ViewMatchers
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.FirebaseAuth
+import junit.framework.Assert.fail
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers
 import org.hamcrest.TypeSafeMatcher
+import androidx.annotation.NonNull
+
+import com.google.firebase.auth.FirebaseUser
+
+
+
 
 class UITestUtils {
 
@@ -107,6 +120,28 @@ class UITestUtils {
                 )
             )
             logOutButton.perform(ViewActions.click())
+        }
+
+        fun createTestUser(email: String, password: String, activity: Activity) : FirebaseUser? {
+            val auth = FirebaseAuth.getInstance()
+            auth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(activity) { task: Task<AuthResult> ->
+                    if (!task.isSuccessful) {
+                        fail("Could not create test user.")
+                    } else {
+                        auth.currentUser!!
+                    }
+                }
+            return null
+        }
+
+        fun destroyTestUser(user: FirebaseUser) {
+            user.delete()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("UITestUtils", "User account deleted.")
+                    }
+                }
         }
 
         private fun childAtPosition(
