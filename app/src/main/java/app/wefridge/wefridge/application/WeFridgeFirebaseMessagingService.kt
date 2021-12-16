@@ -44,7 +44,7 @@ class WeFridgeFirebaseMessagingService : FirebaseMessagingService() {
     /**
      *@param title, message are taken from the payload and displayed in a created channel.
      * it will use the function getRemoteView to create the notification layout
-     * it is an edit version from firebase, the changes are the chanel and the call of the funktion
+     * it is an edit version from firebase, the changes are the channel and the call of the funktion
      * getRemoteView
      */
     private fun generateNotification(title:String, message: String) {
