@@ -3,11 +3,11 @@ package app.wefridge.wefridge.model
 import android.os.Parcelable
 import app.wefridge.wefridge.*
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.*
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.GeoPoint
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.RawValue
 import java.util.*
-import kotlin.collections.HashMap
 
 // The solution regarding the position of
 // @RawValue was found on: https://stackoverflow.com/questions/49606163/rawvalue-annotation-is-not-applicable-to-target-value-parameter
@@ -25,7 +25,9 @@ data class Item(
     var geohash: String? = null,
     var contactName: String? = null,
     var contactEmail: String? = null,
-    var ownerReference: @RawValue DocumentReference) : Parcelable {
+    var ownerReference: @RawValue DocumentReference,
+    var distance: Double = 0.0
+) : Parcelable {
 
     override fun toString(): String {
         return name
