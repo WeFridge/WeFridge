@@ -10,14 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import app.wefridge.wefridge.databinding.FragmentNerbyItemListBinding
-import app.wefridge.wefridge.model.Item
-import app.wefridge.wefridge.model.ItemController
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import java.util.*
-import kotlin.collections.ArrayList
+import app.wefridge.wefridge.model.*
+import com.firebase.geofire.GeoLocation
 
 /**
  * A fragment representing a list of Items.
@@ -27,15 +21,14 @@ class NearbyItemFragment : Fragment() {
     private var _binding: FragmentNerbyItemListBinding? = null
     private val binding get() = _binding!!
 
-    private val itemsPerPage = 15
     private val values = ArrayList<Item>()
     private val _adapter = ItemRecyclerViewAdapter(values, R.id.action_from_nearby_to_detail)
     private lateinit var scrollListener: EndlessRecyclerOnScrollListener
     private lateinit var refreshLayout: SwipeRefreshLayout
+    private lateinit var locationController: LocationController
+    private var geoLocation: GeoLocation? = null
 
-    private val db = Firebase.firestore
-    private val itemDb = db.collection(ITEMS_COLLECTION_NAME)
-    private var lastVisible: DocumentSnapshot? = null
+    private var radius: Double = 0.0
 
     private var loading = false
         set(value) {
@@ -43,6 +36,26 @@ class NearbyItemFragment : Fragment() {
             refreshLayout.isRefreshing = field
             scrollListener.loading = field
         }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        locationController = LocationController(this,
+            callbackOnPermissionDenied = { alertDialogOnLocationPermissionDenied(requireContext()).show() },
+            callbackForPermissionRationale = { callback ->
+                alertDialogForLocationPermissionRationale(requireContext()).setPositiveButton(
+                    android.R.string.ok
+                ) { _, _ ->
+                    callback(true)
+                    locationController.getCurrentLocation()
+                }.show()
+            },
+            callbackOnDeterminationFailed = { alertDialogOnUnableToDetermineLocation(requireContext()).show() },
+            callbackOnSuccess = { geoPoint ->
+                geoLocation = GeoLocation(geoPoint.latitude, geoPoint.longitude)
+                loading = false
+                loadPage()
+            })
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,6 +74,7 @@ class NearbyItemFragment : Fragment() {
             layoutManager = linearLayoutManager
             adapter = _adapter
             scrollListener = EndlessRecyclerOnScrollListener(linearLayoutManager) {
+                radius += 1000.0
                 loadPage()
             }
             addOnScrollListener(scrollListener)
@@ -69,7 +83,8 @@ class NearbyItemFragment : Fragment() {
         refreshLayout = binding.swipe
         with(refreshLayout) {
             setOnRefreshListener {
-                lastVisible = null
+                radius = 0.0
+                geoLocation = null
                 loadPage()
             }
             loadPage()
@@ -83,62 +98,35 @@ class NearbyItemFragment : Fragment() {
         if (loading)
             return
         loading = true
-        Log.v("Auth", "Page: ${lastVisible?.id ?: "new"}")
+        if (geoLocation == null)
+            return locationController.getCurrentLocation()
 
-        val oldAmount = values.size
-        val query = itemDb.whereEqualTo("is_shared", true)
-            .orderBy("best_by", Query.Direction.ASCENDING)
-            .limit(itemsPerPage.toLong())
+//        Log.v("Auth", "Page: ${lastVisible?.id ?: "new"}")
+        ItemController.getNearbyItems({ items ->
+            if (items.isEmpty()) {
+                loading = false
+                return@getNearbyItems
+            }
+            val oldAmount = values.size
 
-        if (lastVisible == null) {
-            query.get()
-                .addOnSuccessListener {
-                    if (it.isEmpty) {
-                        loading = false
-                        return@addOnSuccessListener
-                    }
-                    values.clear()
+            values.clear()
+            values.addAll(items)
 
-                    val newValues = it.documents.mapNotNull { item -> ItemController.tryParse(item) }
-                    values.addAll(newValues)
+            val newSize = items.size
 
-                    val newSize = newValues.size
+            if (oldAmount > newSize) {
+                val diff = oldAmount - newSize
+                _adapter.notifyItemRangeRemoved(oldAmount - diff, diff)
+            }
 
-                    if (oldAmount > newSize) {
-                        val diff = oldAmount - newSize
-                        _adapter.notifyItemRangeRemoved(oldAmount - diff, diff)
-                    }
+            _adapter.notifyItemRangeChanged(0, newSize)
 
-                    _adapter.notifyItemRangeChanged(0, newSize)
-                    lastVisible = it.documents[it.size() - 1]
+            radius = items.last().distance
 
-                    loading = false
-                }
-                .addOnFailureListener {
-                    Log.e("Auth", "error", it)
-                }
-        } else {
-            query.startAfter(lastVisible!!.getDate("best_by"))
-                .get()
-                .addOnSuccessListener {
-                    if (it.isEmpty) {
-                        loading = false
-                        return@addOnSuccessListener
-                    }
-
-                    val newValues = it.documents.mapNotNull { item -> ItemController.tryParse(item) }
-
-                    if (values.addAll(newValues)) {
-                        _adapter.notifyItemRangeInserted(oldAmount, newValues.size)
-                    }
-                    lastVisible = it.documents[it.size() - 1]
-
-                    loading = false
-                }
-                .addOnFailureListener {
-                    Log.e("Auth", "error", it)
-                }
-
-        }
+            loading = false
+        }, {
+            Log.e("Auth", "nearbyItems", it)
+            loading = false
+        }, radius, geoLocation!!)
     }
 }

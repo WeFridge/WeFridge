@@ -15,6 +15,7 @@ import app.wefridge.wefridge.model.Item
 import app.wefridge.wefridge.model.ItemController
 import app.wefridge.wefridge.model.UserController
 import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ListenerRegistration
 
 
@@ -27,6 +28,7 @@ class PantryFragment : Fragment() {
     private val binding get() = _binding!!
     private val values = ArrayList<Item>()
     private var snapshotListener: ListenerRegistration? = null
+    private var ownerRef: DocumentReference? = null
     private val recyclerViewAdapter = ItemRecyclerViewAdapter(values, R.id.action_from_list_to_edit)
 
     override fun onCreateView(
@@ -49,7 +51,10 @@ class PantryFragment : Fragment() {
         }
 
         binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_from_list_to_edit)
+            val bundle = Bundle()
+            bundle.putString(ARG_OWNER, ownerRef?.id)
+
+            findNavController().navigate(R.id.action_from_list_to_edit, bundle)
         }
 
         val itemSwipeTouchHelper =
@@ -89,8 +94,9 @@ class PantryFragment : Fragment() {
             recyclerViewAdapter.notifyItemRangeRemoved(0, oldSize)
         }
 
-        ItemController.getItemsSnapshot({
+        ItemController.getItemsSnapshot({ it, ownerRef ->
             snapshotListener = it
+            this.ownerRef = ownerRef
         }) { item, type, oldIndex, newIndex ->
             when (type) {
                 DocumentChange.Type.ADDED -> {
