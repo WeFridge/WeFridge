@@ -19,8 +19,6 @@ import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import app.wefridge.wefridge.databinding.FragmentEditBinding
 import app.wefridge.wefridge.exceptions.InternetUnavailableException
-import app.wefridge.wefridge.model.Item
-import app.wefridge.wefridge.model.ItemController
 import app.wefridge.wefridge.exceptions.ItemIsSharedWithoutContactEmailException
 import app.wefridge.wefridge.exceptions.ItemIsSharedWithoutLocationException
 import app.wefridge.wefridge.model.*
@@ -74,10 +72,8 @@ class EditFragment : Fragment() {
             callbackOnSuccess = { geoPoint ->
                 model.location = geoPoint
                 model.geohash = GeoFireUtils.getGeoHashForLocation(GeoLocation(model.location!!.latitude, model.location!!.longitude))
-                binding.addressTextInputLayout.editText?.requestFocus()
                 // the following code is based on https://stackoverflow.com/questions/9409195/how-to-get-complete-address-from-latitude-and-longitude
                 binding.addressTextInputLayout.editText?.setText(tryBuildAddressStringFrom(geoPoint))
-                binding.addressTextInputLayout.editText?.clearFocus()
             })
     }
 
