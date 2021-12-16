@@ -98,3 +98,11 @@ dependencies {
     implementation 'com.firebase:geofire-android-common:3.1.0'
     androidTestImplementation 'androidx.test:rules:1.4.0-alpha05'
 }
+
+tasks.withType(Test) {
+    testLogging {
+        exceptionFormat "full"
+        events "started", "skipped", "passed", "failed"
+        showStandardStreams true
+    }
+}
