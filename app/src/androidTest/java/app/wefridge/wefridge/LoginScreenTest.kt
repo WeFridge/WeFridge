@@ -7,6 +7,8 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.filters.LargeTest
 import androidx.test.rule.ActivityTestRule
 import androidx.test.runner.AndroidJUnit4
+import app.wefridge.wefridge.UITestUtils.Companion.logOutUser
+import com.google.firebase.auth.FirebaseAuth
 import org.hamcrest.Matchers.allOf
 import org.junit.Rule
 import org.junit.Test
@@ -23,6 +25,9 @@ class LoginScreenTest {
     // Test requires device language to be English to match strings
     @Test
     fun loginScreenTest() {
+        val auth = FirebaseAuth.getInstance()
+        if(auth.currentUser != null) logOutUser()
+
         val appLogo = onView(
             allOf(
                 withId(R.id.logo), withContentDescription("App logo"),

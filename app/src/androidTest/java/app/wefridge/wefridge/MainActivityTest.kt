@@ -4,23 +4,19 @@ package app.wefridge.wefridge
 import androidx.test.filters.LargeTest
 import androidx.test.rule.ActivityTestRule
 import androidx.test.runner.AndroidJUnit4
-import android.view.View
-import android.view.ViewGroup
 
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions.*
 import androidx.test.espresso.matcher.ViewMatchers.*
-
-import org.hamcrest.Description
-import org.hamcrest.Matcher
-import org.hamcrest.TypeSafeMatcher
+import com.google.firebase.auth.FirebaseAuth
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 import org.hamcrest.Matchers.allOf
-import org.hamcrest.Matchers.`is`
+
+import app.wefridge.wefridge.UITestUtils.Companion.signInUser
 
 @LargeTest
 @RunWith(AndroidJUnit4::class)
@@ -34,57 +30,8 @@ class MainActivityTest {
     // Test requires a user account with credentials "test@example.com/12345678" to exist
     @Test
     fun mainActivityTest() {
-        val signInWithEmailButton = onView(
-            allOf(
-                withId(R.id.email_button), withText("Sign in with email"),
-                childAtPosition(
-                    allOf(
-                        withId(R.id.btn_holder),
-                        childAtPosition(
-                            withId(R.id.container),
-                            0
-                        )
-                    ),
-                    0
-                )
-            )
-        )
-        signInWithEmailButton.perform(scrollTo(), click())
-
-        val emailInputField = onView(
-            allOf(
-                withId(R.id.email)
-            )
-        )
-        emailInputField.perform(scrollTo(), replaceText("test@example.com"), closeSoftKeyboard())
-
-        val emailNextButton = onView(
-            allOf(
-                withId(R.id.button_next), withText("Next"),
-            )
-        )
-        emailNextButton.perform(scrollTo(), click())
-
-        val passwordInputField = onView(
-            allOf(
-                withId(R.id.password),
-            )
-        )
-        passwordInputField.perform(scrollTo(), replaceText("12345678"), closeSoftKeyboard())
-
-        val signInButton = onView(
-            allOf(
-                withId(R.id.button_done), withText("Sign in"),
-                childAtPosition(
-                    childAtPosition(
-                        withClassName(`is`("android.widget.ScrollView")),
-                        0
-                    ),
-                    4
-                )
-            )
-        )
-        signInButton.perform(scrollTo(), click())
+        val auth = FirebaseAuth.getInstance()
+        auth.currentUser ?: signInUser("test@example.com","12345678")
 
         val fab = onView(
             allOf(
@@ -122,23 +69,5 @@ class MainActivityTest {
             )
         )
         settingsFragment.check(matches(isDisplayed()))
-    }
-
-    private fun childAtPosition(
-        parentMatcher: Matcher<View>, position: Int
-    ): Matcher<View> {
-
-        return object : TypeSafeMatcher<View>() {
-            override fun describeTo(description: Description) {
-                description.appendText("Child at position $position in parent ")
-                parentMatcher.describeTo(description)
-            }
-
-            public override fun matchesSafely(view: View): Boolean {
-                val parent = view.parent
-                return parent is ViewGroup && parentMatcher.matches(parent)
-                        && view == parent.getChildAt(position)
-            }
-        }
     }
 }
