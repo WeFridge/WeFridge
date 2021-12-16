@@ -38,8 +38,8 @@
     <string name="item_share_no_internet_connection_text">There was an error while we tried to match the location coordinates to a real address. Therefore, we disabled the sharing option. Please check your internet connection and try again.</string>
     <string name="item_share_invalid_address_title">Invalid address</string>
     <string name="item_share_invalid_address_text">The address you\'ve entered couldn\'t be matched to a real location. Please specify a valid address or turn off the sharing option.</string>
-    <string name="item_share_item_not_saved_title">Item not saved</string>
-    <string name="item_share_item_not_saved_text">Please check your internet connection and try again.</string>
+    <string name="item_not_saved_title">Item not saved</string>
+    <string name="item_not_saved_text">We encountered a problem while we tried to save your changes. Please make sure your are connected to the internet and try again.</string>
     <string name="item_share_unable_to_determine_location_title">Unable to determine location</string>
     <string name="item_share_unable_to_determine_location_text">Please try it another time.</string>
     <string name="item_share_location_permission_denied_title">Permission denied</string>
@@ -48,9 +48,11 @@
     <string name="item_share_location_rationale_title">Why do we need your location?</string>
     <string name="item_share_location_permission_rationale_text">Your location is needed as soon as you start sharing this foodstuff. If you want to determine your location conveniently with just a tap, give us the required permission to do so. Other users will not see your exact location.</string>
 
-
     <string name="user_logged_out_title">Account not verified</string>
     <string name="user_logged_out_text">It seems like you are logged out. Please log in under "Settings" > "Login". Then try again.</string>
+
+    <string name="no_internet_connection_toast">No internet connection. You may be unable to use some of our services.</string>
+    <string name="no_internet_connection_on_save_item_toast">Connect to internet in order to be able to save your foodstuff.</string>
 
     <string name="best_by_overdue">Expired on %1$s</string>
     <string name="best_by_plural">Best by in %1$s days</string>
@@ -98,8 +100,8 @@
     <string name="ad_btn_retry">Retry</string>
     <string name="ad_btn_open_settings">Open settings</string>
 
-    <string name="toast_text_on_new_item_saved">Item saved</string>
-    <string name="toast_text_on_item_deleted">Item deleted</string>
+    <string name="new_item_saved_toast">Item saved</string>
+    <string name="item_deleted_toast">Item deleted</string>
 
 
     <string name="accessibility_hint_unit_auto_complete_view">Choose a unit</string>

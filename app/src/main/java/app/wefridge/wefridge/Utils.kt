@@ -5,6 +5,9 @@ import android.os.Build
 import android.text.format.DateFormat
 import android.widget.DatePicker
 import androidx.annotation.RequiresApi
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import app.wefridge.wefridge.model.toastOnInternetUnavailable
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.time.LocalDate
@@ -90,4 +93,20 @@ fun getBestByString(best_by: Date?, ctx: Context): String {
     } else {
         ctx.getString(R.string.best_by_singular)
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.N)
+fun internetAvailable(ctx: Context): Boolean {
+    // this function was inspired by
+    // https://developer.android.com/reference/android/net/NetworkCapabilities
+    // https://developer.android.com/training/monitoring-device-state/connectivity-status-type
+    val cm = ctx.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val capabilities = cm.getNetworkCapabilities(cm.activeNetwork)
+
+    return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+}
+
+@RequiresApi(Build.VERSION_CODES.N)
+fun displayToastOnInternetUnavailable(ctx: Context) {
+    if (!internetAvailable(ctx)) toastOnInternetUnavailable(ctx).show()
 }

@@ -1,5 +1,6 @@
 package app.wefridge.wefridge
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -88,6 +89,9 @@ class NearbyItemFragment : Fragment() {
             }
             loadPage()
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            displayToastOnInternetUnavailable(requireContext())
     }
 
     private fun loadPage() {
